@@ -141,6 +141,7 @@ export default function SuggestPage({ form }: Props) {
         sources: [],
         suggestUrl: '',
         reportUrl: '',
+        discussUrl: '',
     });
 
     const updateSource = (index: number, key: keyof SourceRow, value: string) =>

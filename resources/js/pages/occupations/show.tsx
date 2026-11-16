@@ -193,6 +193,15 @@ export default function OccupationShow({
                                                     {`: ${field.label}`}
                                                 </span>
                                             </Link>
+                                            <Link
+                                                href={field.discussUrl}
+                                                className="underline underline-offset-4"
+                                            >
+                                                {t('occupations.show.discuss')}
+                                                <span className="sr-only">
+                                                    {`: ${field.label}`}
+                                                </span>
+                                            </Link>
                                         </p>
                                     </dd>
                                 </div>
@@ -272,6 +281,15 @@ export default function OccupationShow({
                             className="inline-block rounded-md border px-3 py-1.5 text-sm hover:bg-muted"
                         >
                             {t('occupations.show.report_button')}
+                        </Link>
+                        <Link
+                            href={occupation.talkUrl}
+                            data-test="talk-link"
+                            className="ml-2 inline-block rounded-md border px-3 py-1.5 text-sm hover:bg-muted"
+                        >
+                            {t('occupations.show.talk_button', {
+                                count: formatNumber(occupation.talkCount),
+                            })}
                         </Link>
                     </div>
                 </section>

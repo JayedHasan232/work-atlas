@@ -20,7 +20,8 @@ void createInertiaApp({
                 name.startsWith('search/') ||
                 name.startsWith('contributors/') ||
                 name.startsWith('tasks/') ||
-                name.startsWith('moderation/'):
+                name.startsWith('moderation/') ||
+                name.startsWith('talk/'):
                 return PublicLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;

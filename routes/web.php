@@ -2,13 +2,16 @@
 
 use App\Http\Controllers\ContributionTermsController;
 use App\Http\Controllers\LocaleController;
+use App\Modules\Community\Http\Controllers\Web\DiscussionController;
 use App\Modules\Community\Http\Controllers\Web\EditSuggestionController;
 use App\Modules\Community\Http\Controllers\Web\ErrorReportController;
+use App\Modules\Community\Http\Controllers\Web\Moderation\DiscussionModerationController;
 use App\Modules\Community\Http\Controllers\Web\Moderation\ModerationActionController;
 use App\Modules\Community\Http\Controllers\Web\Moderation\PatrolEditController;
 use App\Modules\Community\Http\Controllers\Web\Moderation\PatrolQueueController;
 use App\Modules\Community\Http\Controllers\Web\Moderation\ReviewQueueController;
 use App\Modules\Community\Http\Controllers\Web\Moderation\ReviewSlotController;
+use App\Modules\Community\Http\Controllers\Web\Moderation\TalkQueueController;
 use App\Modules\Community\Http\Controllers\Web\TaskAnswerController;
 use App\Modules\Publishing\Http\Controllers\Web\ContributorController;
 use App\Modules\Publishing\Http\Controllers\Web\MicroTaskController;
@@ -20,6 +23,8 @@ use App\Modules\Publishing\Http\Controllers\Web\RobotsTxtController;
 use App\Modules\Publishing\Http\Controllers\Web\SearchController;
 use App\Modules\Publishing\Http\Controllers\Web\SitemapController;
 use App\Modules\Publishing\Http\Controllers\Web\SuggestFormController;
+use App\Modules\Publishing\Http\Controllers\Web\TalkIndexController;
+use App\Modules\Publishing\Http\Controllers\Web\TalkThreadController;
 use App\Support\Localization\LocalizedRoutes;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +56,16 @@ LocalizedRoutes::register(function () {
                 ->name('occupations.suggest.store');
         });
     });
+    // Talk pages (PLAN M19): anyone reads; signed-in people with a verified email write.
+    Route::where(['slug' => '[a-z0-9]+(-[a-z0-9]+)*'])->group(function () {
+        Route::get('occupations/{slug}/talk', TalkIndexController::class)->name('talk.index');
+        Route::get('occupations/{slug}/talk/{thread}', TalkThreadController::class)->whereNumber('thread')->name('talk.show');
+
+        Route::middleware(['auth', 'verified', 'throttle:suggestions'])->group(function () {
+            Route::post('occupations/{slug}/talk', [DiscussionController::class, 'store'])->name('talk.store');
+            Route::post('occupations/{slug}/talk/{thread}', [DiscussionController::class, 'reply'])->whereNumber('thread')->name('talk.reply');
+        });
+    });
     Route::get('contributors/{id}', ContributorController::class)->whereNumber('id')->name('contributors.show');
 
     // Micro-tasks (PLAN M17): one yes/no question at a time, for signed-in people.
@@ -74,6 +89,11 @@ LocalizedRoutes::register(function () {
         Route::get('patrol/{revision}', PatrolEditController::class)->whereNumber('revision')->name('patrol.show');
         Route::post('patrol/{revision}/patrolled', [ModerationActionController::class, 'patrol'])->whereNumber('revision')->name('patrol.mark');
         Route::post('patrol/{revision}/revert', [ModerationActionController::class, 'revert'])->whereNumber('revision')->name('patrol.revert');
+        Route::get('patrol/talk', TalkQueueController::class)->name('patrol.talk');
+        Route::post('talk/posts/{post}/hide', [DiscussionModerationController::class, 'hidePost'])->whereNumber('post')->name('talk.posts.hide');
+        Route::post('talk/posts/{post}/show', [DiscussionModerationController::class, 'showPost'])->whereNumber('post')->name('talk.posts.show');
+        Route::post('talk/threads/{thread}/hide', [DiscussionModerationController::class, 'hideThread'])->whereNumber('thread')->name('talk.threads.hide');
+        Route::post('talk/threads/{thread}/show', [DiscussionModerationController::class, 'showThread'])->whereNumber('thread')->name('talk.threads.show');
     });
 
     // Search (PLAN M15).

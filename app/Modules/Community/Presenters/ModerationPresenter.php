@@ -4,6 +4,7 @@ namespace App\Modules\Community\Presenters;
 
 use App\Models\User;
 use App\Modules\Community\Data\PatrolEntry;
+use App\Modules\Community\Queries\Discussions;
 use App\Modules\Community\Queries\PatrolQueue;
 use App\Modules\Community\Queries\PeopleForModeration;
 use App\Modules\Knowledge\Data\EditRecord;
@@ -17,6 +18,7 @@ use App\Modules\Publishing\Presenters\FieldDisplay;
 use App\Modules\Publishing\Presenters\OccupationLinks;
 use App\Modules\Taxonomy\Queries\PublicOccupations;
 use App\Support\Localization\LocalizedRoutes;
+use Illuminate\Support\Facades\Config;
 
 /**
  * The moderation pages (PLAN M18, D66) for reviewers and above: the review queue, one value with its
@@ -35,6 +37,7 @@ final class ModerationPresenter
         private readonly OccupationLinks $links,
         private readonly FieldDisplay $display,
         private readonly FieldDefinitionByKey $definitions,
+        private readonly Discussions $discussions,
     ) {}
 
     /**
@@ -99,6 +102,39 @@ final class ModerationPresenter
             'statusUrl' => LocalizedRoutes::path('review.status', ['slot' => $slot->fieldValueId], $locale),
             'historyUrl' => $slot->currentRevisionId === null ? null : LocalizedRoutes::path('patrol.show', ['revision' => $slot->currentRevisionId], $locale),
         ];
+    }
+
+    /**
+     * Recent talk-page posts that are not hidden, flagged ones first (PLAN M19).
+     *
+     * @return array<string, mixed>
+     */
+    public function talkQueue(string $locale): array
+    {
+        $recent = $this->discussions->recentPosts(now()->subDays(Config::integer('atlas.moderation.patrol_days')));
+        $people = $this->people->handle(array_map(fn (array $item): int => $item['post']->userId, $recent));
+        $occupations = $this->occupationLinks(array_map(fn (array $item): int => $item['thread']->occupationId, $recent), $locale);
+
+        return ['posts' => array_values(array_filter(array_map(function (array $item) use ($people, $occupations, $locale): ?array {
+            $occupation = $occupations[$item['thread']->occupationId] ?? null;
+
+            if ($occupation === null) {
+                return null;
+            }
+
+            return [
+                'postId' => $item['post']->id,
+                'occupation' => $occupation,
+                'threadTitle' => $item['thread']->title,
+                'author' => $people[$item['post']->userId] ?? null,
+                'body' => mb_strimwidth($item['post']->body, 0, 400, '…'),
+                'locale' => $item['post']->locale,
+                'flags' => $item['post']->flags,
+                'createdAt' => $item['post']->createdAt?->toIso8601String(),
+                'threadUrl' => LocalizedRoutes::path('talk.show', ['slug' => $occupation['slug'], 'thread' => $item['thread']->id], $locale),
+                'hideUrl' => LocalizedRoutes::path('talk.posts.hide', ['post' => $item['post']->id], $locale),
+            ];
+        }, $recent)))];
     }
 
     /**

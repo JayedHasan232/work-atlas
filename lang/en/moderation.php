@@ -6,6 +6,7 @@ return [
     'tabs' => [
         'review' => 'Review queue',
         'patrol' => 'Patrol recent edits',
+        'talk' => 'Talk pages',
     ],
     'review' => [
         'title' => 'Review queue',

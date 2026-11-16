@@ -2,6 +2,7 @@
 
 namespace App\Modules\Publishing\Presenters;
 
+use App\Modules\Community\Queries\Discussions;
 use App\Modules\Community\Queries\PublicContributors;
 use App\Modules\Knowledge\Data\FieldSlot;
 use App\Modules\Knowledge\Enums\FieldStatus;
@@ -26,6 +27,7 @@ final class OccupationPresenter
         private readonly FieldDisplay $display,
         private readonly ContributionCredits $credits,
         private readonly PublicContributors $contributors,
+        private readonly Discussions $discussions,
     ) {}
 
     /**
@@ -89,6 +91,8 @@ final class OccupationPresenter
             'unverified' => $unverified,
             'changedAt' => $changedAt?->toIso8601String(),
             'reportUrl' => LocalizedRoutes::path('occupations.report', ['slug' => $occupation->slug], $locale),
+            'talkUrl' => LocalizedRoutes::path('talk.index', ['slug' => $occupation->slug], $locale),
+            'talkCount' => $this->discussions->visibleThreadCount($occupation->id),
             'credits' => $this->credits($occupation->id, $locale),
         ];
     }
@@ -205,6 +209,7 @@ final class OccupationPresenter
             'key' => $definition->key,
             'suggestUrl' => LocalizedRoutes::path('occupations.suggest', ['slug' => $slug, 'field' => $definition->key], $locale),
             'reportUrl' => LocalizedRoutes::path('occupations.report', ['slug' => $slug], $locale).'?field='.rawurlencode($definition->key),
+            'discussUrl' => LocalizedRoutes::path('talk.index', ['slug' => $slug], $locale).'?field='.rawurlencode($definition->key),
             'label' => $this->display->text($definition->label, $locale) ?? $definition->key,
             'help' => $this->display->text($definition->help, $locale),
             'status' => $value?->status->value,

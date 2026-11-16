@@ -116,6 +116,7 @@ export default function MicroTask({ task, answered, agreementsNeeded }: Props) {
                                     sources: [],
                                     suggestUrl: task.suggestUrl,
                                     reportUrl: '',
+                                    discussUrl: '',
                                 }}
                             />
                         </div>
