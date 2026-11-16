@@ -90,6 +90,14 @@ return [
         'retry' => ['backoff_ms' => [1000, 5000]],
 
         'batch_poll_seconds' => 60,
+
+        // Provider and model per task. Fake until the providers are chosen (O3).
+        'tasks' => [
+            'taxonomy_expand' => [
+                'provider' => env('AI_EXPAND_PROVIDER', 'fake'),
+                'model' => env('AI_EXPAND_MODEL', 'fake-model'),
+            ],
+        ],
     ],
 
 ];

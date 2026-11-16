@@ -1,0 +1,96 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "taxonomy/expand-unit-group v1: occupations in one ISCO-08 unit group, as worked in Bangladesh",
+    "type": "object",
+    "required": ["occupations", "note"],
+    "additionalProperties": false,
+    "properties": {
+        "occupations": {
+            "type": "array",
+            "maxItems": 40,
+            "items": {
+                "type": "object",
+                "required": [
+                    "names_bn",
+                    "names_en",
+                    "specializations",
+                    "work_arrangements",
+                    "separate_because",
+                    "confidence"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "names_bn": { "$ref": "#/$defs/names" },
+                    "names_en": { "$ref": "#/$defs/names" },
+                    "specializations": {
+                        "type": "array",
+                        "maxItems": 20,
+                        "items": {
+                            "type": "object",
+                            "required": ["bn", "en"],
+                            "additionalProperties": false,
+                            "properties": {
+                                "bn": { "type": "string", "minLength": 1, "maxLength": 200 },
+                                "en": { "type": "string", "minLength": 1, "maxLength": 200 }
+                            }
+                        }
+                    },
+                    "work_arrangements": {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "items": {
+                            "enum": [
+                                "formal_employment",
+                                "informal_employment",
+                                "self_employed",
+                                "daily_wage",
+                                "gig_platform",
+                                "seasonal",
+                                "household",
+                                "unpaid_family"
+                            ]
+                        }
+                    },
+                    "separate_because": { "type": "string", "minLength": 1, "maxLength": 600 },
+                    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+                }
+            }
+        },
+        "note": { "type": "string", "maxLength": 1000 }
+    },
+    "$defs": {
+        "names": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 30,
+            "contains": {
+                "type": "object",
+                "required": ["type"],
+                "properties": { "type": { "const": "primary" } }
+            },
+            "minContains": 1,
+            "maxContains": 1,
+            "items": {
+                "type": "object",
+                "required": ["name", "type"],
+                "additionalProperties": false,
+                "properties": {
+                    "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+                    "type": { "enum": ["primary", "alias", "local", "regional"] },
+                    "region": {
+                        "enum": [
+                            "barishal",
+                            "chattogram",
+                            "dhaka",
+                            "khulna",
+                            "mymensingh",
+                            "rajshahi",
+                            "rangpur",
+                            "sylhet"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

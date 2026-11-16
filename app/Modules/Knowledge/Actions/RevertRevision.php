@@ -5,6 +5,7 @@ namespace App\Modules\Knowledge\Actions;
 use App\Modules\Knowledge\Data\Actor;
 use App\Modules\Knowledge\Enums\FieldStatus;
 use App\Modules\Knowledge\Enums\ReviewDecision;
+use App\Modules\Knowledge\Events\CurrentValueChanged;
 use App\Modules\Knowledge\Exceptions\RevertNotAllowed;
 use App\Modules\Knowledge\Exceptions\SourceRequired;
 use App\Modules\Knowledge\Models\FieldValue;
@@ -65,6 +66,8 @@ final class RevertRevision
             $slot->current_revision_id = $revision->id;
             $slot->status = $restoredStatus ?? FieldStatus::AiDraft;
             $slot->save();
+
+            event(new CurrentValueChanged($slot->occupation_id, $slot->field_definition_id, $slot->definition->key, $slot->locale, $slot->region, $value));
 
             return $revision;
         });

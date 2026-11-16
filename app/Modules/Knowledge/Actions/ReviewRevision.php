@@ -7,6 +7,7 @@ use App\Modules\Community\Enums\Role;
 use App\Modules\Knowledge\Data\Actor;
 use App\Modules\Knowledge\Enums\FieldStatus;
 use App\Modules\Knowledge\Enums\ReviewDecision;
+use App\Modules\Knowledge\Events\CurrentValueChanged;
 use App\Modules\Knowledge\Exceptions\ReviewNotAllowed;
 use App\Modules\Knowledge\Models\FieldValue;
 use App\Modules\Knowledge\Models\Revision;
@@ -81,6 +82,10 @@ final class ReviewRevision
             }
 
             $slot->save();
+
+            if ($accepted) {
+                event(new CurrentValueChanged($slot->occupation_id, $slot->field_definition_id, $slot->definition->key, $slot->locale, $slot->region, $revision->new_value));
+            }
 
             return $review;
         });

@@ -66,6 +66,37 @@ final class AiGateway
     }
 
     /**
+     * The result of an earlier succeeded run with exactly this input (provider, model, prompt version,
+     * rendered prompt and settings), or null. A caller uses it to skip a repeat call; it makes no run.
+     */
+    public function previousSuccess(AiRequest $request): ?AiResult
+    {
+        $prompt = $this->prompts->get($request->promptKey, $request->promptVersion);
+        $run = AiRun::query()
+            ->where('input_hash', $this->inputHash($request, $prompt, $prompt->render($request->values)))
+            ->where('status', AiRunStatus::Succeeded)
+            ->orderByDesc('id')
+            ->first();
+
+        return $run === null ? null : new AiResult($run->id, AiRunStatus::Succeeded, $run->parsed_output);
+    }
+
+    /**
+     * Refuses a set of requests, as a whole, when its estimate is above the cap or a price is unknown
+     * (BudgetExceeded). For work that goes out as many single calls, so the cap still holds for the
+     * whole job, not only for each call.
+     *
+     * @param  list<AiRequest>  $requests
+     */
+    public function checkBudget(array $requests): CostEstimate
+    {
+        $estimate = $this->estimate($requests);
+        $this->ensureWithinBudget($estimate);
+
+        return $estimate;
+    }
+
+    /**
      * A dry-run cost estimate for a set of requests. Nothing is sent and no run is made.
      *
      * @param  list<AiRequest>  $requests
@@ -182,13 +213,18 @@ final class AiGateway
             'model' => $request->model,
             'prompt_key' => $prompt->key,
             'prompt_version' => $prompt->version,
-            'input_hash' => hash('sha256', (string) json_encode([
-                $request->provider, $request->model, $prompt->key, $prompt->version, $text,
-                $prompt->maxOutputTokens, $prompt->temperature,
-            ], JSON_UNESCAPED_UNICODE)),
+            'input_hash' => $this->inputHash($request, $prompt, $text),
             'status' => AiRunStatus::Running,
             'started_at' => now(),
         ]);
+    }
+
+    private function inputHash(AiRequest $request, Prompt $prompt, string $text): string
+    {
+        return hash('sha256', (string) json_encode([
+            $request->provider, $request->model, $prompt->key, $prompt->version, $text,
+            $prompt->maxOutputTokens, $prompt->temperature,
+        ], JSON_UNESCAPED_UNICODE));
     }
 
     private function completion(AiRun $run, Prompt $prompt, string $text): CompletionRequest

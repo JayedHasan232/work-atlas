@@ -92,3 +92,16 @@ it('rejects a schema that is not a JSON object', function () {
     expect(fn () => (new PromptRegistry(base_path('tests/Fixtures/prompts'), $schemas))->get('test/sample', 1))
         ->toThrow(InvalidPrompt::class, 'is not a JSON object');
 });
+
+it('reads a key and a schema path with a hyphen in the name', function () {
+    $prompt = registryWith(promptFile(), 'taxonomy/expand-unit-group.v1.md')->get('taxonomy/expand-unit-group', 1);
+
+    expect($prompt->key)->toBe('taxonomy/expand-unit-group');
+});
+
+it('reads the committed list-expansion prompt and its schema', function () {
+    $prompt = app(PromptRegistry::class)->get('taxonomy/expand-unit-group', 1);
+
+    expect($prompt->variables)->toBe(['isco_code', 'group_title_en', 'group_title_bn', 'hierarchy', 'existing_occupations'])
+        ->and(json_decode($prompt->schemaJson, true)['required'])->toBe(['occupations', 'note']);
+});

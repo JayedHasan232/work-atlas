@@ -297,3 +297,39 @@ function sampleAiRequest(array $values = [], string $model = 'fake-model', strin
         model: $model,
     );
 }
+
+/**
+ * The fake provider, with the real prompt and schema files (data/prompts, data/schemas).
+ */
+function fakeExpansionAi(): FakeDriver
+{
+    $fake = fakeAi();
+
+    config([
+        'atlas.ai.prompts_path' => base_path('data/prompts'),
+        'atlas.ai.schemas_path' => base_path('data/schemas'),
+    ]);
+
+    return $fake;
+}
+
+/**
+ * A schema-valid output of taxonomy/expand-unit-group v1 with one occupation.
+ *
+ * @param  list<array<string, string>>|null  $namesEn
+ * @return array<string, mixed>
+ */
+function expansionOutput(?array $namesEn = null): array
+{
+    return [
+        'occupations' => [[
+            'names_bn' => [['name' => 'প্লাম্বার', 'type' => 'primary'], ['name' => 'নলমিস্ত্রি', 'type' => 'local']],
+            'names_en' => $namesEn ?? [['name' => 'Plumber', 'type' => 'primary']],
+            'specializations' => [['bn' => 'স্যানিটারি মিস্ত্রি', 'en' => 'Sanitary fitter'], ['bn' => 'নলমিস্ত্রি', 'en' => 'plumber']],
+            'work_arrangements' => ['self_employed', 'daily_wage'],
+            'separate_because' => 'Installs and repairs water pipes; different tasks and training from electricians.',
+            'confidence' => 0.7,
+        ]],
+        'note' => '',
+    ];
+}

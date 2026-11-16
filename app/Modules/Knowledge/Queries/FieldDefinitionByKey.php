@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Modules\Knowledge\Queries;
+
+use App\Modules\Knowledge\Models\FieldDefinition;
+
+/**
+ * The id of a field definition by key: the latest version, or a given one. Null when there is none
+ * (run `atlas:fields:sync`).
+ */
+final class FieldDefinitionByKey
+{
+    public function handle(string $key, ?int $version = null): ?int
+    {
+        $id = FieldDefinition::query()
+            ->where('key', $key)
+            ->when($version !== null, fn ($query) => $query->where('version', $version))
+            ->orderByDesc('version')
+            ->value('id');
+
+        return is_int($id) ? $id : null;
+    }
+}

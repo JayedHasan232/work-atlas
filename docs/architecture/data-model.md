@@ -9,6 +9,7 @@ erDiagram
     isco_groups ||--o{ isco_groups : "parent_code"
     isco_groups ||--o{ occupations : "isco_code (unit group)"
     occupations ||--o{ occupations : "merged_into_id"
+    ai_runs |o--o{ occupations : "proposed (ai_run_id)"
     occupations ||--o{ occupation_names : has
     occupations ||--o{ field_values : has
     field_definitions ||--o{ field_values : "defines"
@@ -49,9 +50,10 @@ erDiagram
         string publish_state "candidate, listed, published, merged"
         bool indexable "never for merged"
         bigint merged_into_id FK "set iff merged"
+        bigint ai_run_id FK "the run that proposed it (M10)"
     }
     occupation_names {
-        bigint occupation_id FK
+        bigint occupation_id FK "copy of the names field (D44)"
         string locale
         text name
         text normalized_name "search key"
@@ -61,9 +63,9 @@ erDiagram
     field_definitions {
         string key "unique with version"
         smallint version
-        smallint wave "1-6"
+        smallint wave "0 taxonomy, 1-6"
         string group
-        string type "scale_1_5, enum, multi_enum, boolean, band, text"
+        string type "scale_1_5, enum, multi_enum, boolean, band, text, name_list"
         jsonb options "enum, multi_enum, band"
         jsonb anchors "bn + en, required for scale_1_5"
         jsonb label "bn + en (M7)"
@@ -186,7 +188,15 @@ slot run one after the other (`ConcurrentWriteTest`).
 **Values.** `null` and `"unknown"` both mean "not known" and are stored as null; `requires_source`
 applies only to a known value. A 1–5 scale is a whole number; enum and band values are one of the
 definition's options; a multi-enum is a non-empty list of distinct options. Text needs a supported
-locale; every other type is the same in every language, so it has none (D22).
+locale; every other type is the same in every language, so it has none (D22). A name list (D44) has
+a locale too, and no region: a list of `{name, type}` with exactly one `primary`, no name twice
+(compared without case and extra spaces), and a division key on each `regional` name.
+
+**Names.** The current value of the `names` field in each language is copied into
+`occupation_names` (the search table) whenever it changes: a direct write, an accepted proposal or a
+revert raises `Knowledge\Events\CurrentValueChanged`, and `Taxonomy\Actions\SyncOccupationNames`
+rewrites that occupation's rows for the language in the same transaction. Search reads only the
+copy; the history lives in `revisions`.
 
 **Status moves** (`FieldStatus::allowedTargets`, D27). A value moves up the ladder or to `disputed`;
 a disputed value goes back up once checked again. `ai_draft` is never a target: only an AI revision

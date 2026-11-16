@@ -4,6 +4,7 @@ namespace App\Modules\Knowledge\Actions;
 
 use App\Modules\Knowledge\Data\RevisionInput;
 use App\Modules\Knowledge\Enums\FieldStatus;
+use App\Modules\Knowledge\Events\CurrentValueChanged;
 use App\Modules\Knowledge\Exceptions\InvalidFieldValue;
 use App\Modules\Knowledge\Exceptions\SourceRequired;
 use App\Modules\Knowledge\Models\FieldDefinition;
@@ -76,6 +77,10 @@ final class RecordRevision
             }
 
             $slot->save();
+
+            if (! $proposed) {
+                event(new CurrentValueChanged($slot->occupation_id, $definition->id, $definition->key, $slot->locale, $slot->region, $value));
+            }
 
             return $revision;
         });
