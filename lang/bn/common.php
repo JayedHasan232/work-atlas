@@ -29,6 +29,7 @@ return [
         'code_license' => 'কোড:',
         'source_code' => 'GitHub-এ সোর্স কোড',
         'api' => 'খোলা তথ্যের API',
+        'policies' => 'নীতিমালা',
         'copyright' => '© :year Work Atlas-এর অবদানকারীরা',
     ],
 

@@ -169,6 +169,7 @@ return [
     |
     */
 
+    // Unset, AppServiceProvider turns it on when APP_URL is HTTPS (PLAN M23, D81).
     'secure' => env('SESSION_SECURE_COOKIE'),
 
     /*

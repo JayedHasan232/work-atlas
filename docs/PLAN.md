@@ -673,6 +673,15 @@ Acceptance
 Tests
 - `Browser/AccessibilityTest`, full suite, `Feature/Admin/Gate1DashboardTest`.
 
+Status: repo side done (D80–D81); the beta launch, the H6 user test and approval of the policy texts are
+the maintainer's. In the repo: the policy pages `/policies` (code of conduct, editorial policy, privacy,
+not medical/legal/financial advice, neutrality and funding; Bangla and English, each marked as a draft
+until approved, linked from every page's footer; the contact address waits on H1/O1), the Gate 1
+widget on the `/admin` dashboard, `Browser/AccessibilityTest` (15 public pages on a phone in both
+languages), the checklist-to-test map `docs/architecture/checklist-tests.md` guarded by
+`Arch/ChecklistTestsTest` (item 6, the monthly restore test, can only be proved by the log once
+production exists), and the security review `docs/ops/security-review.md` with its fixes.
+
 ---
 
 ## Engineering decisions in this plan (reversible; tell me if you disagree)
@@ -1039,6 +1048,18 @@ Tests
   only from `StagingSeeder`, which runs without Faker (no dev dependencies on servers) and refuses
   production. `/up` checks the database and Redis so the uptime check and the post-deploy smoke catch
   a broken queue or database, not only a running PHP.
+- **D80** (M23) The Gate 1 dashboard counts a slot as one listed or published occupation times one
+  Wave 1 field (national, no locale), using the newest field version that has a value. "Supported" is
+  `community_supported` or `verified`; a disputed value is filled but not supported; a proposal nobody
+  accepted fills nothing. The percentage is supported slots over all slots, empty ones included, because
+  the gate asks about every occupation, not only those that already have values. Active contributors
+  are the people who, in the last 30 days, wrote a change, answered a fact-check question or posted on
+  a talk page; "outside the core team" means not a maintainer (A13).
+- **D81** (M23) Security headers (`nosniff`, frame, referrer, permissions, opener policy) are sent by
+  the app on every response rather than by Nginx alone, so tests and every environment see them; HSTS
+  stays with Nginx. Sign-up and the password-reset mail share a rate limit per IP address (10 an hour),
+  because Fortify limits neither. The session cookie is `Secure` by default when `APP_URL` is HTTPS. A
+  Content Security Policy waits for a report-only trial on staging.
 
 ## Maintainer decisions (answered 2026-11-16)
 

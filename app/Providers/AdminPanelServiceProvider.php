@@ -26,8 +26,8 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
  */
 final class AdminPanelServiceProvider extends PanelProvider
 {
-    /** Modules with admin resources. */
-    private const array MODULES = ['Taxonomy', 'Knowledge', 'AiPipeline', 'Community'];
+    /** Modules with admin resources or dashboard widgets. */
+    private const array MODULES = ['Taxonomy', 'Knowledge', 'AiPipeline', 'Community', 'Publishing'];
 
     public function panel(Panel $panel): Panel
     {
@@ -57,6 +57,10 @@ final class AdminPanelServiceProvider extends PanelProvider
             $panel->discoverResources(
                 in: app_path("Modules/{$module}/Filament/Resources"),
                 for: "App\\Modules\\{$module}\\Filament\\Resources",
+            );
+            $panel->discoverWidgets(
+                in: app_path("Modules/{$module}/Filament/Widgets"),
+                for: "App\\Modules\\{$module}\\Filament\\Widgets",
             );
         }
 

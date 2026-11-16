@@ -61,6 +61,22 @@ final class ContributionCredits
     }
 
     /**
+     * The people who wrote at least one change since a moment, credited or not (PLAN M23, the Gate 1
+     * dashboard's active contributors). AI runs are not people and are left out.
+     *
+     * @return list<int>
+     */
+    public function writersSince(CarbonInterface $since): array
+    {
+        return array_values(array_map(intval(...), Revision::query()
+            ->whereNotNull('user_id')
+            ->where('created_at', '>=', $since)
+            ->distinct()
+            ->pluck('user_id')
+            ->all()));
+    }
+
+    /**
      * How many changes a person wrote since a moment, credited or not (Community's daily limits).
      */
     public function writtenSince(int $userId, CarbonInterface $since): int

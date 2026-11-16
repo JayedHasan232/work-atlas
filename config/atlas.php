@@ -46,6 +46,7 @@ return [
             'settings/contributions' => ['contribute'],
             'search/*' => ['search'],
             'publishing/*' => ['api'],
+            'publishing/polic*' => ['policies', 'terms'],
             'dashboard' => ['shell'],
             'settings/*' => ['shell', 'settings'],
         ],
@@ -249,6 +250,13 @@ return [
     'staging' => [
         'basic_auth_user' => env('STAGING_BASIC_AUTH_USER'),
         'basic_auth_password' => env('STAGING_BASIC_AUTH_PASSWORD'),
+    ],
+
+    /*
+    | Security (PLAN M23, D81): account signups and password-reset mails per IP address and hour.
+    */
+    'security' => [
+        'account_forms_per_hour' => 10,
     ],
 
     'publishing' => [

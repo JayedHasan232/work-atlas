@@ -65,6 +65,13 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('public-api', fn (Request $request): Limit => Limit::perMinute(Config::integer('atlas.api.per_minute'))
             ->by((string) $request->ip()));
 
+        // Fortify's register and forgot-password forms have no limiter of their own: without one,
+        // anyone could create accounts in bulk or send reset mail to many addresses (D81).
+        RateLimiter::for('account-forms', fn (Request $request): Limit => $request->isMethod('POST')
+            && in_array($request->route()?->getName(), ['register.store', 'password.email'], true)
+            ? Limit::perHour(Config::integer('atlas.security.account_forms_per_hour'))->by($request->ip() ?? '')
+            : Limit::none());
+
         RateLimiter::for('answers', fn (Request $request): Limit => Limit::perMinute(Config::integer('atlas.community.answers_per_minute'))
             ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
@@ -99,6 +106,12 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        // The session cookie is Secure whenever the app is served over HTTPS, unless
+        // SESSION_SECURE_COOKIE says otherwise (D81): production cannot send it over plain HTTP by accident.
+        if (Config::get('session.secure') === null && str_starts_with(Config::string('app.url'), 'https://')) {
+            Config::set('session.secure', true);
+        }
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
