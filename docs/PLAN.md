@@ -21,7 +21,7 @@ Based on `docs/01-vision.md` and `docs/02-implementation.md`. Phase 0 = weeks 1�
 | M3 | Localization and module skeleton | 0 | M2 | — |
 | M4 | Core data model | 0 | M3 | — |
 | M5 | Knowledge write path and rule enforcement | 0 | M4 | — |
-| M6 | ISCO-08 import | 0 | M4 | — |
+| M6 | ISCO-08 import | 0 | M4 | O9 (real file) |
 | M6b | BSCO-2012 mapping and Bangla group titles | 0–1 | M6, M9 | O4 |
 | M7 | Wave 1 field definitions and separate-occupation policy | 0 | M5 | O2 (settled inside M7) |
 | M8 | Roles, signup consent, Filament admin shell | 1 | M5 | — |
@@ -203,7 +203,7 @@ Tests
 
 ### M6 — ISCO-08 import
 
-Depends on: M4 · Blocked by: —
+Depends on: M4 · Blocked by: O9 for the real file (the importer is built on fixtures)
 
 Tasks
 - Get the ISCO-08 structure (ILO). Check reuse terms. Write `data/taxonomy/SOURCE.md` (URL, publisher,
@@ -663,6 +663,16 @@ Tests
 - **D28** (M5) Every Knowledge action locks the slot row first. A slot is created with
   `ON CONFLICT DO NOTHING`, so two first writes don't collide. `ConcurrentWriteTest` holds the lock
   from a second database connection and checks that the write waits at the locking read.
+- **D29** (M6) The ISCO-08 file is a CSV with the header `code,title_en`. Level and parent come from the
+  code, so they can't be written wrong. Where the file comes from sits next to it in
+  `isco08.source.json` (url, publisher, title, license, accessed_on, archive_url); `SOURCE.md` is the
+  human-readable note with the checksum. The importer checks the whole file before writing, then writes
+  in one transaction. It never deletes a group (occupations may point to it) and never touches
+  `title_bn` or `bsco_code` (M6b).
+- **D30** (M6) `Knowledge\Actions\RecordSource` is how other modules record a source. A source with the
+  same url, access date and other fields is recorded once, so a re-import adds no row; a new download
+  (a new access date) is a new row. URLs must be http(s); the access date can't be in the future
+  (Asia/Dhaka).
 
 ## Maintainer decisions (answered 2026-11-16)
 
@@ -760,6 +770,11 @@ is written down so the choice can be reversed later.
    `ChangeStatus` only updates the slot, so who verified or disputed a value, and when, is not kept.
    Proposal: an append-only `status_changes` table (slot, from, to, actor, reason, time) added in M8
    with the roles. Decide before M8.
+9. **O9 — ISCO-08 reuse terms** (raised in M6). The ILO puts work published on or after 3 May 2023
+   under CC BY 4.0; ISCO-08 is © ILO 2012, so it may need written permission (rights@ilo.org), as
+   ESCO got. The ILOSTAT classification page could not be opened here (bot check). Until this is
+   clear, the importer is built and tested with placeholder fixtures only, and no ILO text is in the
+   repo. Blocks the real `isco08.csv`, `SOURCE.md` and `IscoRealFileCountsTest`.
 
 ---
 

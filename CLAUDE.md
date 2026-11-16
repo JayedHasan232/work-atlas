@@ -176,6 +176,8 @@ Services: PostgreSQL 18 and Redis (`docker compose up -d`, or native; see CONTRI
 - `scripts/ci/ssr-smoke [url]` — a running app must render `/` on the server
 - `scripts/ci/check-dco-selftest` — self-test of the DCO check
 - `scripts/ci/check-translations` — every key in `lang/bn` and `lang/en`, same placeholders
+- `php artisan atlas:taxonomy:import` — import ISCO-08 groups from `data/taxonomy/isco08.csv` + `isco08.source.json`
+  (`--file`, `--source` to override); safe to run again
 - `php artisan atlas:translation-types` — regenerate the React `TranslationKey` type from `lang/en`
   (Vite runs it on build and when `lang/en` changes)
 
