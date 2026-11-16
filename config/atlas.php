@@ -46,6 +46,7 @@ return [
             'settings/contributions' => ['contribute'],
             'search/*' => ['search'],
             'publishing/*' => ['api'],
+            'publishing/polic*' => ['policies', 'terms'],
             'dashboard' => ['shell'],
             'settings/*' => ['shell', 'settings'],
         ],
@@ -231,6 +232,31 @@ return [
         'license_url' => 'https://creativecommons.org/licenses/by-sa/4.0/',
         'attribution' => 'Work Atlas contributors',
         'notice' => 'Every value has a status. ai_draft values are unchecked AI drafts. Sensitive values (income, health, legal) appear only once verified. Not medical, legal or financial advice.',
+    ],
+
+    /*
+    | Self-hosted Umami (PLAN M22, A12): the only analytics, off until both values are set. It never
+    | sends query strings (the guide's answers live there, D73) and honours Do Not Track.
+    */
+    'analytics' => [
+        'umami_script' => env('UMAMI_SCRIPT_URL'),
+        'umami_website_id' => env('UMAMI_WEBSITE_ID'),
+    ],
+
+    /*
+    | Staging (PLAN M22): with APP_ENV=staging every request except `/up` needs HTTP basic auth, and
+    | every response is `noindex`. Without a user and password set, staging lets nobody in.
+    */
+    'staging' => [
+        'basic_auth_user' => env('STAGING_BASIC_AUTH_USER'),
+        'basic_auth_password' => env('STAGING_BASIC_AUTH_PASSWORD'),
+    ],
+
+    /*
+    | Security (PLAN M23, D81): account signups and password-reset mails per IP address and hour.
+    */
+    'security' => [
+        'account_forms_per_hour' => 10,
     ],
 
     'publishing' => [

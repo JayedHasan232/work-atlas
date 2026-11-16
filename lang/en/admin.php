@@ -149,4 +149,14 @@ return [
         'rangpur' => 'Rangpur',
         'sylhet' => 'Sylhet',
     ],
+    'gate1' => [
+        'heading' => 'Gate 1 → Phase 2',
+        'description' => 'Every occupation listed, most Wave 1 values supported by the community, regular contributors from outside the core team.',
+        'listed' => 'Listed occupations',
+        'wave1_supported' => 'Wave 1 values supported',
+        'percent' => ':percent%',
+        'wave1_detail' => ':supported supported, :filled filled, of :slots slots',
+        'active' => 'Active contributors',
+        'active_detail' => ':outside outside the core team, last :days days',
+    ],
 ];

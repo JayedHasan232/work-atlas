@@ -15,12 +15,14 @@ use App\Modules\Community\Http\Controllers\Web\Moderation\TalkQueueController;
 use App\Modules\Community\Http\Controllers\Web\TaskAnswerController;
 use App\Modules\Discovery\Http\Controllers\Web\CompareController;
 use App\Modules\Discovery\Http\Controllers\Web\GuideController;
+use App\Modules\Publishing\Enums\Policy;
 use App\Modules\Publishing\Http\Controllers\Web\ApiDocsController;
 use App\Modules\Publishing\Http\Controllers\Web\ContributorController;
 use App\Modules\Publishing\Http\Controllers\Web\MicroTaskController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationGroupController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationIndexController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationPageController;
+use App\Modules\Publishing\Http\Controllers\Web\PolicyController;
 use App\Modules\Publishing\Http\Controllers\Web\ReportFormController;
 use App\Modules\Publishing\Http\Controllers\Web\RobotsTxtController;
 use App\Modules\Publishing\Http\Controllers\Web\SearchController;
@@ -108,6 +110,12 @@ LocalizedRoutes::register(function () {
 
     // The public API's docs (PLAN M21).
     Route::get('developers', ApiDocsController::class)->name('developers');
+
+    // Policy pages (PLAN M23), drafts until the maintainer approves them.
+    Route::get('policies', [PolicyController::class, 'index'])->name('policies.index');
+    Route::get('policies/{policy}', [PolicyController::class, 'show'])
+        ->whereIn('policy', Policy::slugs())
+        ->name('policies.show');
 });
 
 // For crawlers (PLAN M14): not localized.

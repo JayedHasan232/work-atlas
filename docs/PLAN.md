@@ -644,6 +644,15 @@ Acceptance
 Tests
 - `Feature/HealthCheckTest`, post-deploy e2e smoke against staging, restore-test log entry.
 
+Status: repo side done (D77–D79); the live part waits on O1 (domain) and H9 (accounts). In the repo:
+`ops/provision.sh` (idempotent; Nginx, PHP-FPM, PostgreSQL 18, Redis, supervisor for Horizon and SSR,
+cron, firewall, SSH keys only), the nightly encrypted backup and the restore-test script
+(`ops/backup/`), `deploy.php` and `.github/workflows/deploy.yml` (off until `DEPLOY_ENABLED`), Sentry
+with personal-data scrubbing, Umami behind config, the staging gate and `StagingSeeder`, `/up`
+checking the database and Redis, and the runbooks `docs/ops/server.md` and `docs/ops/restore.md`.
+Not done until a maintainer has the accounts: the first deploy, the first restore test and its log
+line, a test exception in Sentry, SPF/DKIM/DMARC, the uptime check.
+
 ### M23 — Beta readiness
 
 Depends on: all of the above · Blocked by: —
@@ -663,6 +672,15 @@ Acceptance
 
 Tests
 - `Browser/AccessibilityTest`, full suite, `Feature/Admin/Gate1DashboardTest`.
+
+Status: repo side done (D80–D81); the beta launch, the H6 user test and approval of the policy texts are
+the maintainer's. In the repo: the policy pages `/policies` (code of conduct, editorial policy, privacy,
+not medical/legal/financial advice, neutrality and funding; Bangla and English, each marked as a draft
+until approved, linked from every page's footer; the contact address waits on H1/O1), the Gate 1
+widget on the `/admin` dashboard, `Browser/AccessibilityTest` (15 public pages on a phone in both
+languages), the checklist-to-test map `docs/architecture/checklist-tests.md` guarded by
+`Arch/ChecklistTestsTest` (item 6, the monthly restore test, can only be proved by the log once
+production exists), and the security review `docs/ops/security-review.md` with its fixes.
 
 ---
 
@@ -1015,6 +1033,33 @@ Tests
   a hand-written spec gives exact schemas without a new dependency. `OpenApiSpecTest` keeps it honest:
   every `/api/v1` route is described, and real responses are validated against schemas that allow no
   extra properties, so a new response field fails until it is described and checked for personal data.
+- **D77** (M22) Error reports carry no personal data by construction: `send_default_pii` and SQL
+  bindings are fixed off in `config/sentry.php` (not env switches), and `ErrorReportScrubber` drops the
+  user, server name, cookies, headers, body and query string (the guide's answers live there, D73),
+  and masks email and IP addresses in messages. Umami sends no query strings or hashes and honours
+  Do Not Track. Both stay off until configured.
+- **D78** (M22) Backups are encrypted with `age` to a public key before they leave the server; the
+  private key is kept offline by two maintainers, so neither the server nor R2 can read a backup.
+  The restore test runs on staging or a maintainer's machine, never on production.
+- **D79** (M22) Deploys build the front end on the server (Node.js is installed by the provisioning
+  script) rather than shipping build artefacts, to keep one deploy path. The deploy workflow does
+  nothing until the maintainer sets `DEPLOY_ENABLED`; production deploys only from `main`. Staging
+  is private by HTTP basic auth that fails closed, `noindex` on every response, and gets fake data
+  only from `StagingSeeder`, which runs without Faker (no dev dependencies on servers) and refuses
+  production. `/up` checks the database and Redis so the uptime check and the post-deploy smoke catch
+  a broken queue or database, not only a running PHP.
+- **D80** (M23) The Gate 1 dashboard counts a slot as one listed or published occupation times one
+  Wave 1 field (national, no locale), using the newest field version that has a value. "Supported" is
+  `community_supported` or `verified`; a disputed value is filled but not supported; a proposal nobody
+  accepted fills nothing. The percentage is supported slots over all slots, empty ones included, because
+  the gate asks about every occupation, not only those that already have values. Active contributors
+  are the people who, in the last 30 days, wrote a change, answered a fact-check question or posted on
+  a talk page; "outside the core team" means not a maintainer (A13).
+- **D81** (M23) Security headers (`nosniff`, frame, referrer, permissions, opener policy) are sent by
+  the app on every response rather than by Nginx alone, so tests and every environment see them; HSTS
+  stays with Nginx. Sign-up and the password-reset mail share a rate limit per IP address (10 an hour),
+  because Fortify limits neither. The session cookie is `Secure` by default when `APP_URL` is HTTPS. A
+  Content Security Policy waits for a report-only trial on staging.
 
 ## Maintainer decisions (answered 2026-11-16)
 
@@ -1154,6 +1199,16 @@ is written down so the choice can be reversed later.
     not built yet. Proposal: a small `Community\Support\Turnstile` client as the one named exception
     in that arch test, off by default. Using Cloudflare Turnstile is also a new external service on a
     public page (CLAUDE.md), so Jayed decides both. Until then: honeypot + rate limit (D61).
+15. **O15 — Policy texts** (raised in M23). The five policy pages (`/policies`, `lang/*/policies.php`)
+    are drafts marked as such, written to say only what the code does today. Like O12 they are legal
+    and public promises, so Jayed approves them (ideally with legal advice) before the public launch.
+    The contact address in them waits on O1; the privacy policy names the providers of H9 (hosting,
+    Cloudflare, Amazon SES, Sentry), so a change there changes the text too.
+16. **O16 — Security follow-ups** (raised in M23, `docs/ops/security-review.md`). (a) A Content Security
+    Policy, tried in report-only mode on staging first (needs O1, H9). (b) `composer audit` and
+    `npm audit` as CI steps: a new advisory would then block unrelated PRs, so Jayed decides whether
+    they block or only warn. (c) A penetration test by someone outside the project before the public
+    launch.
 
 ---
 

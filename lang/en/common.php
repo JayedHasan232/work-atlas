@@ -29,6 +29,7 @@ return [
         'code_license' => 'Code:',
         'source_code' => 'Source code on GitHub',
         'api' => 'Open data API',
+        'policies' => 'Policies',
         'copyright' => '© :year Work Atlas contributors',
     ],
 

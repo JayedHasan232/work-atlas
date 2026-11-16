@@ -157,6 +157,13 @@ export default function PublicLayout({
                         >
                             {t('common.footer.api')}
                         </Link>
+                        {' · '}
+                        <Link
+                            href={localizePath('/policies')}
+                            className={footerLinkClass}
+                        >
+                            {t('common.footer.policies')}
+                        </Link>
                     </p>
                     <p>
                         {t('common.footer.copyright', {

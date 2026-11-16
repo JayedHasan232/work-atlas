@@ -149,4 +149,14 @@ return [
         'rangpur' => 'রংপুর',
         'sylhet' => 'সিলেট',
     ],
+    'gate1' => [
+        'heading' => 'Gate 1 → Phase 2',
+        'description' => 'সব পেশা তালিকায়, Wave 1-এর বেশিরভাগ মান কমিউনিটি সমর্থিত, core team-এর বাইরে থেকে নিয়মিত অবদানকারী।',
+        'listed' => 'তালিকাভুক্ত পেশা',
+        'wave1_supported' => 'সমর্থিত Wave 1 মান',
+        'percent' => ':percent%',
+        'wave1_detail' => ':slots ঘরের মধ্যে :filled-এ মান আছে, :supported সমর্থিত',
+        'active' => 'সক্রিয় অবদানকারী',
+        'active_detail' => 'core team-এর বাইরে :outside জন, গত :days দিনে',
+    ],
 ];

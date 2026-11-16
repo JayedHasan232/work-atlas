@@ -42,6 +42,11 @@
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        {{-- Self-hosted analytics (PLAN M22): off unless configured; no query strings, honours Do Not Track. --}}
+        @if (filled(config('atlas.analytics.umami_script')) && filled(config('atlas.analytics.umami_website_id')))
+            <script defer src="{{ config('atlas.analytics.umami_script') }}" data-website-id="{{ config('atlas.analytics.umami_website_id') }}" data-do-not-track="true" data-exclude-search="true" data-exclude-hash="true"></script>
+        @endif
+
         <x-inertia::head>
             <title>{{ config('app.name', 'Laravel') }}</title>
         </x-inertia::head>
