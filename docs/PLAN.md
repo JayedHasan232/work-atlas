@@ -57,7 +57,7 @@ after M13 lets testers reach real pages early.
 
 | H | Task | When | Feeds |
 |---|---|---|---|
-| H1 | Buy the domain; create the GitHub org when the repo goes public (O5) | weeks 1–2 | M22, O5 |
+| H1 | Buy the domain; set up a project email for the Code of Conduct; create a GitHub org if wanted (O1) | weeks 1–2 | M22, O1 |
 | H2 | Interview 20–30 potential users and a few workers; written summary in `docs/research/` | weeks 1–4 | Gate 0, M15 benchmark queries, M20 questions |
 | H3 | Publish 10 hand-written profiles on Facebook; note which get the most interest | weeks 3–4 | prioritisation |
 | H4 | Approve the 20 separate-occupation examples drafted in M7 | during M7 | M7, M10 |
@@ -76,8 +76,8 @@ after M13 lets testers reach real pages early.
 Depends on: — · Blocked by: — (the push to GitHub waits for O1; everything else is done locally)
 
 Tasks
-- `git init`, `main` branch. Push to the private repo `JayedHasan232/work-atlas` (A1); it goes public
-  later (O5).
+- `git init`, `main` branch. Push to `JayedHasan232/work-atlas` (A1; private at
+  first, public since 2026-11-16).
 - `LICENSE` (AGPL-3.0 full text; SPDX `AGPL-3.0-or-later`), `LICENSE-DATA.md` (CC BY-SA 4.0 for data and text, with the
   attribution format), `BRAND.md` stub (forks allowed; "official Work Atlas" claim not allowed).
 - `README.md` (bn + en): what it is, status, how to contribute, licenses.
@@ -89,7 +89,7 @@ Tasks
 - First signed commit: `docs/`, `CLAUDE.md`, governance files.
 
 Acceptance
-- License files match A2. The repo is pushed (private for now, A1).
+- License files match A2. The repo is pushed (A1).
 - A PR with an unsigned commit fails the DCO check; a signed one passes.
 
 Tests
@@ -618,8 +618,11 @@ Tests
 is written down so the choice can be reversed later.
 
 - **A1 — Name and repo.** Work Atlas (Jayed). The Bangla name stays কাজ, as in the docs. The repo is
-  `JayedHasan232/work-atlas`, **private for now** (Jayed, 2026-11-16); it moves to an org and goes
-  public later → O5. Domain still to be bought → O1, H1.
+  `JayedHasan232/work-atlas`, **public since 2026-11-16** (Jayed; it was private at first, and GitHub
+  Free runs Actions on a private repo only while included minutes and billing allow). It can move to
+  an org later (O1). Domain still to be bought → O1, H1. When it went public: private vulnerability
+  reporting turned on, and `main` protected (pull requests only; the DCO check and the four CI jobs
+  required; no force-push or deletion; the maintainer can bypass in an emergency).
 - **A2 — Licenses** (delegated). Platform `AGPL-3.0-or-later`; small libraries/SDKs MIT; data and text
   CC BY-SA 4.0; DCO 1.1, no CLA; copyright line "Work Atlas contributors". Why "or later": with DCO and
   no CLA there is no single copyright holder, so "or later" is the only way the project can move to a
@@ -677,8 +680,10 @@ is written down so the choice can be reversed later.
 
 ## Still open
 
-1. **O1 — Domain and GitHub org** (H1). The org isn't needed to start: the repo lives under Jayed's
-   account and can be transferred later (GitHub redirects the old URL). The domain blocks M22.
+1. **O1 — Domain, project email and GitHub org** (H1). The org isn't needed to start: the repo lives
+   under Jayed's account and can be transferred later (GitHub redirects the old URL). The domain
+   blocks M22. A project email (not a personal one) goes into the Code of Conduct as the contact for
+   reports; until then it shows a marked placeholder. Needed before outside contributors are invited.
 2. **O2 — Anchors and bands** (Appendix A). Jayed approves them in M7, where the bn + en file is shown
    with a plain explanation. Blocks the end of M7.
 3. **O3 — AI providers and budget** (H8). Proposal: provider A = Anthropic (Claude), provider B = a
@@ -687,10 +692,8 @@ is written down so the choice can be reversed later.
    paid run gets a dry-run cost estimate first. Blocks the real drivers in M9 and the paid runs in M10
    and M12.
 4. **O4 — BSCO-2012 file** (H7). Blocks M6b only.
-5. **O5 — When the repo goes public.** Jayed decides. Before it does: put the contact email in the Code
-   of Conduct (needs O1), turn on private vulnerability reporting, and make the DCO check required
-   through branch protection. On GitHub Free, branch protection and private vulnerability reporting
-   need a public repo, so until then the DCO check runs on every pull request but isn't enforced.
+5. ~~**O5 — When the repo goes public.**~~ Settled 2026-11-16: public now (A1). The Code of Conduct
+   contact email moved to O1.
 
 ---
 
