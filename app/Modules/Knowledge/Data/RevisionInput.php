@@ -9,6 +9,9 @@ namespace App\Modules\Knowledge\Data;
  *
  * `value` is null or "unknown" when the value is not known (rule 2). `confidence` (0–1) is required
  * from an AI run and not allowed from a person.
+ *
+ * `secondOpinion` is for an AI run only: the value is kept as a proposal next to the current one (the
+ * cross-check's second model, D50), and does not move the slot up the review queue on its own.
  */
 final readonly class RevisionInput
 {
@@ -25,5 +28,6 @@ final readonly class RevisionInput
         public array $sourceIds = [],
         public ?float $confidence = null,
         public ?string $comment = null,
+        public bool $secondOpinion = false,
     ) {}
 }

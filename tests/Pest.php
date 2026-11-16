@@ -6,11 +6,13 @@ use App\Modules\AiPipeline\Drivers\FakeDriver;
 use App\Modules\AiPipeline\Models\AiRun;
 use App\Modules\Community\Enums\Role;
 use App\Modules\Knowledge\Actions\RecordRevision;
+use App\Modules\Knowledge\Actions\SyncFieldDefinitions;
 use App\Modules\Knowledge\Data\Actor;
 use App\Modules\Knowledge\Data\RevisionInput;
 use App\Modules\Knowledge\Data\SourceInput;
 use App\Modules\Knowledge\Models\FieldDefinition;
 use App\Modules\Knowledge\Models\Revision;
+use App\Modules\Taxonomy\Enums\PublishState;
 use App\Modules\Taxonomy\Models\IscoGroup;
 use App\Modules\Taxonomy\Models\Occupation;
 use App\Modules\Taxonomy\Models\OccupationName;
@@ -360,4 +362,59 @@ function searchNamesOf(int $occupationId): array
 {
     return OccupationName::query()->where('occupation_id', $occupationId)->orderBy('locale')->orderBy('id')->get()
         ->map(fn (OccupationName $name) => [$name->locale, $name->name, $name->type->value, $name->region])->all();
+}
+
+/**
+ * A listed occupation with Bangla and English names, ready for Wave 1, with the real field definitions
+ * (data/fields) and the real prompts (data/prompts) on the fake driver.
+ */
+function wave1Setup(): FakeDriver
+{
+    $fake = fakeExpansionAi();
+    app(SyncFieldDefinitions::class)->handle(base_path('data/fields'));
+    IscoGroup::factory()->create(['code' => '7126']);
+
+    return $fake;
+}
+
+/**
+ * @param  array<string, mixed>  $names
+ */
+function listedOccupation(array $names = []): Occupation
+{
+    $occupation = occupationNamed($names ?: [
+        'bn' => [['name' => 'প্লাম্বার', 'type' => 'primary'], ['name' => 'নলমিস্ত্রি', 'type' => 'local']],
+        'en' => [['name' => 'Plumber', 'type' => 'primary']],
+    ]);
+    $occupation->update(['publish_state' => PublishState::Listed]);
+
+    return $occupation;
+}
+
+/**
+ * A schema-valid output of wave1/fields v1. Each value can be replaced: ['physical_workload' => 5].
+ *
+ * @param  array<string, mixed>  $values
+ * @return array<string, mixed>
+ */
+function wave1Output(array $values = []): array
+{
+    $defaults = [
+        'education_required' => 'none',
+        'formal_training' => 'helpful',
+        'physical_workload' => 3,
+        'mental_workload' => 3,
+        'work_setting' => ['indoor', 'outdoor'],
+        'work_time' => ['day'],
+        'seasonal' => 'year_round',
+        'time_to_learn' => 'months_3_12',
+        'time_to_first_income' => 'months_1_6',
+        'part_time_possible' => 'sometimes',
+        'available_in' => ['rural', 'urban'],
+    ];
+
+    return ['fields' => array_map(
+        fn (mixed $value): array => ['value' => $value, 'confidence' => 0.6],
+        array_replace($defaults, $values),
+    )];
 }

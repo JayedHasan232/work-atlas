@@ -112,6 +112,18 @@ return [
                 'provider' => env('AI_EXPAND_PROVIDER', 'fake'),
                 'model' => env('AI_EXPAND_MODEL', 'fake-model'),
             ],
+            // Wave 1 runs the same prompt on two different models (PLAN M12, D50). Model A's value
+            // becomes the draft; model B's is the cross-check.
+            'wave1' => [
+                'a' => [
+                    'provider' => env('AI_WAVE1_A_PROVIDER', 'fake'),
+                    'model' => env('AI_WAVE1_A_MODEL', 'fake-model-a'),
+                ],
+                'b' => [
+                    'provider' => env('AI_WAVE1_B_PROVIDER', 'fake'),
+                    'model' => env('AI_WAVE1_B_MODEL', 'fake-model-b'),
+                ],
+            ],
         ],
     ],
 

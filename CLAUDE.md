@@ -183,6 +183,8 @@ Services: PostgreSQL 18 and Redis (`docker compose up -d`, or native; see CONTRI
   queued job per unit group; checks the budget cap first; a rerun reuses the earlier run
 - `php artisan atlas:taxonomy:duplicates [--threshold=0.5]` — store possible duplicate pairs for the list review;
   safe to run again (a decided pair is never flagged again)
+- `php artisan atlas:wave1:generate --occupations=<slugs>|--all [--dry-run] [--force]` — Wave 1 values on two models
+  with a cross-check, one queued job per listed occupation; checks the budget cap first
 - `php artisan atlas:fields:sync` — field definitions from `data/fields/*.yaml` into the database; safe to run again
 - `php artisan atlas:fields:generate` — write `data/schemas/wave<N>/fields.v<M>.json` and `docs/architecture/fields.md`
   from `data/fields` (`--check` only reports drift; schema files are never overwritten)

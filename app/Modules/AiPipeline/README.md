@@ -37,4 +37,11 @@ Run it from a job (`Jobs\RunAiCompletion`, `Jobs\PollAiBatch`), never inside a w
 (tests/Pest.php) binds a `FakeDriver` you script with `respondWithJson()`, `respond()`, `failWith()` and
 `holdBatches()`, and points the registry at `tests/Fixtures/{prompts,schemas}`.
 
+**Wave 1 (M12).** `Actions\GenerateWave1` runs prompt `wave1/fields` (built by `BuildWave1Requests`
+from the field definitions and the occupation's context) on model A and model B
+(`atlas.ai.tasks.wave1`), and `ApplyWave1` writes A's value, B's second opinion and the cross-check
+(`AgreementCalculator`), all or nothing (PLAN D50, D51). `php artisan atlas:wave1:generate
+--occupations=<slugs>|--all --dry-run` prints the estimate; without `--dry-run` it checks the cap and
+queues `Jobs\GenerateWave1Job` per occupation.
+
 See [the module rules](../README.md).

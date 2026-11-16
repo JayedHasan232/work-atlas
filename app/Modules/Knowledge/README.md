@@ -24,6 +24,9 @@ What is known about each occupation, field by field, with its history.
 - **Events:** a change of a current value (direct write, accepted proposal, revert) raises
   `Events\CurrentValueChanged` inside the transaction, so other modules can keep copies in step
   (Taxonomy's `occupation_names`, D44). `Queries\FieldDefinitionByKey` gives a field's id.
+- **Cross-check (M12):** a `RevisionInput` with `secondOpinion` is an AI value kept as a proposal;
+  `RecordCrossCheck` saves the two-model result on the slot. `Queries\ReviewQueue` lists slots by
+  priority (model disagreements first); `Queries\DisagreementReport` is the CSV in /admin (D50).
 - **Sources:** `RecordSource` records a source once per url, access date and details (M6).
 - **Tables:** see [the data model](../../../docs/architecture/data-model.md).
 

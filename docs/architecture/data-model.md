@@ -96,7 +96,9 @@ erDiagram
         string region "null = all of Bangladesh"
         bigint current_revision_id FK
         string status "ai_draft to verified, or disputed"
-        smallint review_priority
+        smallint review_priority "20 models disagree, 10 proposal, 0 none"
+        string cross_check "agreed, disagreed (M12)"
+        timestamptz cross_checked_at
     }
     revisions {
         bigint field_value_id FK
@@ -176,10 +178,11 @@ Each is a constraint, so it holds even for raw SQL. The tests are in
   two "all regions" rows can't coexist.
 - **Statuses and types** are check constraints, not Postgres enum types, so a later value is a small
   migration. PHP enums mirror them: `FieldStatus`, `FieldType`, `ReviewDecision`, `PublishState`,
-  `NameType`, `AiRunStatus`, `DuplicateStatus`.
+  `NameType`, `AiRunStatus`, `DuplicateStatus`, `CrossCheck`.
 - **ISCO codes**: digits only, length = level, and the parent is the code minus its last digit.
 - **Merges**: `merged_into_id` is set if and only if `publish_state = 'merged'`. A merged occupation is
   never `indexable` and never points to itself.
+- **Cross-check (M12)**: `cross_check` and `cross_checked_at` are set together (PLAN D50).
 - **List review (M11)**: `reviewed_by_id` and `reviewed_at` are set together; a rejected occupation
   is never indexable. `duplicate_candidates` holds each pair once (`occupation_id < other_occupation_id`,
   unique), and a decided pair has `decided_by_id` and `decided_at`; a GIN trigram index on
