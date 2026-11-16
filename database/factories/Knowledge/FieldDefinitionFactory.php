@@ -47,6 +47,14 @@ class FieldDefinitionFactory extends Factory
     }
 
     /**
+     * The taxonomy `names` field (wave 0, D44).
+     */
+    public function names(): static
+    {
+        return $this->state(['key' => 'names', 'version' => 1, 'wave' => 0, 'group' => 'names', 'type' => FieldType::NameList, 'options' => null, 'anchors' => null]);
+    }
+
+    /**
      * Income-like: hidden until verified and never saved without a source.
      */
     public function sensitive(): static

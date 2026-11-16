@@ -2,14 +2,15 @@
 
 use App\Modules\Knowledge\Actions\ReadFieldFiles;
 use App\Modules\Knowledge\Actions\SyncFieldDefinitions;
+use App\Modules\Knowledge\Enums\FieldType;
 use App\Modules\Knowledge\Exceptions\InvalidFieldFile;
 use App\Modules\Knowledge\Models\FieldDefinition;
 
-test('after a sync the database definitions match the Wave 1 file', function () {
+test('after a sync the database definitions match the field files', function () {
     $result = app(SyncFieldDefinitions::class)->handle(base_path('data/fields'));
     $files = app(ReadFieldFiles::class)->handle(base_path('data/fields'));
 
-    expect($result->created)->toHaveCount(11)
+    expect($result->created)->toHaveCount(12)
         ->and(FieldDefinition::query()->count())->toBe(count($files));
 
     foreach ($files as $data) {
@@ -29,18 +30,27 @@ test('after a sync the database definitions match the Wave 1 file', function () 
 });
 
 test('the Wave 1 file has the eleven fields of A5, none sensitive and none needing a source', function () {
-    $files = app(ReadFieldFiles::class)->handle(base_path('data/fields'));
+    $wave1 = array_values(array_filter(app(ReadFieldFiles::class)->handle(base_path('data/fields')), fn ($data) => $data->wave === 1));
 
-    expect(array_map(fn ($data) => $data->key, $files))->toBe([
+    expect(array_map(fn ($data) => $data->key, $wave1))->toBe([
         'education_required', 'formal_training', 'physical_workload', 'mental_workload', 'work_setting',
         'work_time', 'seasonal', 'time_to_learn', 'time_to_first_income', 'part_time_possible', 'available_in',
     ]);
 
-    foreach ($files as $data) {
-        expect($data->wave)->toBe(1)
-            ->and($data->sensitive)->toBeFalse()
+    foreach ($wave1 as $data) {
+        expect($data->sensitive)->toBeFalse()
             ->and($data->requiresSource)->toBeFalse();
     }
+});
+
+test('wave 0 holds only the names field, a name list that is neither sensitive nor needs a source (D44)', function () {
+    $wave0 = array_values(array_filter(app(ReadFieldFiles::class)->handle(base_path('data/fields')), fn ($data) => $data->wave === 0));
+
+    expect($wave0)->toHaveCount(1)
+        ->and($wave0[0]->key)->toBe('names')
+        ->and($wave0[0]->type)->toBe(FieldType::NameList)
+        ->and($wave0[0]->sensitive)->toBeFalse()
+        ->and($wave0[0]->requiresSource)->toBeFalse();
 });
 
 test('a second sync changes nothing', function () {
@@ -53,7 +63,7 @@ test('a second sync changes nothing', function () {
 
     expect($result->created)->toBe([])
         ->and($result->updated)->toBe([])
-        ->and($result->unchanged)->toBe(11)
+        ->and($result->unchanged)->toBe(12)
         ->and(FieldDefinition::query()->orderBy('id')->get()->toArray())->toBe($before);
 });
 
@@ -78,8 +88,8 @@ test('a definition that no file lists is kept and reported', function () {
 });
 
 test('the command syncs and reports', function () {
-    $this->artisan('atlas:fields:sync')->expectsOutputToContain('11 created, 0 updated, 0 unchanged')->assertSuccessful();
-    $this->artisan('atlas:fields:sync')->expectsOutputToContain('0 created, 0 updated, 11 unchanged')->assertSuccessful();
+    $this->artisan('atlas:fields:sync')->expectsOutputToContain('12 created, 0 updated, 0 unchanged')->assertSuccessful();
+    $this->artisan('atlas:fields:sync')->expectsOutputToContain('0 created, 0 updated, 12 unchanged')->assertSuccessful();
     $this->artisan('atlas:fields:sync', ['--path' => fieldDirectory([])])->expectsOutputToContain('no wave<N>.v<M>.yaml files')->assertFailed();
 });
 

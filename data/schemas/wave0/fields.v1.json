@@ -1,0 +1,96 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "urn:work-atlas:schema:wave0:fields:v1",
+    "title": "Wave 0 fields, v1",
+    "description": "Generated from data/fields by atlas:fields:generate. Do not edit; a change is a new version.",
+    "type": "object",
+    "required": [
+        "fields"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "fields": {
+            "type": "object",
+            "required": [
+                "names"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "names": {
+                    "description": "names v1: This occupation's names in one language: one primary name, then other names, local names and regional names. Every name people search for belongs here.",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "maxItems": 50,
+                                    "contains": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "const": "primary"
+                                            }
+                                        },
+                                        "required": [
+                                            "type"
+                                        ]
+                                    },
+                                    "minContains": 1,
+                                    "maxContains": 1,
+                                    "items": {
+                                        "type": "object",
+                                        "required": [
+                                            "name",
+                                            "type"
+                                        ],
+                                        "additionalProperties": false,
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 200
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "primary",
+                                                    "alias",
+                                                    "local",
+                                                    "regional"
+                                                ]
+                                            },
+                                            "region": {
+                                                "type": "string",
+                                                "pattern": "^[a-z][a-z0-9_]*$",
+                                                "maxLength": 32
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

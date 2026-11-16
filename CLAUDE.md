@@ -179,6 +179,8 @@ Services: PostgreSQL 18 and Redis (`docker compose up -d`, or native; see CONTRI
 - `scripts/ci/check-translations` — every key in `lang/bn` and `lang/en`, same placeholders
 - `php artisan atlas:taxonomy:import` — import ISCO-08 groups from `data/taxonomy/isco08.csv` + `isco08.source.json`
   (`--file`, `--source` to override); safe to run again
+- `php artisan atlas:taxonomy:expand --groups=<codes>|--all [--dry-run] [--force]` — AI list expansion, one
+  queued job per unit group; checks the budget cap first; a rerun reuses the earlier run
 - `php artisan atlas:fields:sync` — field definitions from `data/fields/*.yaml` into the database; safe to run again
 - `php artisan atlas:fields:generate` — write `data/schemas/wave<N>/fields.v<M>.json` and `docs/architecture/fields.md`
   from `data/fields` (`--check` only reports drift; schema files are never overwritten)

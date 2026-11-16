@@ -72,3 +72,13 @@ it('refuses a model without a price, whatever the cap', function () {
 it('has a cap of zero unless the maintainer sets one', function () {
     expect(config('atlas.ai.max_batch_usd'))->toBe(0.0);
 });
+
+it('checks a set of single calls against the cap as a whole', function () {
+    $single = $this->gateway->estimate([sampleAiRequest(model: 'priced-model')])->usd;
+    config(['atlas.ai.max_batch_usd' => $single * 1.5]);
+
+    expect($this->gateway->checkBudget([sampleAiRequest(model: 'priced-model')])->requests)->toBe(1)
+        ->and(fn () => $this->gateway->checkBudget([sampleAiRequest(model: 'priced-model'), sampleAiRequest(model: 'priced-model')]))
+        ->toThrow(BudgetExceeded::class)
+        ->and(AiRun::query()->count())->toBe(0);
+});

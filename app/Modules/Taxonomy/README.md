@@ -12,5 +12,15 @@ The list of occupations and how they are named.
 - **Import (M6):** `Actions\ImportIscoGroups` reads `data/taxonomy/isco08.csv` (`code,title_en`) and
   records its source through `Knowledge\Actions\RecordSource`. Run it with
   `php artisan atlas:taxonomy:import`; a second run changes nothing (PLAN D29).
+- **Names (D44):** an occupation's names are the Knowledge field `names` (one list per language), so
+  they have revisions and statuses. `occupation_names` is the search copy: `Actions\SyncOccupationNames`
+  rewrites it from `Knowledge\Events\CurrentValueChanged` (listener in `AppServiceProvider`), with
+  `NormalizeName` as the search key.
+- **List expansion (M10):** `Actions\ExpandUnitGroup` asks the AI (prompt
+  `taxonomy/expand-unit-group`, built by `BuildExpansionRequest`) which occupations belong to one unit
+  group; `ApplyExpansion` writes them as `candidate` occupations linked to the run, with their names as
+  `ai_draft`, all or nothing. A rerun with the same input reuses the earlier run (D45).
+  `php artisan atlas:taxonomy:expand --groups=7411,7412 --dry-run` prints the estimate;
+  without `--dry-run` it checks the budget cap and queues `Jobs\ExpandUnitGroupJob` per group.
 
 See [the module rules](../README.md).

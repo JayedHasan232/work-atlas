@@ -38,7 +38,7 @@ final class PromptRegistry
 
     private function read(string $key, int $version): Prompt
     {
-        if (preg_match('/^[a-z0-9_]+\/[a-z0-9_]+$/', $key) !== 1 || $version < 1) {
+        if (preg_match('/^[a-z0-9_]+\/[a-z0-9][a-z0-9_-]*$/', $key) !== 1 || $version < 1) {
             throw InvalidPrompt::because("{$key} v{$version}", 'a key is "<wave>/<name>" in lower case, and a version is 1 or more');
         }
 
@@ -79,7 +79,7 @@ final class PromptRegistry
 
     private function schema(string $file, mixed $schema): string
     {
-        if (! is_string($schema) || preg_match('/^[a-z0-9_]+\/[a-z0-9_]+\.v[1-9][0-9]*\.json$/', $schema) !== 1) {
+        if (! is_string($schema) || preg_match('/^[a-z0-9_]+\/[a-z0-9][a-z0-9_-]*\.v[1-9][0-9]*\.json$/', $schema) !== 1) {
             throw InvalidPrompt::because($file, 'schema must be a path like wave1/fields.v1.json');
         }
 

@@ -26,7 +26,7 @@ final class RenderFieldTable
         ];
 
         foreach ($this->byWave($definitions) as $wave => $fields) {
-            array_push($lines, '', "## Wave {$wave}", '', '| Field | Version | Group | Type | Values | Flags |', '|---|---|---|---|---|---|');
+            array_push($lines, '', $wave === 0 ? '## Wave 0 (taxonomy: names)' : "## Wave {$wave}", '', '| Field | Version | Group | Type | Values | Flags |', '|---|---|---|---|---|---|');
 
             foreach ($fields as $field) {
                 $lines[] = sprintf(
@@ -81,6 +81,7 @@ final class RenderFieldTable
             FieldType::Scale1To5 => '1–5, anchors below',
             FieldType::Boolean => 'yes · no',
             FieldType::Text => 'text (bn, en)',
+            FieldType::NameList => 'names (bn, en): one primary, then aliases, local and regional names',
             default => implode(' · ', array_map(
                 fn (string $option): string => "`{$option}` {$this->cell($field->optionLabels[$option]['en'] ?? '')}",
                 $field->options ?? [],

@@ -21,6 +21,9 @@ What is known about each occupation, field by field, with its history.
   synced by `SyncFieldDefinitions` (`atlas:fields:sync`). Once a definition has values, its type,
   options, anchors and wave are fixed; a change is a new version. `FieldSchemaBuilder` makes a wave's
   AI output schema and `RenderFieldTable` the field table, both through `atlas:fields:generate`.
+- **Events:** a change of a current value (direct write, accepted proposal, revert) raises
+  `Events\CurrentValueChanged` inside the transaction, so other modules can keep copies in step
+  (Taxonomy's `occupation_names`, D44). `Queries\FieldDefinitionByKey` gives a field's id.
 - **Sources:** `RecordSource` records a source once per url, access date and details (M6).
 - **Tables:** see [the data model](../../../docs/architecture/data-model.md).
 

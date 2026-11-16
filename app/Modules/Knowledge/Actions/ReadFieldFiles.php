@@ -18,7 +18,7 @@ final class ReadFieldFiles
 {
     private const string KEY_PATTERN = '/^[a-z][a-z0-9_]{0,63}$/';
 
-    private const string FILE_PATTERN = '/^wave([1-6])\.v([1-9]\d*)\.yaml$/';
+    private const string FILE_PATTERN = '/^wave([0-6])\.v([1-9]\d*)\.yaml$/';
 
     private const array FIELD_KEYS = ['key', 'version', 'group', 'type', 'label', 'help', 'options', 'anchors', 'sensitive', 'requires_source'];
 

@@ -6,6 +6,12 @@ Every field value has a status (`ai_draft` → `sourced` → `community_supporte
 `disputed`). "unknown" is always a valid answer. Changing a field's type, options or anchors once it
 has values needs a new version (`atlas:fields:sync` refuses the change).
 
+## Wave 0 (taxonomy: names)
+
+| Field | Version | Group | Type | Values | Flags |
+|---|---|---|---|---|---|
+| `names`<br>Names · নাম | 1 | names | name_list | names (bn, en): one primary, then aliases, local and regional names | — |
+
 ## Wave 1
 
 | Field | Version | Group | Type | Values | Flags |

@@ -1,0 +1,10 @@
+wave: 0
+fields:
+  - key: names
+    version: 1
+    group: names
+    type: name_list
+    label: { bn: "নাম", en: "Names" }
+    help:
+      bn: "এই পেশার নাম এক ভাষায়: একটা মূল নাম, তারপর অন্য নাম, স্থানীয় নাম আর অঞ্চলভেদে নাম। মানুষ যে নামে খোঁজে, সব এখানে থাকে।"
+      en: "This occupation's names in one language: one primary name, then other names, local names and regional names. Every name people search for belongs here."

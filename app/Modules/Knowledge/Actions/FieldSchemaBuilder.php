@@ -93,6 +93,24 @@ final class FieldSchemaBuilder
             ],
             FieldType::Boolean => ['type' => 'boolean'],
             FieldType::Text => ['type' => 'string', 'minLength' => 1, 'maxLength' => ValidateFieldValue::TEXT_MAX_LENGTH],
+            FieldType::NameList => [
+                'type' => 'array',
+                'minItems' => 1,
+                'maxItems' => ValidateFieldValue::NAMES_MAX_COUNT,
+                'contains' => ['type' => 'object', 'properties' => ['type' => ['const' => 'primary']], 'required' => ['type']],
+                'minContains' => 1,
+                'maxContains' => 1,
+                'items' => [
+                    'type' => 'object',
+                    'required' => ['name', 'type'],
+                    'additionalProperties' => false,
+                    'properties' => [
+                        'name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => ValidateFieldValue::NAME_MAX_LENGTH],
+                        'type' => ['type' => 'string', 'enum' => ValidateFieldValue::NAME_TYPES],
+                        'region' => ['type' => 'string', 'pattern' => '^[a-z][a-z0-9_]*$', 'maxLength' => ValidateFieldValue::REGION_MAX_LENGTH],
+                    ],
+                ],
+            ],
         };
     }
 }

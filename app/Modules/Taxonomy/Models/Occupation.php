@@ -20,10 +20,11 @@ use Illuminate\Support\Carbon;
  * @property PublishState $publish_state
  * @property bool $indexable
  * @property int|null $merged_into_id
+ * @property int|null $ai_run_id the AI run that proposed it (D45)
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['slug', 'isco_code', 'bsco_code', 'publish_state', 'indexable', 'merged_into_id'])]
+#[Fillable(['slug', 'isco_code', 'bsco_code', 'publish_state', 'indexable', 'merged_into_id', 'ai_run_id'])]
 #[UseFactory(OccupationFactory::class)]
 class Occupation extends Model
 {

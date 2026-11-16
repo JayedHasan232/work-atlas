@@ -319,6 +319,10 @@ Tests
 
 Depends on: M6, M8, M9 · Blocked by: O3 (budget go-ahead for the paid run)
 
+Status: the code is done (prompt v1, schema, action, job, command, tests; D44, D45). The pilot on 5
+unit groups and the full run wait for O3 (providers, prices and a budget above 0) and for O7, which
+must be decided before the first paid run.
+
 Tasks
 - Prompt `data/prompts/taxonomy/expand-unit-group.v1.md` + schema: occupations with bn/en names,
   local and regional aliases, informal/self-employed/seasonal flags, short reason for "separate vs
@@ -739,6 +743,22 @@ Tests
 - **D43** (M9) An output is accepted only when it is a JSON object that matches the prompt's schema
   (opis/json-schema). Otherwise the run is `failed` with the reason, the raw output is kept for
   review, and nothing is parsed.
+- **D44** (M10, Jayed's choice 2026-11-16) Names are a Knowledge field: `names`, wave 0 (taxonomy),
+  type `name_list`, one value per language. A value is a list of `{name, type}` (`primary`, `alias`,
+  `local`, `regional` + a division key), exactly one primary, no name twice. So AI names enter as
+  `ai_draft` with full revisions, sources and statuses like every other value. `occupation_names` is
+  a search copy of the current value: `RecordRevision`, an accepted review and a revert raise
+  `Knowledge\Events\CurrentValueChanged`, and `Taxonomy\Actions\SyncOccupationNames` rewrites that
+  occupation's rows for the language in the same transaction. A pending proposal is not copied.
+- **D45** (M10) A candidate links to the run that proposed it (`occupations.ai_run_id`, `RESTRICT`).
+  A rerun is recognised by the gateway's input hash (`AiGateway::previousSuccess`): an earlier
+  succeeded run is reused with no new call, and skipped when its occupations exist or it proposed
+  none; `--force` makes a new call. So the context lists only `listed` and `published` occupations,
+  never candidates, or each run would change the next input. Specializations become aliases; work
+  arrangements, the reason for a separate occupation and the note stay in the run's parsed output
+  for the list review (M11). Regional names use the 8 division keys. The whole command is checked
+  against the cap before any job is queued (`AiGateway::checkBudget`). The provider batch API is
+  left for the full run (M10 pilot first, O3).
 
 ## Maintainer decisions (answered 2026-11-16)
 
