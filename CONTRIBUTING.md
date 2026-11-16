@@ -52,8 +52,8 @@ Forgot? Fix the last commit with `git commit --amend -s --no-edit`, or every com
 - **Small and focused.** One topic or one milestone per pull request.
 - **Tests are required.** Pest for unit, feature and architecture tests; browser tests for user flows.
   Every rule enforced in code has a test — never weaken or skip one.
-- **CI must pass.** Pint, Larastan, Pest, ESLint, `tsc`, build, SSR build, SSR smoke, end-to-end, and
-  the DCO check.
+- **CI must pass.** Pint, Larastan, Pest, `vp check` (lint and format), `tsc`, build, SSR build, SSR
+  smoke, end-to-end, and the DCO check.
 - **Migrations are reversible.** Never edit a merged migration; add a new one.
 - **Bangla and English.** Every user-facing string goes through translation keys in both `lang/bn` and
   `lang/en`. No hard-coded UI text.
@@ -84,4 +84,50 @@ test it, make sure it follows the rules above, and sign it off only if you have 
 
 ## Local setup
 
-Setup instructions arrive with milestone M2 (Laravel skeleton). Until then there is nothing to run.
+> **বাংলা:** লাগবে PHP 8.4, Composer, Node 22, PostgreSQL 18 আর Redis। নিচের ধাপগুলো একবার চালালেই
+> app চলবে।
+
+You need PHP 8.4 (extensions `pdo_pgsql`, `redis`, `intl`), Composer 2, Node 22, PostgreSQL 18 and
+Redis. PHP and Node run on your machine; only the database and Redis may run in Docker.
+
+**1. Start PostgreSQL and Redis.** Either way, the settings match `.env.example`.
+
+- With Docker: `docker compose up -d` (creates the `work_atlas` and `work_atlas_test` databases).
+- Without Docker (macOS example): `brew install postgresql@18 redis`, then
+  `brew services run postgresql@18` and `brew services run redis`, and create the role and databases:
+
+  ```bash
+  psql -d postgres -c "CREATE ROLE work_atlas LOGIN PASSWORD 'password' CREATEDB"
+  psql -d postgres -c "CREATE DATABASE work_atlas OWNER work_atlas"
+  psql -d postgres -c "CREATE DATABASE work_atlas_test OWNER work_atlas"
+  ```
+
+  These credentials are for local development only.
+
+**2. Install and build.**
+
+```bash
+composer setup
+```
+
+This installs the PHP and JS dependencies, creates `.env`, generates the app key, runs the migrations
+and builds the front end.
+
+**3. Run.** `composer dev` starts the app at <http://localhost:8000> with Horizon, a log tail and Vite.
+If port 8000 is taken, run `php artisan serve --port=8001` and `npm run dev` yourself.
+
+To try server-side rendering: `npm run build:ssr`, then `php artisan inertia:start-ssr` next to
+`php artisan serve`. `scripts/ci/ssr-smoke http://127.0.0.1:8000/` checks the page came from the server.
+
+**Tests and checks** (CI runs the same):
+
+```bash
+php artisan test --testsuite=Unit,Feature,Arch
+vendor/bin/pint --test
+vendor/bin/phpstan analyse
+npm run check
+npm run types:check
+```
+
+Browser tests need built assets and a Playwright browser: `npm run build`,
+`npx playwright install chromium`, then `php artisan test --testsuite=Browser`.

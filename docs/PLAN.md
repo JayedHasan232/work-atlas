@@ -104,9 +104,10 @@ Tasks
   Fortify) with Pest. Sanctum installed.
 - `compose.yaml` for services only: PostgreSQL 18, Redis. `.env.example` without secrets.
 - SSR on (SSR entry, `inertia:start-ssr`). Horizon installed (dashboard gated in M8).
-- Tooling: Pint, Larastan (start at level 6), ESLint, Prettier, `tsc --noEmit`.
+- Tooling: Pint, Larastan (level 7, the starter kit's default), Oxlint + Oxfmt through `vp check`
+  (the starter kit's Vite+ toolchain, D11), `tsc --noEmit`.
 - Pest arch presets (`php`, `security`, `laravel`) + custom: no `dd`/`dump`/`ray`.
-- E2E harness: Pest 4 browser plugin (A14), Playwright browsers installed in CI, one smoke test with
+- E2E harness: Pest's browser plugin (A14), Playwright browsers installed in CI, one smoke test with
   an accessibility assertion.
 - GitHub Actions: PHP job (Pint, Larastan, Pest on Postgres 18 + Redis services,
   migrate → rollback → migrate), JS job (lint, types, build, SSR build), SSR smoke job (boot the SSR
@@ -604,7 +605,12 @@ Tests
 - **D7** Time-to-learn and time-to-first-income are bands, not numbers, to avoid false precision.
 - **D8** Prompt and schema immutability is enforced in CI, not by convention.
 - **D9** Guided-filter answers are never stored on the server.
-- **D10** Local dev: Docker Compose for Postgres and Redis only; PHP and Node run locally.
+- **D10** Local dev: Docker Compose for Postgres and Redis only; PHP and Node run locally. Native
+  PostgreSQL and Redis work too (CONTRIBUTING.md).
+- **D11** Front-end lint and format use the starter kit's Vite+ toolchain (Oxlint + Oxfmt via
+  `vp check`) instead of ESLint + Prettier, so we don't fight the kit's defaults. Markdown, license
+  texts and `data/` are excluded from formatting.
+- **D12** Tests run on PostgreSQL, not sqlite: later milestones rely on triggers and `pg_trgm`.
 
 ## Maintainer decisions (answered 2026-11-16)
 
@@ -663,7 +669,7 @@ is written down so the choice can be reversed later.
 - **A13 — Core team** (Jayed). Jayed alone holds maintainer and reviewer. Nobody holds `expert`, so
   health and legal fields stay hidden (they are not in Phase 1 anyway). Because one person reviews, the
   queue order (model disagreement first) matters more.
-- **A14 — E2E runner** (delegated). Pest 4 browser plugin (Playwright underneath): tests in PHP, the same
+- **A14 — E2E runner** (delegated). Pest's browser plugin (Playwright underneath; Pest 5 since M2): tests in PHP, the same
   factories and database setup as feature tests, one test runner, built-in accessibility assertion.
 - **A15 — Spam** (delegated). At launch: honeypot, rate limits, limits for new accounts, and the
   moderation queue. Cloudflare Turnstile is wired behind a config flag, off by default, and switched on
