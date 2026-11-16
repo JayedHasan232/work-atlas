@@ -30,6 +30,18 @@ final class LocalizedRoutes
     }
 
     /**
+     * The path of a localized route in the given locale, e.g. `/en/occupations/plumber`.
+     *
+     * @param  array<string, mixed>  $parameters
+     */
+    public static function path(string $name, array $parameters, string $locale): string
+    {
+        $prefix = Locales::prefix($locale);
+
+        return route($prefix === null ? $name : "{$prefix}.{$name}", $parameters, false);
+    }
+
+    /**
      * The locale a route was registered for, or null when the route is not localized.
      */
     public static function localeOf(?Route $route): ?string

@@ -3,28 +3,42 @@
 namespace App\Modules\Publishing\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Publishing\Presenters\OccupationPresenter;
 use App\Modules\Taxonomy\Queries\OccupationBySlug;
+use App\Modules\Taxonomy\Queries\PublicOccupations;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+use Inertia\Response;
 
 /**
- * `/occupations/{slug}` (A10). A merged occupation's old slug redirects permanently to the occupation
- * it was merged into, in the same language (D5). The page itself is built in M13; until then every
- * other slug is not found.
+ * `/occupations/{slug}` (A10). A listed or published occupation has a page (PLAN M13); a merged
+ * occupation's old slug redirects permanently to the occupation it was merged into, in the same
+ * language (D5); a candidate or rejected occupation is not found.
  */
 final class OccupationPageController extends Controller
 {
-    public function __invoke(Request $request, string $slug, OccupationBySlug $occupations): RedirectResponse
-    {
-        $address = $occupations->handle($slug);
+    public function __invoke(
+        string $slug,
+        OccupationBySlug $slugs,
+        PublicOccupations $occupations,
+        OccupationPresenter $presenter,
+    ): Response|RedirectResponse {
+        $address = $slugs->handle($slug);
 
-        if ($address === null || ! $address->redirects()) {
+        if ($address === null) {
             abort(404);
         }
 
-        $name = (string) Route::currentRouteName();
+        if ($address->redirects()) {
+            return redirect()->to(route((string) Route::currentRouteName(), ['slug' => $address->canonicalSlug]), 301);
+        }
 
-        return redirect()->to(route($name, ['slug' => $address->canonicalSlug]), 301);
+        $occupation = $occupations->find($address->occupationId) ?? abort(404);
+
+        return Inertia::render('occupations/show', [
+            'occupation' => $presenter->present($occupation, App::getLocale()),
+        ]);
     }
 }

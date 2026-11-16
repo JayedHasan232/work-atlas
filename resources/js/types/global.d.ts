@@ -15,6 +15,8 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             localization: Localization;
             translations: Translations;
+            /** Set on pages kept out of search engines (rule 12). */
+            robots?: string;
             [key: string]: unknown;
         };
     }

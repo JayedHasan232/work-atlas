@@ -37,6 +37,7 @@ return [
             'welcome' => ['home'],
             'contribution-terms' => ['terms'],
             'auth/*' => ['auth'],
+            'occupations/*' => ['occupations'],
             'dashboard' => ['shell'],
             'settings/*' => ['shell', 'settings'],
         ],
@@ -125,6 +126,23 @@ return [
                 ],
             ],
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Public pages
+    |--------------------------------------------------------------------------
+    |
+    | What the public occupation page shows (PLAN M13): the field waves, the field groups that carry
+    | the "not medical advice" note (rule 7), and the size of an index page. Every page is noindex
+    | during the Phase 1 beta (rule 12; the index gate comes in M14).
+    |
+    */
+
+    'publishing' => [
+        'page_waves' => [0, 1],
+        'medical_groups' => ['health'],
+        'per_page' => 50,
     ],
 
 ];

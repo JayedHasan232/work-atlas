@@ -14,4 +14,20 @@ enum PublishState: string
 
     // A candidate the list review turned down (D46). Kept, so a rerun does not propose it as new.
     case Rejected = 'rejected';
+
+    /**
+     * Listed and published occupations have a public page (PLAN M13); candidates, rejected and
+     * merged ones do not.
+     *
+     * @return list<self>
+     */
+    public static function public(): array
+    {
+        return [self::Listed, self::Published];
+    }
+
+    public function isPublic(): bool
+    {
+        return in_array($this, self::public(), true);
+    }
 }

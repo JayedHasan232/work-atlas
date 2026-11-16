@@ -9,6 +9,7 @@ return [
         'label' => 'Main',
         'account' => 'Account',
         'home' => 'Home',
+        'occupations' => 'Occupations',
         'log_in' => 'Log in',
         'register' => 'Register',
         'dashboard' => 'Dashboard',
