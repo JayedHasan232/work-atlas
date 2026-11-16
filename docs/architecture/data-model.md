@@ -33,6 +33,12 @@ erDiagram
     revisions ||--o| revision_patrols : "patrolled (M18)"
     users ||--o{ revision_patrols : patroller
     revisions ||--o{ revision_flags : "flagged (M18)"
+    occupations ||--o{ discussion_threads : "talk page (M19)"
+    field_definitions |o..o{ discussion_threads : "about a field (by key)"
+    discussion_threads ||--o{ discussion_posts : posts
+    users ||--o{ discussion_posts : author
+    discussion_threads |o--o{ discussion_moderations : "hidden or shown"
+    discussion_posts |o--o{ discussion_moderations : "hidden or shown"
 
     users {
         string role "contributor, trusted, reviewer, expert, maintainer (M8)"
@@ -56,6 +62,34 @@ erDiagram
     revision_patrols {
         bigint revision_id FK "unique: patrolled once"
         bigint user_id FK "the patroller"
+        timestamptz created_at
+    }
+    discussion_threads {
+        bigint occupation_id FK "restrict"
+        string field_key "nullable: the whole page"
+        string title "max 200"
+        string locale
+        bigint user_id FK "who opened it"
+        int posts_count
+        timestamptz last_posted_at
+        timestamptz hidden_at "nullable: hidden by a moderator"
+        bigint hidden_by FK "nullable"
+    }
+    discussion_posts {
+        bigint discussion_thread_id FK
+        bigint user_id FK
+        text body "never changes (trigger)"
+        string locale
+        jsonb flags "link and organisation flags for moderators"
+        timestamptz hidden_at "nullable"
+        bigint hidden_by FK "nullable"
+    }
+    discussion_moderations {
+        bigint discussion_thread_id FK "nullable; exactly one target"
+        bigint discussion_post_id FK "nullable"
+        string action "hide, show"
+        text reason "nullable"
+        bigint user_id FK "the moderator"
         timestamptz created_at
     }
     revision_flags {
@@ -212,7 +246,7 @@ erDiagram
 | Taxonomy | `isco_groups`, `occupations`, `occupation_names` | `IscoGroup`, `Occupation`, `OccupationName` |
 | Knowledge | `field_definitions`, `field_values`, `revisions`, `revision_reviews`, `sources`, `revision_source` | `FieldDefinition`, `FieldValue`, `Revision`, `RevisionReview`, `Source` |
 | AiPipeline | `ai_runs` | `AiRun` |
-| Community | `contribution_consents`, `error_reports`, `verification_tasks`, `verification_answers`, `revision_patrols`, `revision_flags` (and `users.role`, trust counters, `users.anonymous_credit`, `users.blocked_*`) | `ContributionConsent` (`App\Models\User` stays the auth model) |
+| Community | `contribution_consents`, `error_reports`, `verification_tasks`, `verification_answers`, `revision_patrols`, `revision_flags`, `discussion_threads`, `discussion_posts`, `discussion_moderations` (and `users.role`, trust counters, `users.anonymous_credit`, `users.blocked_*`) | `ContributionConsent` (`App\Models\User` stays the auth model) |
 
 A module never reads another module's tables or models. Across modules, rows are linked by a foreign
 key, and the model keeps only the id (`FieldValue::$occupation_id`, `Revision::$ai_run_id`).
@@ -242,6 +276,9 @@ Each is a constraint, so it holds even for raw SQL. The tests are in
   `occupation_names.normalized_name` serves the detector (PLAN D47).
 - **Micro-tasks (M17)**: one task per revision (unique `revision_id`), one answer per person and task
   (unique), and the task states and answers are check constraints (PLAN D64).
+- **Talk pages (M19)**: a trigger refuses deleting or truncating `discussion_threads` and
+  `discussion_posts` and any change except `hidden_at`, `hidden_by` and the thread counters;
+  `discussion_moderations` is append-only and names exactly one target (PLAN D70).
 - **Names**: one primary name per occupation and locale. Regional names carry a region; others don't.
 - **Field definitions**: `key` + `version` is unique. A change of meaning, options or anchors is a new
   version. 1–5 scales need anchors in `bn` and `en`; choice fields need options.

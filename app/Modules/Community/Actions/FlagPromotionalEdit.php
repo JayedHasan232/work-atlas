@@ -76,6 +76,30 @@ final class FlagPromotionalEdit
     }
 
     /**
+     * The same link and organisation rules for a talk-page post (PLAN M19), without the repeat check:
+     * a post is talk, not a change to the data. Returns flags ready to store with the post.
+     *
+     * @param  list<string>  $texts
+     * @return list<array{reason: string, detail: string|null}>
+     */
+    public function textFlags(array $texts): array
+    {
+        $flags = [];
+        $domains = $this->domainsIn([], $texts);
+        $organisations = $this->organisationsIn($texts);
+
+        if ($domains !== []) {
+            $flags[] = ['reason' => FlagReason::Link->value, 'detail' => mb_substr(implode(', ', $domains), 0, 1000)];
+        }
+
+        if ($organisations !== []) {
+            $flags[] = ['reason' => FlagReason::Organisation->value, 'detail' => mb_substr(implode(', ', $organisations), 0, 1000)];
+        }
+
+        return $flags;
+    }
+
+    /**
      * A domain or organisation name this person added on enough other occupations recently.
      *
      * @param  list<string>  $domains
@@ -174,9 +198,17 @@ final class FlagPromotionalEdit
      */
     private function domains(EditRecord $edit): array
     {
-        $urls = array_map(fn (array $source): string => $source['url'], $edit->sources);
+        return $this->domainsIn(array_map(fn (array $source): string => $source['url'], $edit->sources), $edit->texts());
+    }
 
-        foreach ($edit->texts() as $text) {
+    /**
+     * @param  list<string>  $urls
+     * @param  list<string>  $texts
+     * @return list<string>
+     */
+    private function domainsIn(array $urls, array $texts): array
+    {
+        foreach ($texts as $text) {
             if (preg_match_all(self::URL, $text, $matches) > 0) {
                 array_push($urls, ...$matches[0]);
             }
@@ -203,9 +235,18 @@ final class FlagPromotionalEdit
      */
     private function organisations(EditRecord $edit): array
     {
+        return $this->organisationsIn($edit->texts());
+    }
+
+    /**
+     * @param  list<string>  $texts
+     * @return list<string>
+     */
+    private function organisationsIn(array $texts): array
+    {
         $found = [];
 
-        foreach ($edit->texts() as $text) {
+        foreach ($texts as $text) {
             // Phone numbers are often written in Bangla digits.
             if (preg_match_all(self::PHONE, strtr($text, self::BANGLA_DIGITS), $matches) > 0) {
                 foreach ($matches[0] as $phone) {

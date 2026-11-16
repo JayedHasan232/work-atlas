@@ -17,11 +17,16 @@ import type { TranslationKey } from '@/types/translation-keys.generated';
 export const controlClass =
     'w-full rounded-md border border-input bg-background px-3 py-2 text-base shadow-xs focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none md:text-sm';
 
-export function ModerationTabs({ active }: { active: 'review' | 'patrol' }) {
+export function ModerationTabs({
+    active,
+}: {
+    active: 'review' | 'patrol' | 'talk';
+}) {
     const { t, localizePath } = useTranslation();
     const tabs = [
         { key: 'review', href: localizePath('/review') },
         { key: 'patrol', href: localizePath('/patrol') },
+        { key: 'talk', href: localizePath('/patrol/talk') },
     ] as const;
 
     return (
@@ -85,6 +90,7 @@ export function ShowValue({
                 sources: [],
                 suggestUrl: '',
                 reportUrl: '',
+                discussUrl: '',
             }}
         />
     );

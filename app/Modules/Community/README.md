@@ -52,4 +52,16 @@ The people who write and check Work Atlas.
 - `Actions\CheckContributionLimits`: daily limits by trust level (D68) and the block check.
 - `Actions\BlockUser`, `Filament\Resources\Users`: maintainers block and unblock people (D69).
 
+**M19 (talk pages):**
+
+- `Actions\StartDiscussion`, `Actions\ReplyToDiscussion` (both through `Actions\WriteDiscussionPost`)
+  and `Http\Controllers\Web\DiscussionController`: open a thread about the page or one field, and
+  reply; the daily limits and the block check apply to posts (`CheckContributionLimits::handlePost`),
+  and posts get the link and organisation flags (`FlagPromotionalEdit::textFlags`, D71).
+- `Actions\ModerateDiscussion`, `Http\Controllers\Web\Moderation\DiscussionModerationController`:
+  moderators hide and show posts and threads; each change is logged in `discussion_moderations`
+  and nothing is deleted (D70).
+- `Queries\Discussions`: threads, posts, recent posts for `/patrol/talk`
+  (`ModerationPresenter::talkQueue`), and post counts for the limits.
+
 See [the module rules](../README.md).

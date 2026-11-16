@@ -5,7 +5,9 @@ namespace App\Modules\Community\Actions;
 use App\Models\User;
 use App\Modules\Community\Enums\Role;
 use App\Modules\Community\Exceptions\ContributionRejected;
+use App\Modules\Community\Queries\Discussions;
 use App\Modules\Knowledge\Queries\ContributionCredits;
+use Closure;
 use Illuminate\Support\Facades\Config;
 
 /**
@@ -18,12 +20,29 @@ final class CheckContributionLimits
 {
     public function __construct(
         private readonly ContributionCredits $credits,
+        private readonly Discussions $discussions,
     ) {}
 
     public function handle(User $user): void
     {
         $this->ensureNotBlocked($user);
+        $this->ensureWithinDailyLimit($user, fn (): int => $this->credits->writtenSince($user->id, now()->subDay()), 'changes');
+    }
 
+    /**
+     * The same limits for talk-page posts (PLAN M19), counted apart from changes.
+     */
+    public function handlePost(User $user): void
+    {
+        $this->ensureNotBlocked($user);
+        $this->ensureWithinDailyLimit($user, fn (): int => $this->discussions->postsSince($user->id, now()->subDay()), 'posts');
+    }
+
+    /**
+     * @param  Closure(): int  $writtenToday
+     */
+    private function ensureWithinDailyLimit(User $user, Closure $writtenToday, string $what): void
+    {
         if ($user->role->atLeast(Role::Reviewer)) {
             return;
         }
@@ -34,8 +53,8 @@ final class CheckContributionLimits
             default => Config::integer('atlas.community.daily_changes'),
         };
 
-        if ($this->credits->writtenSince($user->id, now()->subDay()) >= $limit) {
-            throw ContributionRejected::because('limit', "user {$user->id} reached the limit of {$limit} changes a day");
+        if ($writtenToday() >= $limit) {
+            throw ContributionRejected::because('limit', "user {$user->id} reached the limit of {$limit} {$what} a day");
         }
     }
 

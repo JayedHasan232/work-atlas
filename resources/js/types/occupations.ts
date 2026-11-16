@@ -30,6 +30,7 @@ export type PublicField = {
     sources: number[];
     suggestUrl: string;
     reportUrl: string;
+    discussUrl: string;
 };
 
 export type FieldSection = {
@@ -76,6 +77,8 @@ export type PublicOccupation = {
     unverified: boolean;
     changedAt: string | null;
     reportUrl: string;
+    talkUrl: string;
+    talkCount: number;
     credits: Credits;
 };
 

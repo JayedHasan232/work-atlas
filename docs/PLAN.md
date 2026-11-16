@@ -555,6 +555,13 @@ Acceptance
 Tests
 - `Feature/Community/DiscussionTest`, `DiscussionModerationTest`.
 
+Status: done (D70–D71): a talk page per occupation (`/occupations/{slug}/talk`, thread pages under it)
+with threads about the whole page or one field, replies, and a "Discuss" link next to each field and a
+talk-page link on the occupation page. Moderators hide and show posts and threads, and see recent posts
+on `/patrol/talk`, flagged ones first. Nothing is deleted. A browser test covers opening and replying
+on a phone. Known limit: threads on a merged occupation stay under the old occupation and are not
+shown under the new slug.
+
 ### M20 — Guided filter and compare
 
 Depends on: M13, M17 · Blocked by: —
@@ -953,6 +960,15 @@ Tests
   optional reason, and never themself. A blocked person can still read and sign in, but cannot
   suggest, answer tasks, send signed-in error reports, moderate or open `/admin`. Their past edits
   stay; reviewers revert what needs reverting.
+- **D70** (M19) Talk posts and threads are hidden, never deleted. A trigger refuses `DELETE` and
+  `TRUNCATE` and any change other than the hidden state and the thread counters, so what a person
+  wrote never changes. Every hide and show writes a `discussion_moderations` row (append-only), with an
+  optional reason. The public sees neither the text nor the author of a hidden post. A hidden thread
+  drops out of the public list and takes no replies; moderators still see everything.
+- **D71** (M19) Talk posts share the daily limits of D68, counted apart from changes, and the block
+  check. Posts and thread titles get the link and organisation flags of D67; there is no conflict-of-
+  interest field on a post, so the "interest" flag does not apply. A thread may name one field by its
+  key (current field definitions only). There is no editing of one's own post in Phase 1.
 
 ## Maintainer decisions (answered 2026-11-16)
 

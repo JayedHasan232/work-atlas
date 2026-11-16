@@ -1,0 +1,58 @@
+<?php
+
+return [
+    'title' => 'Talk: :name',
+    'heading' => 'Talk',
+    'intro' => 'Discuss this occupation\'s page: what is wrong, what is missing, which source is better. Be respectful; every honest occupation deserves respect.',
+    'back_to_page' => 'Back to the occupation page',
+    'back_to_talk' => 'All discussions',
+    'empty' => 'No discussions yet.',
+    'about_field' => 'About: :field',
+    'all_fields' => 'Whole page',
+    'filter' => 'Show discussions about',
+    'posts' => 'Posts: :count',
+    'by' => 'by :name',
+    'anonymous' => 'anonymous contributor',
+    'last_post' => 'last post :date',
+    'sign_in' => 'Sign in to join the discussion.',
+    'cannot_post' => 'Please verify your email address to join the discussion.',
+    'form' => [
+        'new' => 'Start a discussion',
+        'title' => 'Title',
+        'body' => 'Your message',
+        'field' => 'Part of the page',
+        'start' => 'Start discussion',
+        'reply' => 'Reply',
+        'send_reply' => 'Send reply',
+        'hint' => 'Links to your own business or training centre are flagged for moderators. Please declare any interest.',
+    ],
+    'hidden' => [
+        'thread' => 'A moderator hid this discussion.',
+        'post' => 'A moderator hid this post.',
+        'closed' => 'This discussion is hidden, so it takes no new replies.',
+    ],
+    'moderation' => [
+        'hide' => 'Hide',
+        'show' => 'Show again',
+        'reason' => 'Reason (optional)',
+        'hidden_badge' => 'Hidden',
+    ],
+    'queue' => [
+        'title' => 'Recent talk posts',
+        'intro' => 'Posts from the last days. Posts with links or organisation names come first.',
+        'empty' => 'No recent posts.',
+        'open' => 'Open discussion',
+    ],
+    'errors' => [
+        'field' => 'This part of the page does not exist.',
+        'limit' => 'You have reached today\'s limit of posts. Please try again tomorrow.',
+        'blocked' => 'Your account is blocked from contributing. Please write to the maintainers if you think this is a mistake.',
+        'hidden' => 'This discussion is hidden, so it takes no new replies.',
+    ],
+    'notices' => [
+        'started' => 'Your discussion has started.',
+        'replied' => 'Your reply has been added.',
+        'hidden' => 'Hidden. Nothing was deleted; you can show it again.',
+        'shown' => 'Shown again.',
+    ],
+];

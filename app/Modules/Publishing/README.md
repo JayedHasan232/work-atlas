@@ -32,5 +32,9 @@ Everything the public can read.
 - **Micro-tasks (M17):** `Presenters\MicroTaskPresenter` serves the "Check facts" page (`/tasks`,
   signed in, `noindex`): one question with the value as reader text, how many people must agree and
   how many questions the person answered (D64).
+- **Talk pages (M19):** `Presenters\TalkPresenter` serves `/occupations/{slug}/talk` and its thread
+  pages (`noindex`): the threads (filtered by field), the posts, and the hide and show links for
+  moderators. A hidden post's text and author are left out for everyone else (D70). The occupation
+  page links its talk page and, per field, a "Discuss" link.
 
 See [the module rules](../README.md).
