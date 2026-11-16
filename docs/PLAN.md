@@ -613,6 +613,14 @@ Tests
 - `Feature/Publishing/ApiSensitiveGateTest`, `ApiNoPersonalDataTest`, `ApiRateLimitTest`,
   `OpenApiSpecTest`.
 
+Status: done (D75–D76): `/api/v1/occupations` (by ISCO group, paginated), `/occupations/{slug}`
+(merged slugs redirect), `/fields`, `/search` and `/openapi.json`, read through
+`Publishing\Presenters\ApiPresenter` with the sensitive-field gate. 60 requests per minute per IP
+address (`ATLAS_API_PER_MINUTE`), CORS for reads from any origin without credentials, and the license,
+attribution and a status notice in every response's `meta`. The OpenAPI 3.1 description is written by
+hand in `resources/api/openapi.v1.yaml`; tests check it covers every route and that real responses
+match its strict schemas. `/developers` explains the API in both languages, linked from the footer.
+
 ### M22 — Production deploy, backups and monitoring
 
 Depends on: M2 (best after M13) · Blocked by: O1 (domain), H9 (accounts). Stack per A12.
@@ -997,6 +1005,16 @@ Tests
   merged occupation's old slug, and shows the fields of the configured waves
   (`atlas.discovery.compare_waves`, Wave 1 now) except names and free text, each value with its status;
   the sensitive-field gate applies as on the occupation page.
+- **D75** (M21) The API returns stored values (option keys, scale points) with their status, language,
+  last change and source ids; labels come from `/fields`. It has no people in it: no authors, credits,
+  revision comments, declared interests, confidence, error reports or AI run output, and it sets no
+  cookies. A sensitive value that is not verified keeps its status with `withheld: true`, no value and
+  no sources. Responses may be cached for five minutes. No API keys in v1; the limit is per IP address.
+- **D76** (M21) The OpenAPI description is written by hand, not generated (the PLAN named Scramble as an
+  example). The controllers return presenter arrays, from which a generator can only infer "array";
+  a hand-written spec gives exact schemas without a new dependency. `OpenApiSpecTest` keeps it honest:
+  every `/api/v1` route is described, and real responses are validated against schemas that allow no
+  extra properties, so a new response field fails until it is described and checked for personal data.
 
 ## Maintainer decisions (answered 2026-11-16)
 

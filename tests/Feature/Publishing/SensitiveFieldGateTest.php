@@ -10,7 +10,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 /*
  * CLAUDE.md, "Rules enforced in code": a sensitive field (income, health, legal) is not rendered
  * publicly unless it is verified. Neither its value nor its sources reach the Inertia props or the
- * HTML; the field shows only its status. (The API joins this test when it exists, M18.)
+ * HTML; the field shows only its status. The API has its own test, ApiSensitiveGateTest (M21).
  */
 
 beforeEach(function () {

@@ -45,6 +45,7 @@ return [
             'discovery/*' => ['guide', 'occupations'],
             'settings/contributions' => ['contribute'],
             'search/*' => ['search'],
+            'publishing/*' => ['api'],
             'dashboard' => ['shell'],
             'settings/*' => ['shell', 'settings'],
         ],
@@ -218,6 +219,18 @@ return [
             'লিমিটেড', 'ইনস্টিটিউট', 'একাডেমি', 'ট্রেনিং সেন্টার', 'প্রশিক্ষণ কেন্দ্র', 'কোচিং', 'এজেন্সি',
             'এন্টারপ্রাইজ', 'কোম্পানি', 'যোগাযোগ করুন',
         ],
+    ],
+
+    /*
+    | The public read-only API v1 (PLAN M21, D75). Requests per minute per IP address; the license and
+    | attribution go into every response's meta.
+    */
+    'api' => [
+        'per_minute' => (int) env('ATLAS_API_PER_MINUTE', 60),
+        'license' => 'CC BY-SA 4.0',
+        'license_url' => 'https://creativecommons.org/licenses/by-sa/4.0/',
+        'attribution' => 'Work Atlas contributors',
+        'notice' => 'Every value has a status. ai_draft values are unchecked AI drafts. Sensitive values (income, health, legal) appear only once verified. Not medical, legal or financial advice.',
     ],
 
     'publishing' => [

@@ -150,6 +150,13 @@ export default function PublicLayout({
                         <a href={SOURCE_URL} className={footerLinkClass}>
                             {t('common.footer.source_code')}
                         </a>
+                        {' · '}
+                        <Link
+                            href={localizePath('/developers')}
+                            className={footerLinkClass}
+                        >
+                            {t('common.footer.api')}
+                        </Link>
                     </p>
                     <p>
                         {t('common.footer.copyright', {

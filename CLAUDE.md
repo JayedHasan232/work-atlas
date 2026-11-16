@@ -96,7 +96,7 @@ scripts/                        one-off Python (run with python3 -I)
 | Rule | Enforced in | Test |
 |---|---|---|
 | A `requires_source` field cannot be saved without ≥ 1 source | `RecordRevision` | `Feature/Knowledge/RequiresSourceTest` |
-| A `sensitive` field (income, health, legal) is not rendered publicly unless `verified` | `Publishing` presenters | `Feature/Publishing/SensitiveFieldGateTest` (web props, HTML, API) |
+| A `sensitive` field (income, health, legal) is not rendered publicly unless `verified` | `Publishing` presenters | `Feature/Publishing/SensitiveFieldGateTest` (web props, HTML), `ApiSensitiveGateTest` (API) |
 | AI writes never replace a `verified` value; they become a proposed revision | `RecordRevision` | `Feature/Knowledge/AiCannotOverwriteVerifiedTest` |
 | Revisions are append-only; revert = new revision | `Revision` model guard + Postgres trigger | `Feature/Knowledge/RevisionsAppendOnlyTest` |
 | Every AI call creates an `ai_runs` row, failures included | `AiGateway` | `Feature/AiPipeline/AiRunLoggedTest`, `Arch/AiGatewayOnlyTest` |

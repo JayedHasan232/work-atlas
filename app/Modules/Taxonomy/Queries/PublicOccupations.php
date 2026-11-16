@@ -64,13 +64,22 @@ final class PublicOccupations
         return $this->items($occupations->all());
     }
 
-    public function index(string $locale, int $page, int $perPage): OccupationIndexPage
+    /**
+     * One page of the public occupations, optionally only those in an ISCO group (any level).
+     */
+    public function index(string $locale, int $page, int $perPage, ?string $groupCode = null): OccupationIndexPage
     {
-        $total = Occupation::query()->whereIn('publish_state', PublishState::public())->count();
+        $total = Occupation::query()
+            ->whereIn('publish_state', PublishState::public())
+            ->when($groupCode !== null, fn (Builder $query) => $query->where('isco_code', 'like', $groupCode.'%'))
+            ->count();
         $lastPage = max(1, (int) ceil($total / $perPage));
         $page = min(max(1, $page), $lastPage);
 
-        $occupations = $this->sorted($locale)->forPage($page, $perPage)->get();
+        $occupations = $this->sorted($locale)
+            ->when($groupCode !== null, fn (Builder $query) => $query->where('occupations.isco_code', 'like', $groupCode.'%'))
+            ->forPage($page, $perPage)
+            ->get();
 
         return new OccupationIndexPage($this->items($occupations->all()), $total, $page, $lastPage);
     }
