@@ -1,5 +1,7 @@
 <?php
 
+use App\Modules\AiPipeline\Drivers\FakeDriver;
+
 return [
 
     /*
@@ -52,5 +54,42 @@ return [
     */
 
     'contribution_terms_version' => '2026-11-draft',
+
+    /*
+    |--------------------------------------------------------------------------
+    | AI gateway
+    |--------------------------------------------------------------------------
+    |
+    | Every model call goes through App\Modules\AiPipeline\AiGateway (PLAN M9). Only the fake driver
+    | exists until the providers are chosen (O3). Prices are USD per million tokens and are added only
+    | from the provider's own price page, with the date checked; a model without a price is refused,
+    | because its cost can't be checked against the cap. The cap is per batch (a single call counts as
+    | a batch of one) and is 0 until the maintainer sets AI_MAX_BATCH_USD.
+    |
+    */
+
+    'ai' => [
+        'prompts_path' => base_path('data/prompts'),
+        'schemas_path' => base_path('data/schemas'),
+
+        'providers' => [
+            'fake' => ['driver' => FakeDriver::class],
+        ],
+
+        'pricing' => [
+            'fake' => ['*' => ['input_per_million' => 0, 'output_per_million' => 0]],
+        ],
+
+        'max_batch_usd' => (float) env('AI_MAX_BATCH_USD', 0),
+
+        // Characters per token for the cost estimate. Kept low so the estimate runs high: Bangla text
+        // uses more tokens per character than English.
+        'chars_per_token' => 1,
+
+        // Waits before the second and third attempt after a retryable provider error.
+        'retry' => ['backoff_ms' => [1000, 5000]],
+
+        'batch_poll_seconds' => 60,
+    ],
 
 ];

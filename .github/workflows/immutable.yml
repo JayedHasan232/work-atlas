@@ -1,0 +1,37 @@
+name: Immutable prompts
+
+# Committed prompt and schema files never change; a change is a new vN file (CLAUDE.md).
+# Like the DCO check, pull_request_target runs the script from the base branch, so a pull request
+# cannot change the script that judges it. The pull request's commits are fetched as data only.
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  immutable:
+    name: Prompt and schema files unchanged
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Fetch the pull request's commits
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: git fetch --no-tags origin "+refs/pull/${PR_NUMBER}/head:refs/remotes/pr/head"
+      - name: Check that no committed prompt or schema file changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # The pull request that adds the script runs before the base branch has it.
+          if [ ! -x scripts/ci/check-immutable ]; then
+            echo "scripts/ci/check-immutable is not on the base branch yet; skipping."
+            exit 0
+          fi
+          scripts/ci/check-immutable "$BASE_SHA" "$HEAD_SHA"

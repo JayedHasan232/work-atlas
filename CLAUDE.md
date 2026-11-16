@@ -175,6 +175,7 @@ Services: PostgreSQL 18 and Redis (`docker compose up -d`, or native; see CONTRI
 - `npm run check` (lint + format; `npm run check:fix` fixes) · `npm run types:check`
 - `scripts/ci/ssr-smoke [url]` — a running app must render `/` on the server
 - `scripts/ci/check-dco-selftest` — self-test of the DCO check
+- `scripts/ci/check-immutable <base> <head>` — no committed prompt or schema file changed; `scripts/ci/check-immutable-selftest` tests it
 - `scripts/ci/check-translations` — every key in `lang/bn` and `lang/en`, same placeholders
 - `php artisan atlas:taxonomy:import` — import ISCO-08 groups from `data/taxonomy/isco08.csv` + `isco08.source.json`
   (`--file`, `--source` to override); safe to run again

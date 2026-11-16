@@ -713,6 +713,32 @@ Tests
   in the same transaction as the account. The version is `atlas.contribution_terms_version`
   (`2026-11-draft` until O12 approves the text); a new text gets a new version, and a person agreeing
   again to the same version keeps the first time.
+- **D40** (M9) `AiPipeline\AiGateway` is a final class, not an interface; providers sit behind
+  `Drivers\AiDriver` (`complete`, `submitBatch`, `pollBatch`), chosen per provider in
+  `atlas.ai.providers.<name>.driver`. Only `FakeDriver` exists until O3; a real driver is a new class in
+  `Drivers` plus a config entry, and only `Drivers` may make HTTP calls (`Arch/AiGatewayOnlyTest`).
+  The run row is created before the call and finished after it; a non-provider exception still marks
+  the run failed and is rethrown. Retries (`atlas.ai.retry.backoff_ms`) happen inside one run, so a
+  run counts calls, not attempts, and `RunAiCompletion` runs once. The gateway writes only `ai_runs`:
+  callers turn a succeeded result into revisions through `Knowledge\Actions\RecordRevision`.
+- **D41** (M9) The budget cap is `AI_MAX_BATCH_USD` (`atlas.ai.max_batch_usd`), **0 by default**, so
+  nothing paid can run until the maintainer sets it. Before anything is sent, the gateway estimates the
+  cost (input tokens from the prompt length at `chars_per_token`, kept low so the guess runs high;
+  output tokens at the prompt's maximum) and refuses above the cap, or when a model has no price in
+  `atlas.ai.pricing`. A refused call makes no run, because nothing reached a provider. A single call
+  counts as a batch of one. `estimate()` is the dry run that every paid run shows first. The pricing
+  table holds only the fake provider's zero price; real prices are added with the O3 drivers, from the
+  provider's published price page with its URL and date in a comment (rule 2).
+- **D42** (M9) Prompts are `data/prompts/<wave>/<name>.v<N>.md` with YAML front matter holding exactly
+  `version`, `schema` (a path under `data/schemas`), `max_output_tokens`, `temperature` and
+  `variables`; the body uses `{{ name }}` placeholders, and the registry refuses a file whose
+  placeholders and `variables` differ. The model is not in the file: the same prompt runs on both
+  cross-check models. `scripts/ci/check-immutable` fails a pull request that changes, renames or
+  deletes a committed file under `data/prompts` or `data/schemas` (a new `vN` is always fine); it runs
+  from the base branch like the DCO check.
+- **D43** (M9) An output is accepted only when it is a JSON object that matches the prompt's schema
+  (opis/json-schema). Otherwise the run is `failed` with the reason, the raw output is kept for
+  review, and nothing is parsed.
 
 ## Maintainer decisions (answered 2026-11-16)
 
