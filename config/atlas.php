@@ -57,6 +57,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Occupation list review
+    |--------------------------------------------------------------------------
+    |
+    | Two occupations in the same ISCO-08 minor group are flagged as a possible duplicate when a name
+    | in the same language is the same after normalization, or this similar by trigram (pg_trgm, 0–1)
+    | (PLAN M11, D47). A person decides every pair.
+    |
+    */
+
+    'taxonomy' => [
+        'duplicate_threshold' => 0.5,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | AI gateway
     |--------------------------------------------------------------------------
     |

@@ -22,5 +22,10 @@ The list of occupations and how they are named.
   `ai_draft`, all or nothing. A rerun with the same input reuses the earlier run (D45).
   `php artisan atlas:taxonomy:expand --groups=7411,7412 --dry-run` prints the estimate;
   without `--dry-run` it checks the budget cap and queues `Jobs\ExpandUnitGroupJob` per group.
+- **List review (M11):** `Actions\DetectDuplicates` (`php artisan atlas:taxonomy:duplicates`) stores
+  possible duplicate pairs (PLAN D47). A reviewer approves (`ApproveCandidate`), rejects
+  (`RejectCandidate`), corrects names (`UpdateOccupationNames`), merges (`MergeOccupations`, D48) or
+  keeps a pair separate (`KeepSeparate`), from the Filament screens in `Filament/`.
+  `Queries\OccupationBySlug` follows a merge to the canonical slug (D49).
 
 See [the module rules](../README.md).

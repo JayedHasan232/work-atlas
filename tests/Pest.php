@@ -13,6 +13,7 @@ use App\Modules\Knowledge\Models\FieldDefinition;
 use App\Modules\Knowledge\Models\Revision;
 use App\Modules\Taxonomy\Models\IscoGroup;
 use App\Modules\Taxonomy\Models\Occupation;
+use App\Modules\Taxonomy\Models\OccupationName;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -332,4 +333,31 @@ function expansionOutput(?array $namesEn = null): array
         ]],
         'note' => '',
     ];
+}
+
+/**
+ * An occupation with its names written through Knowledge (the `names` field must exist).
+ *
+ * @param  array<string, list<array<string, string>>>  $names  per locale
+ * @param  array<string, mixed>  $attributes
+ */
+function occupationNamed(array $names, array $attributes = []): Occupation
+{
+    $occupation = Occupation::factory()->create($attributes + ['isco_code' => '7126']);
+    $field = FieldDefinition::query()->where('key', 'names')->sole();
+
+    foreach ($names as $locale => $list) {
+        recordValue($field, $list, occupationId: $occupation->id, locale: $locale);
+    }
+
+    return $occupation;
+}
+
+/**
+ * @return list<array{0: string, 1: string, 2: string, 3: string|null}> [locale, name, type, region]
+ */
+function searchNamesOf(int $occupationId): array
+{
+    return OccupationName::query()->where('occupation_id', $occupationId)->orderBy('locale')->orderBy('id')->get()
+        ->map(fn (OccupationName $name) => [$name->locale, $name->name, $name->type->value, $name->region])->all();
 }

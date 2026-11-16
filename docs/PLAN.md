@@ -346,6 +346,10 @@ Tests
 
 Depends on: M10 · Blocked by: —
 
+Status: the code is done (migration, detector, review and merge actions, Filament queues, redirect,
+tests; D46–D49). Reviewing the real list waits for the M10 run (O3, O7). H4's separate-occupation
+policy is still a draft; the rule shown in the review screens is its current text.
+
 Tasks
 - `pg_trgm`; `duplicate_candidates` table. Detector: trigram similarity on normalized names plus
   alias overlap, within the same ISCO minor group. No embeddings in Phase 1 (A8).
@@ -759,6 +763,23 @@ Tests
   for the list review (M11). Regional names use the 8 division keys. The whole command is checked
   against the cap before any job is queued (`AiGateway::checkBudget`). The provider batch API is
   left for the full run (M10 pilot first, O3).
+- **D46** (M11) A reviewed occupation records who reviewed it, when and why (`reviewed_by_id`,
+  `reviewed_at`, `review_note`). A new state `rejected` (never indexable, a reason required) keeps a
+  rejected candidate and its run instead of deleting them; a rejected candidate can still be approved
+  later. Approving needs a primary name in Bangla and English. Only reviewers and above review the list.
+- **D47** (M11) Possible duplicates: `pg_trgm` similarity on `occupation_names.normalized_name` (same
+  language, threshold `atlas.taxonomy.duplicate_threshold`, 0.5), or the same name (an alias overlap),
+  only within the same ISCO-08 minor group (first 3 digits). A pair is stored once (lower id first)
+  with its closest names; a decided pair, merged or kept separate, is never flagged again. Run with
+  `atlas:taxonomy:duplicates`. No embeddings in Phase 1 (A8).
+- **D48** (M11) A merge moves the old occupation's names to the target as aliases through a
+  `names` revision by the reviewer (a primary becomes an alias, a name the target has is dropped), sets
+  `merged_into_id`, re-points earlier merges into the old one, removes the old one's search copy and
+  closes its open pairs, in one transaction. "Mark as specialization" is a merge into the parent with
+  a note. A merge needing more than 50 names in one language is refused (the `names` limit).
+- **D49** (M11) `/occupations/{slug}` (and `/en/occupations/{slug}`) exists now only to 301-redirect
+  a merged slug to the canonical one, following the merge chain (at most 10 steps); everything else is
+  404 until the page itself (M13).
 
 ## Maintainer decisions (answered 2026-11-16)
 
@@ -882,6 +903,13 @@ is written down so the choice can be reversed later.
     you may share, private submissions stay private, respect. It is legal text, so Jayed approves it
     (ideally with legal advice) before outside contributors are invited; approval changes
     `atlas.contribution_terms_version` to a final value.
+13. **O13 — GitHub's `pull_request_target` policy** (raised in M10). On 2026-11-16 the DCO and
+    immutable-files workflows (both `pull_request_target`, D42) failed to start: GitHub ran a
+    scheduled brownout of its new default that blocks `pull_request_target` for affected public
+    repositories. If that default becomes permanent, those required checks never run and no PR can
+    merge. It is a repository security setting, so Jayed decides: allow `pull_request_target` for
+    this repo in Settings → Actions (see gh.io/securely-using-pull_request_target), or move both
+    checks to `pull_request` with read-only permissions.
 
 ---
 
