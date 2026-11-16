@@ -67,6 +67,8 @@ jobs:
           php artisan migrate --force
           php artisan migrate:reset --force
           php artisan migrate --force
+          # migrate:fresh drops tables but not functions; a second run catches leftovers.
+          php artisan migrate:fresh --force
       - name: Pest (unit, feature, arch)
         run: php artisan test --testsuite=Unit,Feature,Arch
 

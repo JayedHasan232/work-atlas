@@ -630,6 +630,22 @@ Tests
   `Enums` and `Events`. Controllers use no DB facade, query builder or models
   (`Arch/ModuleBoundariesTest`, `Arch/ThinControllersTest`). The kit's settings controllers still call
   `$request->user()` until they move to `Community` actions in M8.
+- **D19** Statuses, types and decisions are `varchar` columns with check constraints, not Postgres
+  enum types, mirrored by PHP enums. A new value is a small migration that replaces the constraint.
+  Migrations spell the values out instead of reading the PHP enums, so an old migration replays the
+  same way later.
+- **D20** Across modules, rows are linked by a foreign key and the model keeps only the id
+  (`FieldValue::$occupation_id`, `Revision::$ai_run_id`), with no Eloquent relation, because a module's
+  models are private (D18).
+- **D21** `revision_source` is append-only like `revisions` and `revision_reviews`: a revision's sources
+  are part of what it claims. The trigger also blocks `TRUNCATE`. Its function is created with
+  `OR REPLACE`, because `migrate:fresh` drops tables but not functions; CI runs `migrate:fresh` after
+  the rollback cycle to catch that kind of leftover.
+- **D22** `field_values.locale` null means the value is the same in every language (a 1–5 scale);
+  `region` null means all of Bangladesh. Regions are short codes for now; a regions table comes with
+  `Observations` (Phase 2).
+- **D23** The Laravel arch preset assumes a flat app (enums in `App\Enums`, models in `App\Models`), so it
+  skips `App\Modules`; `Arch/ModuleLayoutTest` applies the same placement rules inside each module.
 
 ## Maintainer decisions (answered 2026-11-16)
 
@@ -713,6 +729,12 @@ is written down so the choice can be reversed later.
 4. **O4 — BSCO-2012 file** (H7). Blocks M6b only.
 5. ~~**O5 — When the repo goes public.**~~ Settled 2026-11-16: public now (A1). The Code of Conduct
    contact email moved to O1.
+6. **O6 — Deleting an account that has contributions** (raised in M4). Revisions keep their author
+   and can never change, so the database refuses to delete a user who wrote or reviewed one. Proposal:
+   account deletion removes the person's data (name, email, password, passkeys, 2FA, tokens) and keeps
+   an anonymous user row, shown as "deleted contributor", so the history and its credit stay intact.
+   It does not block anything today: nothing writes revisions until M5, and contributors arrive in
+   M16. Decide before M8 ships signup.
 
 ---
 
