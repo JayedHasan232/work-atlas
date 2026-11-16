@@ -9,8 +9,9 @@ use App\Modules\Knowledge\Queries\ContributionCredits;
 use Illuminate\Support\Facades\Config;
 
 /**
- * Limits for new accounts (PLAN M16, A15). A person may write a limited number of changes a day, fewer
- * while their account is new (`atlas.community`); reviewers and above are not limited. A new account's
+ * Limits for new accounts (PLAN M16, A15) and by trust level (M18, D68). A person may write a limited
+ * number of changes a day: fewer while their account is new, more when trusted (`atlas.community`);
+ * reviewers and above are not limited. A blocked person writes nothing (D69). A new account's
  * links (sources, or a URL in the comment) always wait for a review, even from a trusted person.
  */
 final class CheckContributionLimits
@@ -21,16 +22,27 @@ final class CheckContributionLimits
 
     public function handle(User $user): void
     {
+        $this->ensureNotBlocked($user);
+
         if ($user->role->atLeast(Role::Reviewer)) {
             return;
         }
 
-        $limit = $this->isNew($user)
-            ? Config::integer('atlas.community.daily_changes_new_account')
-            : Config::integer('atlas.community.daily_changes');
+        $limit = match (true) {
+            $this->isNew($user) => Config::integer('atlas.community.daily_changes_new_account'),
+            $user->role === Role::Trusted => Config::integer('atlas.community.daily_changes_trusted'),
+            default => Config::integer('atlas.community.daily_changes'),
+        };
 
         if ($this->credits->writtenSince($user->id, now()->subDay()) >= $limit) {
             throw ContributionRejected::because('limit', "user {$user->id} reached the limit of {$limit} changes a day");
+        }
+    }
+
+    public function ensureNotBlocked(User $user): void
+    {
+        if ($user->isBlocked()) {
+            throw ContributionRejected::because('blocked', "user {$user->id} is blocked");
         }
     }
 

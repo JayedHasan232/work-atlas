@@ -4,6 +4,11 @@ use App\Http\Controllers\ContributionTermsController;
 use App\Http\Controllers\LocaleController;
 use App\Modules\Community\Http\Controllers\Web\EditSuggestionController;
 use App\Modules\Community\Http\Controllers\Web\ErrorReportController;
+use App\Modules\Community\Http\Controllers\Web\Moderation\ModerationActionController;
+use App\Modules\Community\Http\Controllers\Web\Moderation\PatrolEditController;
+use App\Modules\Community\Http\Controllers\Web\Moderation\PatrolQueueController;
+use App\Modules\Community\Http\Controllers\Web\Moderation\ReviewQueueController;
+use App\Modules\Community\Http\Controllers\Web\Moderation\ReviewSlotController;
 use App\Modules\Community\Http\Controllers\Web\TaskAnswerController;
 use App\Modules\Publishing\Http\Controllers\Web\ContributorController;
 use App\Modules\Publishing\Http\Controllers\Web\MicroTaskController;
@@ -55,6 +60,20 @@ LocalizedRoutes::register(function () {
             ->whereNumber('task')
             ->middleware('throttle:answers')
             ->name('tasks.answer');
+    });
+
+    // Moderation (PLAN M18, D66): review desk and patrol queue for reviewers and above.
+    Route::middleware(['auth', 'verified', 'can:moderate'])->group(function () {
+        Route::get('review', ReviewQueueController::class)->name('review.index');
+        Route::get('review/{slot}', ReviewSlotController::class)->whereNumber('slot')->name('review.show');
+        Route::post('review/{slot}/proposals/{revision}', [ModerationActionController::class, 'decide'])
+            ->whereNumber(['slot', 'revision'])
+            ->name('review.decide');
+        Route::post('review/{slot}/status', [ModerationActionController::class, 'status'])->whereNumber('slot')->name('review.status');
+        Route::get('patrol', PatrolQueueController::class)->name('patrol.index');
+        Route::get('patrol/{revision}', PatrolEditController::class)->whereNumber('revision')->name('patrol.show');
+        Route::post('patrol/{revision}/patrolled', [ModerationActionController::class, 'patrol'])->whereNumber('revision')->name('patrol.mark');
+        Route::post('patrol/{revision}/revert', [ModerationActionController::class, 'revert'])->whereNumber('revision')->name('patrol.revert');
     });
 
     // Search (PLAN M15).

@@ -534,6 +534,13 @@ Tests
 - `Feature/Community/RevertFromPatrolTest`, `PromoHeuristicsTest`, `RateLimitByTrustTest`,
   `ReviewerQueueAccessTest`.
 
+Status: done (D66–D69): the review desk (`/review`, `/review/{slot}`) and the patrol queue (`/patrol`,
+`/patrol/{revision}`) are public-site pages for reviewers and above, not Filament (D66). An edit is
+found, diffed and reverted in three clicks: list, edit, revert. Patrol marks live in
+`revision_patrols` because revisions are append-only. Promotional-edit flags are rule-based (D67) and
+only sort the queue. Daily limits follow the trust level (D68). Maintainers block and unblock people
+in Filament's People resource (D69). The report and spam queue is Filament's error reports (M16).
+
 ### M19 — Talk pages
 
 Depends on: M16 · Blocked by: —
@@ -925,6 +932,27 @@ Tests
   contributors are promoted, never lowered; a maintainer-set role is left alone. Tasks are ordered by
   review priority, then oldest, not by page views: the app does not count page views (Umami is
   separate and private).
+- **D66** (M18) Moderation happens in the public React site, for reviewers and above (`can:moderate`:
+  reviewer role or higher and not blocked), because CLAUDE.md keeps community work out of Filament.
+  The review desk lists slots by review priority and shows sensitive values that are not verified
+  (the public never sees them); a reviewer accepts or rejects proposals there and sets the status.
+  The patrol queue lists people's edits from the last `moderation.patrol_days` days that nobody has
+  marked patrolled, flagged ones first. Reverting or reviewing an edit also marks it patrolled. A
+  patrol mark is a row in `revision_patrols`, not a column, because revisions are append-only.
+- **D67** (M18) Promotional-edit flags are rules, not AI, so each flag explains itself and costs
+  nothing: a declared interest; links (source URLs or web addresses in the text, by domain); an
+  organisation term (`moderation.organisation_terms`, bn and en, with up to three words before it) or
+  a Bangladeshi mobile number (also in Bangla digits); and a domain or organisation name the same
+  person added on at least `repeat_after` other occupations in `repeat_days` days. Two names count as
+  the same organisation when they share their last words beyond the bare term ("dhaka skill
+  institute"). Flags are stored in `revision_flags`; they sort the queue and never block an edit.
+- **D68** (M18) Daily limits by trust level: new account `daily_changes_new_account`, contributor
+  `daily_changes`, trusted contributor `daily_changes_trusted` (200), reviewers and above none. A new
+  account's limit applies whatever its role below reviewer.
+- **D69** (M18) Only a maintainer blocks or unblocks (Filament People resource, `BlockUser`), with an
+  optional reason, and never themself. A blocked person can still read and sign in, but cannot
+  suggest, answer tasks, send signed-in error reports, moderate or open `/admin`. Their past edits
+  stay; reviewers revert what needs reverting.
 
 ## Maintainer decisions (answered 2026-11-16)
 

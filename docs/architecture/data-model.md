@@ -30,6 +30,9 @@ erDiagram
     revisions ||--o| verification_tasks : "the asked value"
     verification_tasks ||--o{ verification_answers : answers
     users ||--o{ verification_answers : "one per task"
+    revisions ||--o| revision_patrols : "patrolled (M18)"
+    users ||--o{ revision_patrols : patroller
+    revisions ||--o{ revision_flags : "flagged (M18)"
 
     users {
         string role "contributor, trusted, reviewer, expert, maintainer (M8)"
@@ -37,6 +40,9 @@ erDiagram
         int rejected_proposals_count "trust counter"
         boolean anonymous_credit "credit without the name (M16)"
         int confirmed_answers_count "answers that agreed with a consensus (M17)"
+        timestamptz blocked_at "nullable: blocked by a maintainer (M18)"
+        bigint blocked_by FK "nullable"
+        text block_reason "nullable"
     }
     verification_tasks {
         bigint field_value_id FK
@@ -46,6 +52,17 @@ erDiagram
         string state "open, supported, disputed, stale"
         int priority "the slot's review priority"
         timestamptz resolved_at
+    }
+    revision_patrols {
+        bigint revision_id FK "unique: patrolled once"
+        bigint user_id FK "the patroller"
+        timestamptz created_at
+    }
+    revision_flags {
+        bigint revision_id FK
+        string reason "interest, link, repeated_domain, organisation, repeated_organisation"
+        text detail "what matched"
+        timestamptz created_at
     }
     verification_answers {
         bigint verification_task_id FK
@@ -195,7 +212,7 @@ erDiagram
 | Taxonomy | `isco_groups`, `occupations`, `occupation_names` | `IscoGroup`, `Occupation`, `OccupationName` |
 | Knowledge | `field_definitions`, `field_values`, `revisions`, `revision_reviews`, `sources`, `revision_source` | `FieldDefinition`, `FieldValue`, `Revision`, `RevisionReview`, `Source` |
 | AiPipeline | `ai_runs` | `AiRun` |
-| Community | `contribution_consents`, `error_reports`, `verification_tasks`, `verification_answers` (and `users.role`, trust counters, `users.anonymous_credit`) | `ContributionConsent` (`App\Models\User` stays the auth model) |
+| Community | `contribution_consents`, `error_reports`, `verification_tasks`, `verification_answers`, `revision_patrols`, `revision_flags` (and `users.role`, trust counters, `users.anonymous_credit`, `users.blocked_*`) | `ContributionConsent` (`App\Models\User` stays the auth model) |
 
 A module never reads another module's tables or models. Across modules, rows are linked by a foreign
 key, and the model keeps only the id (`FieldValue::$occupation_id`, `Revision::$ai_run_id`).

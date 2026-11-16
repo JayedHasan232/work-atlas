@@ -33,6 +33,7 @@ final class SuggestEdit
         private readonly CheckContributionLimits $limits,
         private readonly RecordSource $recordSource,
         private readonly RecordRevision $recordRevision,
+        private readonly FlagPromotionalEdit $flag,
     ) {}
 
     public function handle(EditSuggestion $suggestion): SuggestionResult
@@ -72,6 +73,8 @@ final class SuggestEdit
                 declaredInterest: $interest,
                 needsReview: $needsReview,
             ));
+
+            $this->flag->handle($revision->id);
 
             return new SuggestionResult($revision->id, ! $revision->proposed);
         });

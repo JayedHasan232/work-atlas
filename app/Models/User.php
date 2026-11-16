@@ -36,6 +36,9 @@ use Laravel\Sanctum\HasApiTokens;
  * @property int $rejected_proposals_count
  * @property int $confirmed_answers_count
  * @property bool $anonymous_credit
+ * @property Carbon|null $blocked_at
+ * @property int|null $blocked_by
+ * @property string|null $block_reason
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -73,6 +76,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
             'confirmed_answers_count' => 'integer',
             'rejected_proposals_count' => 'integer',
             'anonymous_credit' => 'boolean',
+            'blocked_at' => 'datetime',
         ];
     }
 
@@ -81,6 +85,23 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->role->canUseAdmin();
+        return $this->role->canUseAdmin() && ! $this->isBlocked();
+    }
+
+    /**
+     * A maintainer blocked this person (PLAN M18, D69): they can sign in and read, but not contribute
+     * or moderate.
+     */
+    public function isBlocked(): bool
+    {
+        return $this->blocked_at !== null;
+    }
+
+    /**
+     * Reviewers and above use the moderation tools (PLAN M18, D66), unless blocked.
+     */
+    public function canModerate(): bool
+    {
+        return $this->role->canReview() && ! $this->isBlocked();
     }
 }

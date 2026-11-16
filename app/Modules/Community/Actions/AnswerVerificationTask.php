@@ -2,6 +2,7 @@
 
 namespace App\Modules\Community\Actions;
 
+use App\Models\User;
 use App\Modules\Community\Enums\TaskAnswer;
 use App\Modules\Community\Enums\TaskState;
 use App\Modules\Community\Exceptions\ContributionRejected;
@@ -16,8 +17,14 @@ use App\Modules\Community\Models\VerificationTask;
  */
 final class AnswerVerificationTask
 {
+    public function __construct(
+        private readonly CheckContributionLimits $limits,
+    ) {}
+
     public function handle(int $taskId, int $userId, TaskAnswer $answer): void
     {
+        $this->limits->ensureNotBlocked(User::query()->findOrFail($userId));
+
         $task = VerificationTask::query()->find($taskId)
             ?? throw ContributionRejected::because('task', "task {$taskId} does not exist");
 

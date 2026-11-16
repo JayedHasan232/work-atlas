@@ -40,6 +40,7 @@ return [
             'occupations/*' => ['occupations', 'contribute'],
             'contributors/*' => ['contribute'],
             'tasks/*' => ['tasks', 'occupations'],
+            'moderation/*' => ['moderation', 'occupations'],
             'settings/contributions' => ['contribute'],
             'search/*' => ['search'],
             'dashboard' => ['shell'],
@@ -173,11 +174,15 @@ return [
     | becomes trusted after this many accepted contributions (accepted proposals plus answers that
     | agreed with a reached consensus) and this many days since signup.
     |
+    | Rate limits by trust level (PLAN M18, D68): a trusted person may write more changes a day than
+    | a contributor; reviewers and above have no daily limit.
+    |
     */
 
     'community' => [
         'new_account_days' => 7,
         'daily_changes' => 50,
+        'daily_changes_trusted' => 200,
         'daily_changes_new_account' => 10,
         'error_reports_per_hour' => 10,
         'suggestions_per_minute' => 6,
@@ -186,6 +191,31 @@ return [
         'answers_per_minute' => 20,
         'trusted_after_contributions' => 50,
         'trusted_after_days' => 30,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Moderation
+    |--------------------------------------------------------------------------
+    |
+    | PLAN M18, D66–D67. The patrol queue lists people's edits of the last `patrol_days` days. An edit
+    | is flagged as possibly promotional when it declares an interest, carries links, names an
+    | organisation (one of `organisation_terms`, matched case-insensitively, or a phone number), or
+    | repeats a link domain or an organisation name the same person added on at least `repeat_after`
+    | other occupations in the last `repeat_days` days. Flags only sort the queue; a person decides.
+    |
+    */
+
+    'moderation' => [
+        'patrol_days' => 30,
+        'repeat_days' => 30,
+        'repeat_after' => 2,
+        'organisation_terms' => [
+            'ltd', 'limited', 'institute', 'academy', 'training center', 'training centre', 'coaching',
+            'agency', 'enterprise', 'company', 'call now', 'contact us',
+            'লিমিটেড', 'ইনস্টিটিউট', 'একাডেমি', 'ট্রেনিং সেন্টার', 'প্রশিক্ষণ কেন্দ্র', 'কোচিং', 'এজেন্সি',
+            'এন্টারপ্রাইজ', 'কোম্পানি', 'যোগাযোগ করুন',
+        ],
     ],
 
     'publishing' => [

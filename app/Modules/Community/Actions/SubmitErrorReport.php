@@ -2,6 +2,7 @@
 
 namespace App\Modules\Community\Actions;
 
+use App\Models\User;
 use App\Modules\Community\Data\ErrorReportInput;
 use App\Modules\Community\Exceptions\ContributionRejected;
 use App\Modules\Community\Models\ErrorReport;
@@ -20,10 +21,15 @@ final class SubmitErrorReport
     public function __construct(
         private readonly PublicOccupations $occupations,
         private readonly FieldDefinitionByKey $fields,
+        private readonly CheckContributionLimits $limits,
     ) {}
 
     public function handle(ErrorReportInput $input): int
     {
+        if ($input->userId !== null) {
+            $this->limits->ensureNotBlocked(User::query()->findOrFail($input->userId));
+        }
+
         $message = trim($input->message);
 
         if ($message === '' || mb_strlen($message) > self::MAX_LENGTH) {

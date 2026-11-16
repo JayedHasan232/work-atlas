@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use App\Modules\Knowledge\Events\CurrentValueChanged;
 use App\Modules\Knowledge\Events\FieldStatusChanged;
 use App\Modules\Publishing\Actions\QueueIndexGateCheck;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -35,12 +37,21 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->listenAcrossModules();
         $this->configureRateLimits();
+        $this->configureGates();
     }
 
     /**
      * Contribution limits (PLAN M16, A15). Error reports are counted per IP address, suggestions and
      * micro-task answers (M17) per person; the counters live only in the cache, never in the database.
      */
+    /**
+     * The moderation pages (PLAN M18, D66) are for reviewers and above who are not blocked.
+     */
+    protected function configureGates(): void
+    {
+        Gate::define('moderate', fn (User $user): bool => $user->canModerate());
+    }
+
     protected function configureRateLimits(): void
     {
         RateLimiter::for('error-reports', fn (Request $request): Limit => Limit::perHour(Config::integer('atlas.community.error_reports_per_hour'))
