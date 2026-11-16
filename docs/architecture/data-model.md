@@ -74,6 +74,10 @@ erDiagram
         bigint ai_run_id FK "and ai_run_id"
         text comment
         bigint reverts_revision_id FK
+        boolean proposed "waits for a review"
+        decimal confidence "AI only, 0 to 1"
+        bigint replaces_revision_id FK "current before this one"
+        string old_status "slot status before this one"
         timestamptz created_at "no updated_at"
     }
     revision_reviews {
@@ -81,6 +85,8 @@ erDiagram
         bigint reviewer_id FK
         string decision "accepted, rejected"
         text comment
+        bigint replaces_revision_id FK "accepted only"
+        string old_status "accepted only"
         timestamptz created_at
     }
     sources {
@@ -145,15 +151,39 @@ Each is a constraint, so it holds even for raw SQL. The tests are in
 - **Field definitions**: `key` + `version` is unique. A change of meaning, options or anchors is a new
   version. 1–5 scales need anchors in `bn` and `en`; choice fields need options.
 
-## What the application checks instead
+## The write path (M5)
 
-From M5, `Knowledge\Actions\RecordRevision` checks:
+Rules that need context the database doesn't have live in `Knowledge\Actions`, the only code that
+writes `field_values`, `revisions` and `revision_reviews` (`Arch/KnowledgeWritePathTest`). Each action
+runs in one transaction and first locks the slot's row (`SELECT … FOR UPDATE`), so two writes to one
+slot run one after the other (`ConcurrentWriteTest`).
 
-- that a value fits its field definition (type, options, the 1–5 range, `"unknown"`)
-- the `requires_source` rule
-- that AI never replaces a `verified` value
-- status transitions
+| Action | What it does |
+|---|---|
+| `RecordRevision` | Validates the value (`ValidateFieldValue`), checks `requires_source` and the AI confidence, then writes a revision. An AI write on a `verified` value, and every person's write until M8, is a **proposal**: the current value stays and the slot's `review_priority` rises. Any other AI write becomes current as `ai_draft`, or `sourced` with a source. |
+| `ChangeStatus` | Moves a slot along the transition table below. AI runs can't. |
+| `ReviewRevision` | Accepts or rejects a pending proposal (`revision_reviews`). Accepting makes it current and `verified`. |
+| `RevertRevision` | Undoes the current value with a new revision that restores the replaced value, its sources and its status. |
 
-Those rules need context the database doesn't have.
+**Values.** `null` and `"unknown"` both mean "not known" and are stored as null; `requires_source`
+applies only to a known value. A 1–5 scale is a whole number; enum and band values are one of the
+definition's options; a multi-enum is a non-empty list of distinct options. Text needs a supported
+locale; every other type is the same in every language, so it has none (D22).
+
+**Status moves** (`FieldStatus::allowedTargets`, D27). A value moves up the ladder or to `disputed`;
+a disputed value goes back up once checked again. `ai_draft` is never a target: only an AI revision
+sets it. `sourced` needs a source on the current value.
+
+| From | To |
+|---|---|
+| `ai_draft` | `sourced`, `community_supported`, `verified`, `disputed` |
+| `sourced` | `community_supported`, `verified`, `disputed` |
+| `community_supported` | `verified`, `disputed` |
+| `verified` | `disputed` |
+| `disputed` | `sourced`, `community_supported`, `verified` |
+
+**Pending and replaced.** A proposal is pending while it has no review. The revision that was current
+before, and the slot's status then, are kept where the change happened: on the revision for a direct
+write, on the accepting review for a proposal. A revert reads them from there.
 
 Times are stored as `timestamptz` (UTC) and shown in Asia/Dhaka.

@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Modules\Knowledge\Data;
+
+/**
+ * A new value for one slot: occupation × field definition × locale × region (D22: a null locale means
+ * the same in every language, a null region means all of Bangladesh). The occupation and the field are
+ * referenced by id, so other modules can build this without Knowledge's or Taxonomy's models.
+ *
+ * `value` is null or "unknown" when the value is not known (rule 2). `confidence` (0–1) is required
+ * from an AI run and not allowed from a person.
+ */
+final readonly class RevisionInput
+{
+    /**
+     * @param  list<int>  $sourceIds
+     */
+    public function __construct(
+        public int $occupationId,
+        public int $fieldDefinitionId,
+        public mixed $value,
+        public Actor $actor,
+        public ?string $locale = null,
+        public ?string $region = null,
+        public array $sourceIds = [],
+        public ?float $confidence = null,
+        public ?string $comment = null,
+    ) {}
+}

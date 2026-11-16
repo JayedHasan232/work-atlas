@@ -1,5 +1,13 @@
 <?php
 
+use App\Models\User;
+use App\Modules\AiPipeline\Models\AiRun;
+use App\Modules\Knowledge\Actions\RecordRevision;
+use App\Modules\Knowledge\Data\Actor;
+use App\Modules\Knowledge\Data\RevisionInput;
+use App\Modules\Knowledge\Models\FieldDefinition;
+use App\Modules\Knowledge\Models\Revision;
+use App\Modules\Taxonomy\Models\Occupation;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -78,4 +86,50 @@ function databaseError(Closure $statement): string
     }
 
     return '(accepted)';
+}
+
+/*
+|--------------------------------------------------------------------------
+| Knowledge write path
+|--------------------------------------------------------------------------
+|
+| Shortcuts for tests that write values through RecordRevision, the only write path.
+|
+*/
+
+function aiActor(): Actor
+{
+    return Actor::aiRun(AiRun::factory()->create()->id);
+}
+
+function personActor(): Actor
+{
+    return Actor::user(User::factory()->create());
+}
+
+/**
+ * Records a value through RecordRevision: by a new AI run (confidence 0.8) unless an actor is given,
+ * on a new occupation unless one is given.
+ *
+ * @param  list<int>  $sourceIds
+ */
+function recordValue(
+    FieldDefinition $field,
+    mixed $value,
+    ?Actor $actor = null,
+    array $sourceIds = [],
+    ?int $occupationId = null,
+    ?string $locale = null,
+): Revision {
+    $actor ??= aiActor();
+
+    return app(RecordRevision::class)->handle(new RevisionInput(
+        occupationId: $occupationId ?? Occupation::factory()->create()->id,
+        fieldDefinitionId: $field->id,
+        value: $value,
+        actor: $actor,
+        locale: $locale,
+        sourceIds: $sourceIds,
+        confidence: $actor->isAi() ? 0.8 : null,
+    ));
 }

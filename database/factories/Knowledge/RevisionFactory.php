@@ -38,6 +38,15 @@ class RevisionFactory extends Factory
         return $this->state([
             'user_id' => null,
             'ai_run_id' => $run !== null ? $run->id : fn (): int => AiRun::factory()->create()->id,
+            'confidence' => 0.5,
         ]);
+    }
+
+    /**
+     * Waits for a review instead of being the current value.
+     */
+    public function proposed(): static
+    {
+        return $this->state(['proposed' => true]);
     }
 }

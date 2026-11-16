@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * One value slot: occupation × field × locale × region. The value is the current revision's
- * `new_value`. Only Knowledge\Actions change these rows (from M5). The occupation is referenced by id
+ * `new_value`. Only Knowledge\Actions change these rows. The occupation is referenced by id
  * only: Taxonomy's models are private to Taxonomy.
  *
  * @property int $id
@@ -34,6 +34,12 @@ class FieldValue extends Model
 {
     /** @use HasFactory<FieldValueFactory> */
     use HasFactory;
+
+    /** Nothing waits for a review. */
+    public const int PRIORITY_NONE = 0;
+
+    /** A proposed revision waits for a review. Later milestones add higher levels (model disagreement). */
+    public const int PRIORITY_PENDING_PROPOSAL = 10;
 
     /** @var array<string, mixed> */
     protected $attributes = [
