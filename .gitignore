@@ -11,10 +11,13 @@ auth.json
 /node_modules
 /vendor
 /public/build
+/public/css/filament
 /public/hot
+/public/js/filament
 /public/storage
 /bootstrap/ssr
 /public/fonts-manifest.dev.json
+/public/fonts/filament
 /storage/*.key
 /storage/pail
 

@@ -3,10 +3,11 @@ import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { login } from '@/routes';
+import { contributionTerms, login } from '@/routes';
 import { store } from '@/routes/register';
 import { useTranslation } from '@/lib/i18n';
 import type { AuthLayoutProps } from '@/types';
@@ -16,7 +17,7 @@ type Props = {
 };
 
 export default function Register({ passwordRules }: Props) {
-    const { t } = useTranslation();
+    const { t, localizePath } = useTranslation();
 
     return (
         <>
@@ -97,6 +98,37 @@ export default function Register({ passwordRules }: Props) {
                                 />
                                 <InputError
                                     message={errors.password_confirmation}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <div className="flex items-start gap-3">
+                                    <Checkbox
+                                        id="contribution_terms"
+                                        name="contribution_terms"
+                                        aria-required="true"
+                                        aria-describedby="contribution_terms_link"
+                                        className="mt-0.5"
+                                    />
+                                    <Label
+                                        htmlFor="contribution_terms"
+                                        className="leading-snug font-normal"
+                                    >
+                                        {t('auth.register.consent')}
+                                    </Label>
+                                </div>
+                                {/* A plain link that opens a new tab, so the form keeps what was typed. */}
+                                <a
+                                    id="contribution_terms_link"
+                                    href={localizePath(contributionTerms().url)}
+                                    target="_blank"
+                                    rel="noopener"
+                                    className="ml-7 text-sm underline underline-offset-4"
+                                >
+                                    {t('auth.register.consent_link')}
+                                </a>
+                                <InputError
+                                    message={errors.contribution_terms}
                                 />
                             </div>
 

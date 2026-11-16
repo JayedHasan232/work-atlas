@@ -19,14 +19,14 @@ beforeEach(function () {
     // A sourced value the community supports, then an AI value with another source on top of it.
     $this->first = recordValue($this->field, 2, sourceIds: [$this->source->id]);
     $this->slot = $this->first->fieldValue;
-    app(ChangeStatus::class)->handle($this->slot->id, FieldStatus::CommunitySupported, personActor());
+    app(ChangeStatus::class)->handle($this->slot->id, FieldStatus::CommunitySupported, reviewerActor());
 
     $this->second = recordValue($this->field, 4, sourceIds: [Source::factory()->create()->id], occupationId: $this->slot->occupation_id);
 });
 
 function revert(int $revisionId, mixed $actor = null): Revision
 {
-    return app(RevertRevision::class)->handle($revisionId, $actor ?? personActor(), 'Back to the checked value.');
+    return app(RevertRevision::class)->handle($revisionId, $actor ?? reviewerActor(), 'Back to the checked value.');
 }
 
 it('restores the replaced value, its sources and its status in a new revision', function () {
@@ -60,7 +60,7 @@ it('reverts a revert', function () {
 
 it('restores what an accepted proposal replaced', function () {
     $proposal = recordValue($this->field, 5, personActor(), [$this->source->id], $this->slot->occupation_id);
-    app(ReviewRevision::class)->handle($proposal->id, personActor(), ReviewDecision::Accepted);
+    app(ReviewRevision::class)->handle($proposal->id, reviewerActor(), ReviewDecision::Accepted);
 
     $revert = revert($proposal->id);
     $slot = $this->slot->fresh();

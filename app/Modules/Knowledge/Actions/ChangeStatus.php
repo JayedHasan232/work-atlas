@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Moves a value slot to another status along FieldStatus::allowedTargets(). The slot needs a current
  * value, and `sourced` needs a source on it. An AI run never changes a status; its revisions get one
- * from RecordRevision. M8 adds the role checks (reviewer for verified, expert for health and legal).
+ * from RecordRevision. The person's role must allow the target (Role::canSetStatus, D36).
  */
 final class ChangeStatus
 {
@@ -21,8 +21,13 @@ final class ChangeStatus
             throw StatusTransitionNotAllowed::because('an AI run cannot change a status');
         }
 
-        return DB::transaction(function () use ($fieldValueId, $target): FieldValue {
+        return DB::transaction(function () use ($fieldValueId, $target, $actor): FieldValue {
             $slot = FieldValue::query()->lockForUpdate()->findOrFail($fieldValueId);
+            $role = $actor->personRole();
+
+            if (! $role->canSetStatus($target, $slot->definition->sensitive)) {
+                throw StatusTransitionNotAllowed::because("a {$role->value} cannot set {$target->value} on this field");
+            }
             $current = $slot->currentRevision;
 
             if ($current === null) {

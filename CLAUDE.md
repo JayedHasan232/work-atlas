@@ -181,6 +181,8 @@ Services: PostgreSQL 18 and Redis (`docker compose up -d`, or native; see CONTRI
 - `php artisan atlas:fields:sync` — field definitions from `data/fields/*.yaml` into the database; safe to run again
 - `php artisan atlas:fields:generate` — write `data/schemas/wave<N>/fields.v<M>.json` and `docs/architecture/fields.md`
   from `data/fields` (`--check` only reports drift; schema files are never overwritten)
+- `php artisan atlas:user:promote {email} {role}` — give a person a role (contributor, trusted, reviewer, expert,
+  maintainer); only maintainers can open `/admin` and `/horizon`
 - `php artisan atlas:translation-types` — regenerate the React `TranslationKey` type from `lang/en`
   (Vite runs it on build and when `lang/en` changes)
 

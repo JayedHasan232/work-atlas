@@ -33,10 +33,24 @@ return [
         'always' => ['common'],
         'pages' => [
             'welcome' => ['home'],
+            'contribution-terms' => ['terms'],
             'auth/*' => ['auth'],
             'dashboard' => ['shell'],
             'settings/*' => ['shell', 'settings'],
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Contribution terms
+    |--------------------------------------------------------------------------
+    |
+    | The version of the contribution terms (page contribution-terms, text in the "terms" group)
+    | that signup asks people to accept. A new version of the text gets a new value, so every agreement
+    | stays tied to the text that was shown.
+    |
+    */
+
+    'contribution_terms_version' => '2026-11-draft',
 
 ];

@@ -119,11 +119,11 @@ it('locks the slot row in every action that changes it', function (Closure $act)
         $current->fieldValue->definition, 3, occupationId: $current->fieldValue->occupation_id,
     ),
     'ChangeStatus' => fn (Revision $current) => app(ChangeStatus::class)
-        ->handle($current->field_value_id, FieldStatus::Verified, personActor()),
+        ->handle($current->field_value_id, FieldStatus::Verified, reviewerActor()),
     'ReviewRevision' => fn (Revision $current, Revision $proposal) => app(ReviewRevision::class)
-        ->handle($proposal->id, personActor(), ReviewDecision::Rejected),
+        ->handle($proposal->id, reviewerActor(), ReviewDecision::Rejected),
     'RevertRevision' => fn (Revision $current) => app(RevertRevision::class)
-        ->handle($current->id, personActor()),
+        ->handle($current->id, reviewerActor()),
 ]);
 
 it('creates a slot once, however often it is locked', function () {

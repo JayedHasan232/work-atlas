@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Horizon\Horizon;
 use Laravel\Horizon\HorizonApplicationServiceProvider;
@@ -27,7 +28,7 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
      */
     protected function gate(): void
     {
-        // Roles arrive in milestone M8. Until then nobody can open Horizon outside the local environment.
-        Gate::define('viewHorizon', fn ($user = null): bool => false);
+        // Maintainers only (M8). A guest has no user, so the gate refuses.
+        Gate::define('viewHorizon', fn (?User $user = null): bool => $user?->role->canUseAdmin() === true);
     }
 }

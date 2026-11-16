@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Modules\AiPipeline\Models\AiRun;
+use App\Modules\Community\Enums\Role;
 use App\Modules\Knowledge\Actions\RecordRevision;
 use App\Modules\Knowledge\Data\Actor;
 use App\Modules\Knowledge\Data\RevisionInput;
@@ -104,9 +105,17 @@ function aiActor(): Actor
     return Actor::aiRun(AiRun::factory()->create()->id);
 }
 
-function personActor(): Actor
+/**
+ * A new person with the given role (contributor by default: their writes are proposals).
+ */
+function personActor(Role $role = Role::Contributor): Actor
 {
-    return Actor::user(User::factory()->create());
+    return Actor::user(User::factory()->role($role)->create());
+}
+
+function reviewerActor(): Actor
+{
+    return personActor(Role::Reviewer);
 }
 
 /**

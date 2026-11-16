@@ -40,10 +40,13 @@ final class RecordRevision
         $this->checkConfidence($definition, $input);
         $sourceIds = $this->checkSources($definition, $value, $input->sourceIds);
 
-        return DB::transaction(function () use ($input, $value, $sourceIds): Revision {
+        return DB::transaction(function () use ($input, $definition, $value, $sourceIds): Revision {
             $slot = $this->lockSlot->handle($input->occupationId, $input->fieldDefinitionId, $input->locale, $input->region);
             $current = $slot->currentRevision;
-            $proposed = ! $input->actor->isAi() || $slot->status === FieldStatus::Verified;
+            // A verified value changes only through a review. Otherwise an AI write applies at once; a
+            // person's applies when their role allows it on this field (Role::appliesDirectly, D36).
+            $proposed = $slot->status === FieldStatus::Verified
+                || (! $input->actor->isAi() && ! $input->actor->personRole()->appliesDirectly($definition->sensitive));
 
             $revision = Revision::query()->create([
                 'field_value_id' => $slot->id,
@@ -65,7 +68,11 @@ final class RecordRevision
                 $slot->review_priority = max($slot->review_priority, FieldValue::PRIORITY_PENDING_PROPOSAL);
             } else {
                 $slot->current_revision_id = $revision->id;
-                $slot->status = $value !== null && $sourceIds !== [] ? FieldStatus::Sourced : FieldStatus::AiDraft;
+                $slot->status = match (true) {
+                    $value !== null && $sourceIds !== [] => FieldStatus::Sourced,
+                    $input->actor->isAi() => FieldStatus::AiDraft,
+                    default => FieldStatus::CommunitySupported,
+                };
             }
 
             $slot->save();

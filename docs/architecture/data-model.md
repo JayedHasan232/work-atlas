@@ -1,8 +1,8 @@
 # Data model
 
-The core tables from M4. Migrations in `database/migrations/` are the source of truth; this page
-explains them. Later milestones add `observations`, `submissions`, `verification_tasks` and
-`discussions`.
+The core tables from M4, with the roles and consent from M8. Migrations in `database/migrations/`
+are the source of truth; this page explains them. Later milestones add `observations`,
+`submissions`, `verification_tasks` and `discussions`.
 
 ```mermaid
 erDiagram
@@ -21,6 +21,18 @@ erDiagram
     sources ||--o{ revision_source : "cited by"
     revisions ||--o{ revision_reviews : reviewed
     users ||--o{ revision_reviews : reviewer
+    users ||--o{ contribution_consents : agreed
+
+    users {
+        string role "contributor, trusted, reviewer, expert, maintainer (M8)"
+        int accepted_proposals_count "trust counter"
+        int rejected_proposals_count "trust counter"
+    }
+    contribution_consents {
+        bigint user_id FK "deleted with the user"
+        string terms_version "unique with user_id"
+        timestamptz accepted_at
+    }
 
     isco_groups {
         string code UK "1-4 digits, length = level"
@@ -128,6 +140,7 @@ erDiagram
 | Taxonomy | `isco_groups`, `occupations`, `occupation_names` | `IscoGroup`, `Occupation`, `OccupationName` |
 | Knowledge | `field_definitions`, `field_values`, `revisions`, `revision_reviews`, `sources`, `revision_source` | `FieldDefinition`, `FieldValue`, `Revision`, `RevisionReview`, `Source` |
 | AiPipeline | `ai_runs` | `AiRun` |
+| Community | `contribution_consents` (and `users.role`, trust counters) | `ContributionConsent` (`App\Models\User` stays the auth model) |
 
 A module never reads another module's tables or models. Across modules, rows are linked by a foreign
 key, and the model keeps only the id (`FieldValue::$occupation_id`, `Revision::$ai_run_id`).
@@ -165,10 +178,10 @@ slot run one after the other (`ConcurrentWriteTest`).
 
 | Action | What it does |
 |---|---|
-| `RecordRevision` | Validates the value (`ValidateFieldValue`), checks `requires_source` and the AI confidence, then writes a revision. An AI write on a `verified` value, and every person's write until M8, is a **proposal**: the current value stays and the slot's `review_priority` rises. Any other AI write becomes current as `ai_draft`, or `sourced` with a source. |
-| `ChangeStatus` | Moves a slot along the transition table below. AI runs can't. |
-| `ReviewRevision` | Accepts or rejects a pending proposal (`revision_reviews`). Accepting makes it current and `verified`. |
-| `RevertRevision` | Undoes the current value with a new revision that restores the replaced value, its sources and its status. |
+| `RecordRevision` | Validates the value (`ValidateFieldValue`), checks `requires_source` and the AI confidence, then writes a revision. An AI write on a `verified` value, a contributor's write, and any person's write on a sensitive field is a **proposal**: the current value stays and the slot's `review_priority` rises. Any other write becomes current: an AI write as `ai_draft`, a person's as `community_supported` (O11); either as `sourced` with a source. |
+| `ChangeStatus` | Moves a slot along the transition table below, if the person's role allows the target (D36). AI runs can't. |
+| `ReviewRevision` | Accepts or rejects a pending proposal (`revision_reviews`); reviewers and above, never their own proposal (the maintainer excepted, A13). Accepting makes it current and `verified`. Counts the outcome on the author. |
+| `RevertRevision` | Undoes the current value with a new revision that restores the replaced value, its sources and its status. Trusted and above; a verified or sensitive value needs a reviewer. |
 
 **Values.** `null` and `"unknown"` both mean "not known" and are stored as null; `requires_source`
 applies only to a known value. A 1–5 scale is a whole number; enum and band values are one of the
