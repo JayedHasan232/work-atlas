@@ -18,7 +18,9 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 0
-          persist-credentials: false
+          # Credentials stay so the next step can fetch from a private repository. The token is
+          # read-only (see permissions) and no code from the pull request is run.
+          persist-credentials: true
       - name: Fetch the pull request's commits
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
