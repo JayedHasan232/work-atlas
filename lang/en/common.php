@@ -64,4 +64,10 @@ return [
     'errors' => [
         'generic' => 'Something went wrong.',
     ],
+
+    'search' => [
+        'label' => 'Search occupations',
+        'placeholder' => 'A job name, e.g. plumber or নলমিস্ত্রি',
+        'submit' => 'Search',
+    ],
 ];

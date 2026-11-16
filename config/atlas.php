@@ -38,6 +38,7 @@ return [
             'contribution-terms' => ['terms'],
             'auth/*' => ['auth'],
             'occupations/*' => ['occupations'],
+            'search/*' => ['search'],
             'dashboard' => ['shell'],
             'settings/*' => ['shell', 'settings'],
         ],
@@ -138,6 +139,21 @@ return [
     | indexed is the index gate's decision (below).
     |
     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Search
+    |--------------------------------------------------------------------------
+    |
+    | Occupation search (PLAN M15, D59). A name this similar to the query by trigram (0–1) counts as a
+    | misspelling of it. To be tuned with the search benchmark; results per page.
+    |
+    */
+
+    'search' => [
+        'min_similarity' => 0.4,
+        'per_page' => 20,
+    ],
 
     'publishing' => [
         'page_waves' => [0, 1],

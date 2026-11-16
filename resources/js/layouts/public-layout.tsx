@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import LanguageSwitcher from '@/components/language-switcher';
 import LocaleHead from '@/components/locale-head';
+import SearchBox from '@/components/search-box';
 import { useTranslation } from '@/lib/i18n';
 import { dashboard, home, login, register } from '@/routes';
 
@@ -15,7 +16,8 @@ export default function PublicLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const { auth } = usePage().props;
+    const page = usePage();
+    const { auth } = page.props;
     const { t, formatDate, localizePath } = useTranslation();
     const linkClass =
         'inline-block rounded-md px-3 py-1.5 text-sm leading-normal hover:bg-accent';
@@ -90,6 +92,11 @@ export default function PublicLayout({
                         </nav>
                     </div>
                 </div>
+                {page.component !== 'search/index' && (
+                    <div className="mx-auto w-full max-w-5xl px-4 pb-3">
+                        <SearchBox />
+                    </div>
+                )}
             </header>
 
             <main id="main" className="flex-1">

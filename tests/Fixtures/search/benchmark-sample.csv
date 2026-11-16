@@ -1,0 +1,6 @@
+query,expected_slug,locale,note
+নলমিস্ত্রি,sample-plumber,bn,synthetic: tests the runner only
+plumber,sample-plumber,en,synthetic: tests the runner only
+বিদ্যুত মিস্ত্রী,sample-electrician,bn,synthetic: tests the runner only
+electrishan,sample-electrician,en,synthetic: tests the runner only
+রাজমিস্ত্রি,sample-mason,bn,synthetic: an occupation that is not in the database

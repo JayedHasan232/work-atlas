@@ -20,5 +20,8 @@ Everything the public can read.
   every value or status change while the gate is on (D56). `PageRobots` and
   `Http\Middleware\RobotsTag` mark every page that may not be indexed (`X-Robots-Tag` and the meta
   tag). `Sitemap` and `RobotsTxt` serve `/sitemap.xml` and `/robots.txt` (D57).
+- **Search page (M15):** `/search?q=` renders `Presenters\SearchPresenter` (Taxonomy's search, with the
+  name that matched); result pages are never indexed and are blocked in `robots.txt` (PLAN D60). The
+  public layout has a search box in the header.
 
 See [the module rules](../README.md).

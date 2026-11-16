@@ -15,7 +15,12 @@ The list of occupations and how they are named.
 - **Names (D44):** an occupation's names are the Knowledge field `names` (one list per language), so
   they have revisions and statuses. `occupation_names` is the search copy: `Actions\SyncOccupationNames`
   rewrites it from `Knowledge\Events\CurrentValueChanged` (listener in `AppServiceProvider`), with
-  `NormalizeName` as the search key.
+  `NormalizeName` as the strict key (`normalized_name`, duplicates) and `NormalizeForSearch` as the
+  loose one (`search_key`, search).
+- **Search (M15):** `Queries\SearchOccupations` finds public occupations by any name in any language:
+  exact, then prefix of the name or a word (`simple` full-text index), then trigram similarity (PLAN
+  D58, D59). `Actions\RunSearchBenchmark` measures Recall@3 on a CSV of real queries
+  (`atlas:search:benchmark`, D60).
 - **List expansion (M10):** `Actions\ExpandUnitGroup` asks the AI (prompt
   `taxonomy/expand-unit-group`, built by `BuildExpansionRequest`) which occupations belong to one unit
   group; `ApplyExpansion` writes them as `candidate` occupations linked to the run, with their names as

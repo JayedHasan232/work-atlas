@@ -187,6 +187,8 @@ Services: PostgreSQL 18 and Redis (`docker compose up -d`, or native; see CONTRI
   with a cross-check, one queued job per listed occupation; checks the budget cap first
 - `php artisan atlas:index-gate:recompute` — queue a recompute of `indexable` for every listed occupation (after the
   index gate is turned on or its thresholds change); queues nothing while the gate is off
+- `php artisan atlas:search:benchmark [--file=tests/Fixtures/search-benchmark.csv] [--report=docs/decisions/search-benchmark.md] [--target=0.9]`
+  — search Recall@3 and speed on real queries (`query,expected_slug,locale,note`); fails below the target
 - `php artisan atlas:fields:sync` — field definitions from `data/fields/*.yaml` into the database; safe to run again
 - `php artisan atlas:fields:generate` — write `data/schemas/wave<N>/fields.v<M>.json` and `docs/architecture/fields.md`
   from `data/fields` (`--check` only reports drift; schema files are never overwritten)

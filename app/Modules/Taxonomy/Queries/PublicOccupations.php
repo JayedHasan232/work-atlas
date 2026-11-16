@@ -26,6 +26,20 @@ final class PublicOccupations
     }
 
     /**
+     * The public ones among these occupations, in the order given.
+     *
+     * @param  list<int>  $ids
+     * @return list<OccupationListItem>
+     */
+    public function findMany(array $ids): array
+    {
+        $occupations = Occupation::query()->whereKey($ids)->whereIn('publish_state', PublishState::public())->get()->keyBy('id');
+        $ordered = array_values(array_filter(array_map(fn (int $id): ?Occupation => $occupations->get($id), $ids)));
+
+        return $this->items($ordered);
+    }
+
+    /**
      * The slugs of the indexable occupations, for the sitemap.
      *
      * @return list<string>

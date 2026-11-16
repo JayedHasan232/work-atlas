@@ -6,6 +6,7 @@ use App\Modules\Publishing\Http\Controllers\Web\OccupationGroupController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationIndexController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationPageController;
 use App\Modules\Publishing\Http\Controllers\Web\RobotsTxtController;
+use App\Modules\Publishing\Http\Controllers\Web\SearchController;
 use App\Modules\Publishing\Http\Controllers\Web\SitemapController;
 use App\Support\Localization\LocalizedRoutes;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,9 @@ LocalizedRoutes::register(function () {
     Route::get('occupations/{slug}', OccupationPageController::class)
         ->where('slug', '[a-z0-9]+(-[a-z0-9]+)*')
         ->name('occupations.show');
+
+    // Search (PLAN M15).
+    Route::get('search', SearchController::class)->name('search');
 });
 
 // For crawlers (PLAN M14): not localized.
