@@ -22,12 +22,17 @@ app/Modules/<Module>/
   Data/         plain data objects passed between modules
   Enums/
   Events/
-  Models/       private to the module
+  Models/       private to the module (Models/Concerns/ for model traits)
+  Exceptions/   only when a caller needs to catch a module-specific error
   Jobs/         private to the module
   Policies/     private to the module
-  Http/Controllers/{Web,Api}/
+  Http/Controllers/{Web,Api}/  Http/Requests/
   Filament/     admin screens for the core team
 ```
+
+Each kind of class lives only in its folder (`tests/Arch/ModuleLayoutTest.php`, the Laravel arch
+preset's rules applied per module). Factories are in `database/factories/<Module>/`; models name
+theirs with `#[UseFactory]`.
 
 Classes live in the `App\Modules\<Module>` namespace; the `App\` PSR-4 rule in `composer.json` loads
 them, so a new module needs no autoload change.
@@ -37,7 +42,8 @@ them, so a new module needs no autoload change.
 - Business logic lives in Actions and Queries, never in controllers, Filament resources, jobs,
   commands or models. Web, API, Filament and Artisan call the same actions.
 - A module uses another module's Actions, Queries, Data, Enums and Events, never its Models, Jobs,
-  Policies, Http or Filament classes, and never its tables. `tests/Arch/ModuleBoundariesTest.php`
+  Policies, Http or Filament classes, and never its tables. Across modules, rows are linked by id
+  (with a database foreign key) but not by an Eloquent relation. `tests/Arch/ModuleBoundariesTest.php`
   checks this; add a new module to its list.
 - Controllers stay thin: no `DB` facade, no query builders, no module models
   (`tests/Arch/ThinControllersTest.php`).

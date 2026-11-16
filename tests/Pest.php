@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /*
@@ -54,4 +56,26 @@ function modulePrivateNamespaces(string $module): array
         fn (string $part): string => "App\\Modules\\{$module}\\{$part}",
         ['Models', 'Jobs', 'Policies', 'Http', 'Filament'],
     );
+}
+
+/*
+|--------------------------------------------------------------------------
+| Database constraints
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Runs a statement that the database should reject and returns its error message, or '(accepted)'
+ * when it went through. The statement runs in a savepoint, so a rejection doesn't abort the test's
+ * transaction (PostgreSQL refuses every later query in an aborted transaction).
+ */
+function databaseError(Closure $statement): string
+{
+    try {
+        DB::transaction($statement);
+    } catch (QueryException $exception) {
+        return $exception->getMessage();
+    }
+
+    return '(accepted)';
 }
