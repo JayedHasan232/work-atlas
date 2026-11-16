@@ -1199,6 +1199,16 @@ is written down so the choice can be reversed later.
     not built yet. Proposal: a small `Community\Support\Turnstile` client as the one named exception
     in that arch test, off by default. Using Cloudflare Turnstile is also a new external service on a
     public page (CLAUDE.md), so Jayed decides both. Until then: honeypot + rate limit (D61).
+15. **O15 — Policy texts** (raised in M23). The five policy pages (`/policies`, `lang/*/policies.php`)
+    are drafts marked as such, written to say only what the code does today. Like O12 they are legal
+    and public promises, so Jayed approves them (ideally with legal advice) before the public launch.
+    The contact address in them waits on O1; the privacy policy names the providers of H9 (hosting,
+    Cloudflare, Amazon SES, Sentry), so a change there changes the text too.
+16. **O16 — Security follow-ups** (raised in M23, `docs/ops/security-review.md`). (a) A Content Security
+    Policy, tried in report-only mode on staging first (needs O1, H9). (b) `composer audit` and
+    `npm audit` as CI steps: a new advisory would then block unrelated PRs, so Jayed decides whether
+    they block or only warn. (c) A penetration test by someone outside the project before the public
+    launch.
 
 ---
 
