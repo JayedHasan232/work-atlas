@@ -54,6 +54,9 @@ erDiagram
         string type "scale_1_5, enum, multi_enum, boolean, band, text"
         jsonb options "enum, multi_enum, band"
         jsonb anchors "bn + en, required for scale_1_5"
+        jsonb label "bn + en (M7)"
+        jsonb help "bn + en (M7)"
+        jsonb option_labels "per option, bn + en (M7)"
         bool sensitive
         bool requires_source
     }
@@ -150,6 +153,8 @@ Each is a constraint, so it holds even for raw SQL. The tests are in
 - **Names**: one primary name per occupation and locale. Regional names carry a region; others don't.
 - **Field definitions**: `key` + `version` is unique. A change of meaning, options or anchors is a new
   version. 1–5 scales need anchors in `bn` and `en`; choice fields need options.
+  The definitions come from `data/fields/*.yaml` through `atlas:fields:sync`; see
+  [fields.md](fields.md) and PLAN D31.
 
 ## The write path (M5)
 

@@ -1,0 +1,439 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "urn:work-atlas:schema:wave1:fields:v1",
+    "title": "Wave 1 fields, v1",
+    "description": "Generated from data/fields by atlas:fields:generate. Do not edit; a change is a new version.",
+    "type": "object",
+    "required": [
+        "fields"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "fields": {
+            "type": "object",
+            "required": [
+                "education_required",
+                "formal_training",
+                "physical_workload",
+                "mental_workload",
+                "work_setting",
+                "work_time",
+                "seasonal",
+                "time_to_learn",
+                "time_to_first_income",
+                "part_time_possible",
+                "available_in"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "education_required": {
+                    "description": "education_required v1: The lowest level of schooling usually needed to start this work.",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "none",
+                                        "read_write",
+                                        "primary",
+                                        "ssc",
+                                        "hsc",
+                                        "vocational",
+                                        "bachelors",
+                                        "masters_or_higher"
+                                    ]
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                },
+                "formal_training": {
+                    "description": "formal_training v1: Whether a course, certificate or licence is needed. Much work is learned on the job, from an experienced worker.",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "not_needed",
+                                        "helpful",
+                                        "required"
+                                    ]
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                },
+                "physical_workload": {
+                    "description": "physical_workload v1: How hard a usual working day is on the body.",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 5
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                },
+                "mental_workload": {
+                    "description": "mental_workload v1: How much thinking, deciding and responsibility the work takes.",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 5
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                },
+                "work_setting": {
+                    "description": "work_setting v1: Where the work usually happens. More than one can apply.",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "uniqueItems": true,
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "indoor",
+                                            "outdoor",
+                                            "on_the_move",
+                                            "home_based"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                },
+                "work_time": {
+                    "description": "work_time v1: When in the day the work usually happens. More than one can apply.",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "uniqueItems": true,
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "day",
+                                            "evening",
+                                            "night",
+                                            "rotating_shifts",
+                                            "self_set"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                },
+                "seasonal": {
+                    "description": "seasonal v1: Whether the work is there all year, or grows or exists only in some seasons (harvest, Eid, the winter wedding season, the monsoon).",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "year_round",
+                                        "year_round_with_peaks",
+                                        "seasonal_only"
+                                    ]
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                },
+                "time_to_learn": {
+                    "description": "time_to_learn v1: How long it usually takes, starting from nothing, to learn the work well enough to do it on your own.",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "under_1_month",
+                                        "months_1_3",
+                                        "months_3_12",
+                                        "years_1_2",
+                                        "years_2_5",
+                                        "over_5_years"
+                                    ]
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                },
+                "time_to_first_income": {
+                    "description": "time_to_first_income v1: How long it usually takes from the day you start learning or preparing until the first income. Not the same as time to learn: in much work, income starts while you learn.",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "within_week",
+                                        "under_1_month",
+                                        "months_1_6",
+                                        "months_6_12",
+                                        "years_1_3",
+                                        "over_3_years"
+                                    ]
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                },
+                "part_time_possible": {
+                    "description": "part_time_possible v1: Whether the work can be done for part of the day or week instead of full days.",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "no",
+                                        "sometimes",
+                                        "yes"
+                                    ]
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                },
+                "available_in": {
+                    "description": "available_in v1: Whether this work is usually found in villages, towns and cities, or both. Not how much demand there is (that is Wave 3).",
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "confidence"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "anyOf": [
+                                {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "uniqueItems": true,
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "rural",
+                                            "urban"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "const": "unknown"
+                                }
+                            ]
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 2000
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

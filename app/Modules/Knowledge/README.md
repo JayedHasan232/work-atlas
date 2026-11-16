@@ -17,6 +17,11 @@ What is known about each occupation, field by field, with its history.
   `DELETE` and `TRUNCATE` in a Postgres trigger, and `Models\Concerns\AppendOnly` makes the models
   throw before the query is sent. A revision has exactly one author, a user or an AI run (a check
   constraint).
+- **Field definitions (M7):** written in `data/fields/wave<N>.v<M>.yaml`, read by `ReadFieldFiles`,
+  synced by `SyncFieldDefinitions` (`atlas:fields:sync`). Once a definition has values, its type,
+  options, anchors and wave are fixed; a change is a new version. `FieldSchemaBuilder` makes a wave's
+  AI output schema and `RenderFieldTable` the field table, both through `atlas:fields:generate`.
+- **Sources:** `RecordSource` records a source once per url, access date and details (M6).
 - **Tables:** see [the data model](../../../docs/architecture/data-model.md).
 
 See [the module rules](../README.md).

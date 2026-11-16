@@ -673,6 +673,22 @@ Tests
   same url, access date and other fields is recorded once, so a re-import adds no row; a new download
   (a new access date) is a new row. URLs must be http(s); the access date can't be in the future
   (Asia/Dhaka).
+- **D31** (M7) Field definitions live in `data/fields/wave<N>.v<M>.yaml` and reach the database only
+  through `atlas:fields:sync`. A definition's meaning is its type, options, anchors and wave; once it
+  has values these can't change in place (the sync refuses and asks for a new version). Labels, help
+  text, group and flags can be reworded in place. Definitions no file lists are kept, never deleted.
+- **D32** (M7) The words people see for a field (label, help, option labels) are content rows with a
+  locale, stored on `field_definitions` (`label`, `help`, `option_labels` jsonb), not translation keys:
+  they are data that grows with every wave, like the anchors.
+- **D33** (M7) A wave's AI output schema is generated, never hand-written: `atlas:fields:generate`
+  writes `data/schemas/wave<N>/fields.v<M>.json` (draft 2020-12; M = the newest wave file) and
+  `docs/architecture/fields.md`. It never overwrites an existing schema file. `GeneratedFieldFilesTest`
+  fails when a committed file is out of date.
+- **D34** (M7) Libraries `symfony/yaml` (MIT) for the field files and `opis/json-schema` (Apache-2.0)
+  to validate AI output against the schemas (M9, M12).
+- **D35** (M7) A band includes its lower bound ("1–3 months" is from 1 month up to, not including, 3).
+  `time_to_first_income` counts from the day a person starts learning or preparing; it is a separate
+  field from `time_to_learn`, because in much work income starts while learning.
 
 ## Maintainer decisions (answered 2026-11-16)
 
@@ -747,7 +763,11 @@ is written down so the choice can be reversed later.
    blocks M22. A project email (not a personal one) goes into the Code of Conduct as the contact for
    reports; until then it shows a marked placeholder. Needed before outside contributors are invited.
 2. **O2 — Anchors and bands** (Appendix A). Jayed approves them in M7, where the bn + en file is shown
-   with a plain explanation. Blocks the end of M7.
+   with a plain explanation. Blocks the end of M7. The draft is `data/fields/wave1.v1.yaml` (table:
+   `docs/architecture/fields.md`). Points to look at: "SSC/HSC or equivalent" (covers Dakhil/Alim and
+   vocational SSC); bands include their lower bound (D35); time to first income counts from the start
+   of learning; the anchor examples (porter is "মালবাহী শ্রমিক"). Until approved, nothing generates
+   values for these fields (M12 is later), so a change is still a free edit of the v1 file.
 3. **O3 — AI providers and budget** (H8). Proposal: provider A = Anthropic (Claude), provider B = a
    different company (OpenAI or Google), so the two models make independent mistakes. Jayed opens the
    accounts, keeps the API keys (server `.env` only, never in the repo) and sets a monthly cap. Every
@@ -775,6 +795,11 @@ is written down so the choice can be reversed later.
    ESCO got. The ILOSTAT classification page could not be opened here (bot check). Until this is
    clear, the importer is built and tested with placeholder fixtures only, and no ILO text is in the
    repo. Blocks the real `isco08.csv`, `SOURCE.md` and `IscoRealFileCountsTest`.
+10. **O10 — `formal_training: required` is a licensing claim** (raised in M7). Rule 2 says licensing
+    and legal requirements need a source, but A5 sets `requires_source = false` for all Wave 1
+    fields. Proposal: keep the field without a source requirement, but have M12 store the AI's
+    `required` answers as `ai_draft` with a note and never show "required" publicly until a reviewer
+    adds a source; or make `formal_training` v2 with `requires_source = true`. Decide before M12.
 
 ---
 
