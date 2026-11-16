@@ -13,6 +13,7 @@ return [
         'log_in' => 'Log in',
         'register' => 'Register',
         'tasks' => 'Check facts',
+        'review' => 'Review',
         'dashboard' => 'Dashboard',
         'settings' => 'Settings',
         'log_out' => 'Log out',

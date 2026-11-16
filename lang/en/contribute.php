@@ -84,5 +84,6 @@ return [
         'invalid_source' => 'A source is not valid: check the web address and the date.',
         'invalid_value' => 'This value does not fit the field.',
         'occupation' => 'This occupation has no public page.',
+        'blocked' => 'Your account is blocked from contributing. Please write to the maintainers if you think this is a mistake.',
     ],
 ];

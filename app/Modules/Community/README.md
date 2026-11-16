@@ -39,4 +39,17 @@ The people who write and check Work Atlas.
 - `Actions\PromoteTrustedContributors` (`atlas:trust:promote`, daily, and after each counted
   contribution): contributors with enough accepted contributions and account age become trusted (D65).
 
+**M18 (moderation):**
+
+- `Presenters\ModerationPresenter` and `Http\Controllers\Web\Moderation\*`: the review desk
+  (`/review`, `/review/{slot}`) and the patrol queue (`/patrol`, `/patrol/{revision}`) for reviewers
+  and above (`can:moderate`, D66).
+- `Actions\ModerateEdit`: accept or reject a proposal, set a status, revert; each through the
+  Knowledge action and each marks the edit patrolled. `Actions\MarkPatrolled`, `Models\RevisionPatrol`.
+- `Queries\PatrolQueue`: people's recent edits not yet patrolled, flagged ones first.
+- `Actions\FlagPromotionalEdit` (after every `SuggestEdit`), `Models\RevisionFlag`: rule-based flags
+  for possibly promotional edits (D67).
+- `Actions\CheckContributionLimits`: daily limits by trust level (D68) and the block check.
+- `Actions\BlockUser`, `Filament\Resources\Users`: maintainers block and unblock people (D69).
+
 See [the module rules](../README.md).

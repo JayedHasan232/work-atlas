@@ -19,5 +19,6 @@ return [
     'browse' => 'Browse occupations',
     'thanks' => 'Thank you. Here is the next question.',
     'skipped' => 'Skipped. Here is the next question.',
+    'blocked' => 'Your account is blocked from contributing. Please write to the maintainers if you think this is a mistake.',
     'closed' => 'That question was already settled. Here is the next one.',
 ];

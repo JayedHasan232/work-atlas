@@ -69,6 +69,18 @@ export default function PublicLayout({
                                                 {t('common.nav.tasks')}
                                             </Link>
                                         </li>
+                                        {auth.canModerate && (
+                                            <li>
+                                                <Link
+                                                    href={localizePath(
+                                                        '/review',
+                                                    )}
+                                                    className={linkClass}
+                                                >
+                                                    {t('common.nav.review')}
+                                                </Link>
+                                            </li>
+                                        )}
                                         <li>
                                             <Link
                                                 href={dashboard()}

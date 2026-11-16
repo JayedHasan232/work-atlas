@@ -13,6 +13,7 @@ return [
         'log_in' => 'লগ ইন',
         'register' => 'নিবন্ধন',
         'tasks' => 'তথ্য যাচাই',
+        'review' => 'রিভিউ',
         'dashboard' => 'ড্যাশবোর্ড',
         'settings' => 'সেটিংস',
         'log_out' => 'লগ আউট',

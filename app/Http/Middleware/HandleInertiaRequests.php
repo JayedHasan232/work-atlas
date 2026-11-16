@@ -57,6 +57,8 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
+                // Reviewers and above see the moderation links (PLAN M18).
+                'canModerate' => $request->user()?->canModerate() === true,
             ],
             // A one-time notice after a form (PLAN M16: report sent, suggestion saved), as a translation key.
             'notice' => fn (): ?string => is_string($notice = $request->session()->get('notice')) ? $notice : null,

@@ -38,6 +38,9 @@ What is known about each occupation, field by field, with its history.
   (current, national, `ai_draft` or `sourced`, not sensitive, not a name list). `ApplyConsensus` sets
   `community_supported` or `disputed` from a consensus, only if the value is still the asked one; a
   dispute raises the review priority to 15, which `ChangeStatus` clears (D64).
+- **Moderation (M18):** `Queries\Edits` reads revisions as `Data\EditRecord` (people's recent edits,
+  one edit, a person's edits, a slot with its waiting proposals as `Data\SlotForReview`).
+  `ReviewQueue::reason()` names a review priority.
 - **Sources:** `RecordSource` records a source once per url, access date and details (M6).
 - **Tables:** see [the data model](../../../docs/architecture/data-model.md).
 

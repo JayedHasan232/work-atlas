@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 
 it('registers the module resources', function () {
-    expect(Filament::getPanel('admin')->getResources())->toHaveCount(7);
+    expect(Filament::getPanel('admin')->getResources())->toHaveCount(8);
 });
 
 it('gives every admin resource only list and view pages, and no create, edit or delete', function () {

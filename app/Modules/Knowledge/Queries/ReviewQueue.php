@@ -49,4 +49,18 @@ final class ReviewQueue
             proposedValues: array_values($proposals->get($slot->id)?->pluck('new_value')->all() ?? []),
         ))->all());
     }
+
+    /**
+     * Why a slot waits for a reviewer, from its priority: `models_disagree`, `community_dissent`,
+     * `pending_proposal`, or null when nothing waits.
+     */
+    public static function reason(int $priority): ?string
+    {
+        return match (true) {
+            $priority >= FieldValue::PRIORITY_MODELS_DISAGREE => 'models_disagree',
+            $priority >= FieldValue::PRIORITY_COMMUNITY_DISSENT => 'community_dissent',
+            $priority >= FieldValue::PRIORITY_PENDING_PROPOSAL => 'pending_proposal',
+            default => null,
+        };
+    }
 }

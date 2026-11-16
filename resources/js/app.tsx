@@ -19,7 +19,8 @@ void createInertiaApp({
                 name.startsWith('occupations/') ||
                 name.startsWith('search/') ||
                 name.startsWith('contributors/') ||
-                name.startsWith('tasks/'):
+                name.startsWith('tasks/') ||
+                name.startsWith('moderation/'):
                 return PublicLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;

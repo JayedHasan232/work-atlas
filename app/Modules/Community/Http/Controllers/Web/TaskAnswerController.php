@@ -34,7 +34,7 @@ final class TaskAnswerController extends Controller
                 abort(404);
             }
 
-            return $next->with('notice', 'tasks.closed');
+            return $next->with('notice', $rejected->reason === 'blocked' ? 'tasks.blocked' : 'tasks.closed');
         }
 
         return $next->with('notice', $data['answer'] === TaskAnswer::Skip->value ? 'tasks.skipped' : 'tasks.thanks');
