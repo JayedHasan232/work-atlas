@@ -145,10 +145,11 @@ Bangladesh seasons (harvest, Eid, winter wedding season, monsoon). Crisis demand
 
 ## Conventions
 
-- **Tests:** Pest for unit, feature and arch tests; Pest 4 browser plugin (Playwright underneath) for
-  end-to-end (`tests/Browser`). While working, run only the test file you changed; run the full suite
-  once before finishing a milestone.
-  GitHub Actions must pass: Pint, Larastan, Pest, ESLint, `tsc`, build, SSR build, SSR smoke, e2e.
+- **Tests:** Pest for unit, feature and arch tests; Pest's browser plugin (Playwright underneath) for
+  end-to-end (`tests/Browser`). Tests run on PostgreSQL (`work_atlas_test`), never sqlite. While
+  working, run only the test file you changed; run the full suite once before finishing a milestone.
+  GitHub Actions must pass: Pint, Larastan (level 7), Pest, `vp check` (Oxlint + Oxfmt), `tsc`, build,
+  SSR build, SSR smoke, e2e.
 - **Commits:** DCO sign-off on every commit (`git commit -s` → `Signed-off-by:`). Small, focused PRs,
   one milestone per PR. Commit or push only when the maintainer asks.
 - **Migrations:** reversible (`down()` works; CI runs migrate → rollback → migrate). Never edit a merged
@@ -163,7 +164,17 @@ Bangladesh seasons (harvest, Eid, winter wedding season, monsoon). Crisis demand
 
 ## Commands
 
-Filled in by milestone M2 (setup, dev server, SSR, tests, lint).
+Services: PostgreSQL 18 and Redis (`docker compose up -d`, or native; see CONTRIBUTING.md).
+
+- `composer setup` — fresh clone: dependencies, `.env`, app key, migrations, front-end build
+- `composer dev` — app server, Horizon, log tail (Pail) and Vite together
+- `npm run build:ssr` then `php artisan inertia:start-ssr` — run with SSR locally
+- `php artisan test --testsuite=Unit,Feature,Arch` — fast suites; `php artisan test <file>` — one file
+- `php artisan test --testsuite=Browser` — e2e; needs `npm run build` and `npx playwright install chromium`
+- `vendor/bin/pint` (`--test` to only check) · `vendor/bin/phpstan analyse`
+- `npm run check` (lint + format; `npm run check:fix` fixes) · `npm run types:check`
+- `scripts/ci/ssr-smoke [url]` — a running app must render `/` on the server
+- `scripts/ci/check-dco-selftest` — self-test of the DCO check
 
 ## When unsure
 

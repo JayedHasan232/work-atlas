@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# SSR smoke test. Fetches a page and fails unless the Inertia root element (#app) holds server-rendered
+# markup. Without SSR the root arrives empty and React fills it in the browser, which crawlers and slow
+# phones may never see.
+#
+# Usage: scripts/ci/ssr-smoke [url]   (default: http://127.0.0.1:8000/)
+# The app and the SSR server (php artisan inertia:start-ssr) must already be running.
+set -euo pipefail
+
+url=${1:-http://127.0.0.1:8000/}
+
+html=$(curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 1 "$url")
+
+# The PHP code is single-quoted on purpose: its $variables belong to PHP, not to the shell.
+# shellcheck disable=SC2016
+php -r '
+$doc = Dom\HTMLDocument::createFromString(stream_get_contents(STDIN), LIBXML_NOERROR);
+$root = $doc->getElementById("app");
+if ($root === null) {
+    fwrite(STDERR, "SSR smoke: no #app element in the page.\n");
+    exit(1);
+}
+if ($root->childElementCount === 0) {
+    fwrite(STDERR, "SSR smoke: #app is empty, so the page was not rendered on the server.\n");
+    exit(1);
+}
+$heading = $doc->querySelector("#app h1");
+echo "SSR smoke: #app has server-rendered content", $heading ? " (h1: ".trim($heading->textContent).")" : "", ".\n";
+' <<< "$html"

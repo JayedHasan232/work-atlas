@@ -57,7 +57,7 @@ after M13 lets testers reach real pages early.
 
 | H | Task | When | Feeds |
 |---|---|---|---|
-| H1 | Buy the domain; create the GitHub org when the repo goes public (O5) | weeks 1–2 | M22, O5 |
+| H1 | Buy the domain; set up a project email for the Code of Conduct; create a GitHub org if wanted (O1) | weeks 1–2 | M22, O1 |
 | H2 | Interview 20–30 potential users and a few workers; written summary in `docs/research/` | weeks 1–4 | Gate 0, M15 benchmark queries, M20 questions |
 | H3 | Publish 10 hand-written profiles on Facebook; note which get the most interest | weeks 3–4 | prioritisation |
 | H4 | Approve the 20 separate-occupation examples drafted in M7 | during M7 | M7, M10 |
@@ -76,8 +76,8 @@ after M13 lets testers reach real pages early.
 Depends on: — · Blocked by: — (the push to GitHub waits for O1; everything else is done locally)
 
 Tasks
-- `git init`, `main` branch. Push to the private repo `JayedHasan232/work-atlas` (A1); it goes public
-  later (O5).
+- `git init`, `main` branch. Push to `JayedHasan232/work-atlas` (A1; private at
+  first, public since 2026-11-16).
 - `LICENSE` (AGPL-3.0 full text; SPDX `AGPL-3.0-or-later`), `LICENSE-DATA.md` (CC BY-SA 4.0 for data and text, with the
   attribution format), `BRAND.md` stub (forks allowed; "official Work Atlas" claim not allowed).
 - `README.md` (bn + en): what it is, status, how to contribute, licenses.
@@ -89,7 +89,7 @@ Tasks
 - First signed commit: `docs/`, `CLAUDE.md`, governance files.
 
 Acceptance
-- License files match A2. The repo is pushed (private for now, A1).
+- License files match A2. The repo is pushed (A1).
 - A PR with an unsigned commit fails the DCO check; a signed one passes.
 
 Tests
@@ -104,9 +104,10 @@ Tasks
   Fortify) with Pest. Sanctum installed.
 - `compose.yaml` for services only: PostgreSQL 18, Redis. `.env.example` without secrets.
 - SSR on (SSR entry, `inertia:start-ssr`). Horizon installed (dashboard gated in M8).
-- Tooling: Pint, Larastan (start at level 6), ESLint, Prettier, `tsc --noEmit`.
+- Tooling: Pint, Larastan (level 7, the starter kit's default), Oxlint + Oxfmt through `vp check`
+  (the starter kit's Vite+ toolchain, D11), `tsc --noEmit`.
 - Pest arch presets (`php`, `security`, `laravel`) + custom: no `dd`/`dump`/`ray`.
-- E2E harness: Pest 4 browser plugin (A14), Playwright browsers installed in CI, one smoke test with
+- E2E harness: Pest's browser plugin (A14), Playwright browsers installed in CI, one smoke test with
   an accessibility assertion.
 - GitHub Actions: PHP job (Pint, Larastan, Pest on Postgres 18 + Redis services,
   migrate → rollback → migrate), JS job (lint, types, build, SSR build), SSR smoke job (boot the SSR
@@ -604,7 +605,12 @@ Tests
 - **D7** Time-to-learn and time-to-first-income are bands, not numbers, to avoid false precision.
 - **D8** Prompt and schema immutability is enforced in CI, not by convention.
 - **D9** Guided-filter answers are never stored on the server.
-- **D10** Local dev: Docker Compose for Postgres and Redis only; PHP and Node run locally.
+- **D10** Local dev: Docker Compose for Postgres and Redis only; PHP and Node run locally. Native
+  PostgreSQL and Redis work too (CONTRIBUTING.md).
+- **D11** Front-end lint and format use the starter kit's Vite+ toolchain (Oxlint + Oxfmt via
+  `vp check`) instead of ESLint + Prettier, so we don't fight the kit's defaults. Markdown, license
+  texts and `data/` are excluded from formatting.
+- **D12** Tests run on PostgreSQL, not sqlite: later milestones rely on triggers and `pg_trgm`.
 
 ## Maintainer decisions (answered 2026-11-16)
 
@@ -612,8 +618,11 @@ Tests
 is written down so the choice can be reversed later.
 
 - **A1 — Name and repo.** Work Atlas (Jayed). The Bangla name stays কাজ, as in the docs. The repo is
-  `JayedHasan232/work-atlas`, **private for now** (Jayed, 2026-11-16); it moves to an org and goes
-  public later → O5. Domain still to be bought → O1, H1.
+  `JayedHasan232/work-atlas`, **public since 2026-11-16** (Jayed; it was private at first, and GitHub
+  Free runs Actions on a private repo only while included minutes and billing allow). It can move to
+  an org later (O1). Domain still to be bought → O1, H1. When it went public: private vulnerability
+  reporting turned on, and `main` protected (pull requests only; the DCO check and the four CI jobs
+  required; no force-push or deletion; the maintainer can bypass in an emergency).
 - **A2 — Licenses** (delegated). Platform `AGPL-3.0-or-later`; small libraries/SDKs MIT; data and text
   CC BY-SA 4.0; DCO 1.1, no CLA; copyright line "Work Atlas contributors". Why "or later": with DCO and
   no CLA there is no single copyright holder, so "or later" is the only way the project can move to a
@@ -663,7 +672,7 @@ is written down so the choice can be reversed later.
 - **A13 — Core team** (Jayed). Jayed alone holds maintainer and reviewer. Nobody holds `expert`, so
   health and legal fields stay hidden (they are not in Phase 1 anyway). Because one person reviews, the
   queue order (model disagreement first) matters more.
-- **A14 — E2E runner** (delegated). Pest 4 browser plugin (Playwright underneath): tests in PHP, the same
+- **A14 — E2E runner** (delegated). Pest's browser plugin (Playwright underneath; Pest 5 since M2): tests in PHP, the same
   factories and database setup as feature tests, one test runner, built-in accessibility assertion.
 - **A15 — Spam** (delegated). At launch: honeypot, rate limits, limits for new accounts, and the
   moderation queue. Cloudflare Turnstile is wired behind a config flag, off by default, and switched on
@@ -671,8 +680,10 @@ is written down so the choice can be reversed later.
 
 ## Still open
 
-1. **O1 — Domain and GitHub org** (H1). The org isn't needed to start: the repo lives under Jayed's
-   account and can be transferred later (GitHub redirects the old URL). The domain blocks M22.
+1. **O1 — Domain, project email and GitHub org** (H1). The org isn't needed to start: the repo lives
+   under Jayed's account and can be transferred later (GitHub redirects the old URL). The domain
+   blocks M22. A project email (not a personal one) goes into the Code of Conduct as the contact for
+   reports; until then it shows a marked placeholder. Needed before outside contributors are invited.
 2. **O2 — Anchors and bands** (Appendix A). Jayed approves them in M7, where the bn + en file is shown
    with a plain explanation. Blocks the end of M7.
 3. **O3 — AI providers and budget** (H8). Proposal: provider A = Anthropic (Claude), provider B = a
@@ -681,10 +692,8 @@ is written down so the choice can be reversed later.
    paid run gets a dry-run cost estimate first. Blocks the real drivers in M9 and the paid runs in M10
    and M12.
 4. **O4 — BSCO-2012 file** (H7). Blocks M6b only.
-5. **O5 — When the repo goes public.** Jayed decides. Before it does: put the contact email in the Code
-   of Conduct (needs O1), turn on private vulnerability reporting, and make the DCO check required
-   through branch protection. On GitHub Free, branch protection and private vulnerability reporting
-   need a public repo, so until then the DCO check runs on every pull request but isn't enforced.
+5. ~~**O5 — When the repo goes public.**~~ Settled 2026-11-16: public now (A1). The Code of Conduct
+   contact email moved to O1.
 
 ---
 

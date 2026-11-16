@@ -1,0 +1,188 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PHP_VERSION: '8.4'
+  NODE_VERSION: '22'
+  PHP_EXTENSIONS: intl, pdo_pgsql, pgsql, redis
+
+jobs:
+  php:
+    name: PHP (Pint, Larastan, migrations, Pest)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: work_atlas
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: work_atlas_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U work_atlas -d work_atlas_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:8-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DB_DATABASE: work_atlas_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          tools: composer:v2
+          coverage: none
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Pint
+        run: vendor/bin/pint --test
+      - name: Larastan
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+      - name: Migrations run, roll back and run again
+        run: |
+          php artisan migrate --force
+          php artisan migrate:reset --force
+          php artisan migrate --force
+      - name: Pest (unit, feature, arch)
+        run: php artisan test --testsuite=Unit,Feature,Arch
+
+  js:
+    name: JS (lint, format, types, build, SSR build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The Wayfinder Vite plugin runs artisan to generate typed routes, so the JS build needs PHP too.
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci
+          cp .env.example .env
+          php artisan key:generate
+      - name: Build client and SSR bundles
+        run: npm run build:ssr
+      - name: Lint and format
+        run: npm run check
+      - name: Types
+        run: npm run types:check
+
+  ssr-smoke:
+    name: SSR smoke
+    runs-on: ubuntu-latest
+    env:
+      # The home page needs no database; keep sessions and cache in memory.
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Install dependencies and build
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci
+          cp .env.example .env
+          php artisan key:generate
+          npm run build:ssr
+      - name: Start the SSR server and the app
+        run: |
+          php artisan inertia:start-ssr > ssr.log 2>&1 &
+          php artisan serve --host=127.0.0.1 --port=8000 > serve.log 2>&1 &
+      - name: The home page is rendered on the server
+        run: scripts/ci/ssr-smoke http://127.0.0.1:8000/
+      - name: Server logs
+        if: failure()
+        run: tail -n 50 ssr.log serve.log storage/logs/*.log || true
+
+  e2e:
+    name: E2E (Pest browser tests)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: work_atlas
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: work_atlas_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U work_atlas -d work_atlas_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DB_DATABASE: work_atlas_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Install dependencies and build
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci
+          cp .env.example .env
+          php artisan key:generate
+          npm run build
+      - name: Install the Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Pest browser tests
+        run: php artisan test --testsuite=Browser
+      - name: Upload screenshots of failed tests
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: browser-screenshots
+          path: tests/Browser/Screenshots
+          if-no-files-found: ignore
+          retention-days: 7
