@@ -33,6 +33,12 @@ final class RevertRevision
                 throw RevertNotAllowed::because($revisionId, 'it is not the current value');
             }
 
+            $role = $actor->personRole();
+
+            if (! $role->canRevert($slot->definition->sensitive, $slot->status)) {
+                throw RevertNotAllowed::because($revisionId, "a {$role->value} cannot revert this value");
+            }
+
             [$restored, $restoredStatus] = $this->replacedBy($reverted);
             $value = $restored?->new_value;
             $sourceIds = $restored !== null ? $restored->sources()->pluck('sources.id')->all() : [];

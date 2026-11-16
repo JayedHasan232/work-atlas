@@ -16,7 +16,7 @@ beforeEach(function () {
 
 function review(int $revisionId, ReviewDecision $decision, mixed $reviewer = null): mixed
 {
-    return app(ReviewRevision::class)->handle($revisionId, $reviewer ?? personActor(), $decision, 'Checked.');
+    return app(ReviewRevision::class)->handle($revisionId, $reviewer ?? reviewerActor(), $decision, 'Checked.');
 }
 
 it('makes an accepted proposal the current, verified value', function () {

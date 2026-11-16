@@ -3,22 +3,24 @@
 namespace App\Modules\Knowledge\Data;
 
 use App\Models\User;
+use App\Modules\Community\Enums\Role;
 
 /**
  * Who makes a change: a person (user) or an AI run. Exactly one of the ids is set, matching the
- * one-author rule on revisions. Roles (contributor, trusted, reviewer, expert) arrive with Community in
- * M8; until then every person is treated the same, and the actions note where roles will apply.
+ * one-author rule on revisions. A person carries their role (Community), read when the actor is made;
+ * the Knowledge actions check it against the role matrix (`Role`, D36).
  */
 final readonly class Actor
 {
     private function __construct(
         public ?int $userId,
         public ?int $aiRunId,
+        public ?Role $role = null,
     ) {}
 
     public static function user(User $user): self
     {
-        return new self($user->id, null);
+        return new self($user->id, null, $user->role);
     }
 
     /**
@@ -32,6 +34,14 @@ final readonly class Actor
     public function isAi(): bool
     {
         return $this->aiRunId !== null;
+    }
+
+    /**
+     * The person's role; an AI run has none.
+     */
+    public function personRole(): Role
+    {
+        return $this->role ?? Role::Contributor;
     }
 
     /**

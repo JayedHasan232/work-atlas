@@ -39,7 +39,7 @@ function slotWithSourcedValue(FieldStatus $status): FieldValue
 
 it('allows exactly the moves in the transition table', function (FieldStatus $from, FieldStatus $to, bool $allowed) {
     $slot = slotWithSourcedValue($from);
-    $change = fn () => app(ChangeStatus::class)->handle($slot->id, $to, personActor());
+    $change = fn () => app(ChangeStatus::class)->handle($slot->id, $to, reviewerActor());
 
     if ($allowed) {
         expect($change()->status)->toBe($to)
@@ -53,14 +53,14 @@ it('allows exactly the moves in the transition table', function (FieldStatus $fr
 it('does not mark a value without a source as sourced', function () {
     $slot = recordValue(FieldDefinition::factory()->create(), 3)->fieldValue;
 
-    expect(fn () => app(ChangeStatus::class)->handle($slot->id, FieldStatus::Sourced, personActor()))
+    expect(fn () => app(ChangeStatus::class)->handle($slot->id, FieldStatus::Sourced, reviewerActor()))
         ->toThrow(StatusTransitionNotAllowed::class, 'no source');
 });
 
 it('does not change the status of a slot without a current value', function () {
     $slot = recordValue(FieldDefinition::factory()->create(), 3, personActor())->fieldValue;
 
-    expect(fn () => app(ChangeStatus::class)->handle($slot->id, FieldStatus::Verified, personActor()))
+    expect(fn () => app(ChangeStatus::class)->handle($slot->id, FieldStatus::Verified, reviewerActor()))
         ->toThrow(StatusTransitionNotAllowed::class, 'no current value');
 });
 

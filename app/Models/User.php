@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Modules\Community\Enums\Role;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -16,6 +19,9 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
+ * A person with an account. `role` is never mass-assigned: it changes only through
+ * Community\Actions\ChangeRole (atlas:user:promote).
+ *
  * @property int $id
  * @property string $name
  * @property string $email
@@ -25,15 +31,27 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
+ * @property Role $role
+ * @property int $accepted_proposals_count
+ * @property int $rejected_proposals_count
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
-class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+
+    /**
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'role' => 'contributor',
+        'accepted_proposals_count' => 0,
+        'rejected_proposals_count' => 0,
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -46,6 +64,17 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'role' => Role::class,
+            'accepted_proposals_count' => 'integer',
+            'rejected_proposals_count' => 'integer',
         ];
+    }
+
+    /**
+     * The admin panel is for maintainers only (CLAUDE.md: Filament is core team only).
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->role->canUseAdmin();
     }
 }

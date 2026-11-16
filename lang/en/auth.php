@@ -39,6 +39,9 @@ return [
         'description' => 'Enter your details below to create your account',
         'submit' => 'Create account',
         'have_account' => 'Already have an account?',
+        'consent' => 'I agree that what I contribute is published under the CC BY-SA 4.0 licence.',
+        'consent_link' => 'Read the contribution terms',
+        'consent_required' => 'To create an account, please agree to the contribution terms.',
     ],
 
     'forgot_password' => [

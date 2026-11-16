@@ -651,8 +651,8 @@ Tests
   stored with the change (`replaces_revision_id`, `old_status`: on the revision for a direct write, on
   the accepting review for a proposal), because a revert must restore the old value's sources and
   status, which `old_value` alone doesn't carry.
-- **D25** (M5) Until roles exist (M8), every person's write is a proposal and every person may change a
-  status, review and revert. Accepting a proposal makes it `verified` ("a reviewer approved it"). AI
+- **D25** (M5, replaced by D36 in M8) Until roles exist (M8), every person's write is a proposal and
+  every person may change a status, review and revert. Accepting a proposal makes it `verified` ("a reviewer approved it"). AI
   runs never change a status, review or revert. `review_priority`: 0 nothing waits, 10 a proposal
   waits; it drops back to 0 when the last pending proposal is reviewed.
 - **D26** (M5) `null` and `"unknown"` are stored as null. `requires_source` applies only to a known value
@@ -689,6 +689,30 @@ Tests
 - **D35** (M7) A band includes its lower bound ("1–3 months" is from 1 month up to, not including, 3).
   `time_to_first_income` counts from the day a person starts learning or preparing; it is a separate
   field from `time_to_learn`, because in much work income starts while learning.
+- **D36** (M8) Roles are `Community\Enums\Role` (contributor, trusted, reviewer, expert, maintainer),
+  stored as `users.role` with a check constraint; the enum's methods are the role × action matrix the
+  Knowledge actions ask. A contributor's write is a proposal; a trusted person's write on a
+  non-sensitive field is applied (patrolled later, M16); a write on a sensitive field is always a
+  proposal, whoever writes it. Anyone can mark a value `disputed`. `sourced` and
+  `community_supported` need trusted (reviewer on sensitive fields); `verified` and reviews need a
+  reviewer; nobody reviews their own proposal except the maintainer (A13). Reverting a verified or
+  sensitive value needs a reviewer. Accepted and rejected proposals are counted on the author
+  (trust counters). `role` is never mass-assigned; only `ChangeRole` (`atlas:user:promote`) sets it.
+  Expert sign-off for health and legal fields is not modelled yet: it arrives with waves 5 and 3.
+  Replaces D25.
+- **D37** (M8) Admin resources live in `app/Modules/<Module>/Filament/Resources` and extend
+  `App\Support\Filament\ReadOnlyResource` (list and view only) until a milestone adds an action that
+  calls the module's Actions. `Arch/KnowledgeWritePathTest` allows `Knowledge\Filament` to use the
+  revision models, because Filament needs the model class to show revisions;
+  `Feature/Admin/ReadOnlyResourcesTest` checks that no resource can create, edit or delete.
+- **D38** (M8) The panel provider is `App\Providers\AdminPanelServiceProvider` (the Laravel arch preset
+  wants the `ServiceProvider` suffix). It has no login page of its own: a guest goes to the site's
+  Fortify login, so there is one login and one session. The panel runs `SetLocale`, so it follows the
+  language the person chose. Horizon's gate is the same check (`Role::canUseAdmin`).
+- **D39** (M8) Signup stores consent in `contribution_consents` (user, terms version, time), written
+  in the same transaction as the account. The version is `atlas.contribution_terms_version`
+  (`2026-11-draft` until O12 approves the text); a new text gets a new version, and a person agreeing
+  again to the same version keeps the first time.
 
 ## Maintainer decisions (answered 2026-11-16)
 
@@ -781,7 +805,8 @@ is written down so the choice can be reversed later.
    account deletion removes the person's data (name, email, password, passkeys, 2FA, tokens) and keeps
    an anonymous user row, shown as "deleted contributor", so the history and its credit stay intact.
    It does not block anything today: nothing writes revisions until M5, and contributors arrive in
-   M16. Decide before M8 ships signup.
+   M16. Decide before M8 ships signup. M8 built signup without it: nothing is deployed until M22,
+   and no account can be deleted yet while it has revisions. Still to decide before M16.
 7. **O7 — AI over a `community_supported` value** (raised in M5). The rules protect only `verified`
    values, so a new AI run replaces a community-supported value and drops it to `ai_draft`. Proposal:
    treat `community_supported` like `verified` (the AI write becomes a proposal), so community work is
@@ -789,7 +814,8 @@ is written down so the choice can be reversed later.
 8. **O8 — History of status changes** (raised in M5). Revisions record every value change, but
    `ChangeStatus` only updates the slot, so who verified or disputed a value, and when, is not kept.
    Proposal: an append-only `status_changes` table (slot, from, to, actor, reason, time) added in M8
-   with the roles. Decide before M8.
+   with the roles. Decide before M8. M8 shipped the roles without it (not guessed); still to decide,
+   before reviewers other than Jayed are added.
 9. **O9 — ISCO-08 reuse terms** (raised in M6). The ILO puts work published on or after 3 May 2023
    under CC BY 4.0; ISCO-08 is © ILO 2012, so it may need written permission (rights@ilo.org), as
    ESCO got. The ILOSTAT classification page could not be opened here (bot check). Until this is
@@ -800,6 +826,16 @@ is written down so the choice can be reversed later.
     fields. Proposal: keep the field without a source requirement, but have M12 store the AI's
     `required` answers as `ai_draft` with a note and never show "required" publicly until a reviewer
     adds a source; or make `formal_training` v2 with `requires_source = true`. Decide before M12.
+11. **O11 — Status of a person's direct write** (raised in M8). A trusted person's applied write
+    without a source becomes `community_supported` (with a source, `sourced`). One person is not yet
+    "the community". Proposal: keep it for now, and in
+    M16 (micro-tasks) make `community_supported` need agreement from several people, with a single
+    person's write staying at the status it would have as a draft. Decide before M16.
+12. **O12 — Contribution terms text** (raised in M8). The page (`/contribution-terms`, `lang/*/terms.php`)
+    is a draft marked as such: CC BY-SA 4.0 for contributions, history with authors, share only what
+    you may share, private submissions stay private, respect. It is legal text, so Jayed approves it
+    (ideally with legal advice) before outside contributors are invited; approval changes
+    `atlas.contribution_terms_version` to a final value.
 
 ---
 

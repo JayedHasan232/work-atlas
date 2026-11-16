@@ -2,6 +2,8 @@
 
 namespace App\Modules\Knowledge\Actions;
 
+use App\Modules\Community\Actions\CountReviewOutcome;
+use App\Modules\Community\Enums\Role;
 use App\Modules\Knowledge\Data\Actor;
 use App\Modules\Knowledge\Enums\FieldStatus;
 use App\Modules\Knowledge\Enums\ReviewDecision;
@@ -15,10 +17,15 @@ use Illuminate\Support\Facades\DB;
  * A person's decision on a pending proposal, recorded in `revision_reviews` (D1). Accepting makes the
  * proposal the current value with status `verified`, because a reviewer approved it; the review keeps
  * the replaced revision and status so a revert can restore them. Rejecting leaves the value as it is.
- * Once no proposal waits, the slot leaves the review queue. M8 adds the reviewer role check.
+ * Once no proposal waits, the slot leaves the review queue. Only a reviewer (or higher) reviews, never
+ * their own proposal, and the author's trust counters count the outcome.
  */
 final class ReviewRevision
 {
+    public function __construct(
+        private readonly CountReviewOutcome $countReviewOutcome,
+    ) {}
+
     public function handle(int $revisionId, Actor $reviewer, ReviewDecision $decision, ?string $comment = null): RevisionReview
     {
         if ($reviewer->isAi()) {
@@ -37,6 +44,17 @@ final class ReviewRevision
                 throw ReviewNotAllowed::because($revisionId, 'it has already been reviewed');
             }
 
+            $role = $reviewer->personRole();
+
+            if (! $role->canReview()) {
+                throw ReviewNotAllowed::because($revisionId, "a {$role->value} cannot review");
+            }
+
+            // Nobody reviews their own proposal; the maintainer may while they are the only reviewer (A13).
+            if ($revision->user_id !== null && $revision->user_id === $reviewer->userId && $role !== Role::Maintainer) {
+                throw ReviewNotAllowed::because($revisionId, 'it is your own proposal');
+            }
+
             $accepted = $decision === ReviewDecision::Accepted;
             $replaces = $accepted ? $slot->current_revision_id : null;
 
@@ -52,6 +70,10 @@ final class ReviewRevision
             if ($accepted) {
                 $slot->current_revision_id = $revision->id;
                 $slot->status = FieldStatus::Verified;
+            }
+
+            if ($revision->user_id !== null) {
+                $this->countReviewOutcome->handle($revision->user_id, $accepted);
             }
 
             if (! $this->hasPendingProposal($slot)) {
