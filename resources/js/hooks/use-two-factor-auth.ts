@@ -1,13 +1,15 @@
 import { useHttp } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
 import { qrCode, recoveryCodes, secretKey } from '@/routes/two-factor';
+import type { TranslationKey } from '@/types/translation-keys.generated';
 
 export type UseTwoFactorAuthReturn = {
     qrCodeSvg: string | null;
     manualSetupKey: string | null;
     recoveryCodesList: string[];
     hasSetupData: boolean;
-    errors: string[];
+    /** Translation keys; the component that shows them translates them. */
+    errors: TranslationKey[];
     clearErrors: () => void;
     clearSetupData: () => void;
     clearTwoFactorAuthData: () => void;
@@ -25,7 +27,7 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
     const [qrCodeSvg, setQrCodeSvg] = useState<string | null>(null);
     const [manualSetupKey, setManualSetupKey] = useState<string | null>(null);
     const [recoveryCodesList, setRecoveryCodesList] = useState<string[]>([]);
-    const [errors, setErrors] = useState<string[]>([]);
+    const [errors, setErrors] = useState<TranslationKey[]>([]);
 
     const hasSetupData = qrCodeSvg !== null && manualSetupKey !== null;
 
@@ -55,7 +57,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
 
             setQrCodeSvg(svg);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch QR code']);
+            setErrors((prev) => [
+                ...prev,
+                'settings.two_factor.errors.qr_code',
+            ]);
             setQrCodeSvg(null);
         }
     }, [submit]);
@@ -68,7 +73,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
 
             setManualSetupKey(key);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch a setup key']);
+            setErrors((prev) => [
+                ...prev,
+                'settings.two_factor.errors.setup_key',
+            ]);
             setManualSetupKey(null);
         }
     }, [submit]);
@@ -79,7 +87,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
             const codes = (await submit(recoveryCodes())) as string[];
             setRecoveryCodesList(codes);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch recovery codes']);
+            setErrors((prev) => [
+                ...prev,
+                'settings.two_factor.errors.recovery_codes',
+            ]);
             setRecoveryCodesList([]);
         }
     }, [submit]);

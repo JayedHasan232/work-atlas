@@ -1,0 +1,42 @@
+#!/usr/bin/env php
+<?php
+
+/*
+ * Fails when the languages under lang/ disagree: a key missing from one locale, an empty line, or a
+ * line whose :placeholders differ between locales. CI runs it on every push.
+ *
+ * Usage: scripts/ci/check-translations [lang-dir]   (default: the project's lang/)
+ */
+
+declare(strict_types=1);
+
+use App\Support\Localization\TranslationFiles;
+use App\Support\Localization\TranslationParity;
+
+$root = dirname(__DIR__, 2);
+
+require $root.'/vendor/autoload.php';
+
+$langPath = $argv[1] ?? $root.'/lang';
+
+if (! is_dir($langPath)) {
+    fwrite(STDERR, "No such directory: {$langPath}\n");
+    exit(2);
+}
+
+$files = new TranslationFiles($langPath);
+$problems = (new TranslationParity($files))->problems();
+
+if ($problems !== []) {
+    fwrite(STDERR, "Translations disagree (".count($problems)." problems):\n");
+
+    foreach ($problems as $problem) {
+        fwrite(STDERR, "  {$problem}\n");
+    }
+
+    fwrite(STDERR, "Add the missing lines to every locale under lang/; keep :placeholders the same.\n");
+    exit(1);
+}
+
+$count = count($files->strings($files->locales()[0]));
+echo 'Translations agree: '.implode(', ', $files->locales())." ({$count} lines each).\n";

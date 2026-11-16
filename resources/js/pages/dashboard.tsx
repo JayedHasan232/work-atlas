@@ -1,11 +1,15 @@
 import { Head } from '@inertiajs/react';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import { useTranslation } from '@/lib/i18n';
 import { dashboard } from '@/routes';
+import type { BreadcrumbItem } from '@/types';
 
 export default function Dashboard() {
+    const { t } = useTranslation();
+
     return (
         <>
-            <Head title="Dashboard" />
+            <Head title={t('common.nav.dashboard')} />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
@@ -29,8 +33,8 @@ export default function Dashboard() {
 Dashboard.layout = {
     breadcrumbs: [
         {
-            title: 'Dashboard',
+            title: 'common.nav.dashboard',
             href: dashboard(),
         },
     ],
-};
+} satisfies { breadcrumbs: BreadcrumbItem[] };
