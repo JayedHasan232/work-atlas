@@ -45,6 +45,12 @@ final class ChangeStatus
 
             $from = $slot->status;
             $slot->status = $target;
+
+            // A reviewer settled a micro-task dispute (PLAN M17): it leaves the review queue.
+            if ($from === FieldStatus::Disputed && $slot->review_priority === FieldValue::PRIORITY_COMMUNITY_DISSENT) {
+                $slot->review_priority = FieldValue::PRIORITY_NONE;
+            }
+
             $slot->save();
 
             event(new FieldStatusChanged($slot->occupation_id, $slot->field_definition_id, $from, $target));

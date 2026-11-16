@@ -26,4 +26,17 @@ The people who write and check Work Atlas.
   wait for a review (`config('atlas.community')`).
 - `Actions\SetAnonymousCredit`, `Queries\PublicContributors`: the credit name, or none (D63).
 
+**M17 (micro-tasks):**
+
+- `Actions\GenerateVerificationTasks` (`atlas:tasks:generate`, hourly), `Models\VerificationTask`:
+  one yes/no question per checkable value; a changed value makes the task stale (D64).
+- `Queries\NextVerificationTask`: the next question for a person, highest review priority first,
+  never one they answered or whose value they wrote.
+- `Actions\AnswerVerificationTask`, `Models\VerificationAnswer`: one answer per person and task;
+  agree and disagree queue `Jobs\EvaluateConsensusJob`.
+- `Actions\EvaluateConsensus`: three agreeing answers and no dissent → `community_supported`, one
+  "no" → `disputed`, both through `Knowledge\Actions\ApplyConsensus`; counts the agreeing answers.
+- `Actions\PromoteTrustedContributors` (`atlas:trust:promote`, daily, and after each counted
+  contribution): contributors with enough accepted contributions and account age become trusted (D65).
+
 See [the module rules](../README.md).

@@ -29,5 +29,8 @@ Everything the public can read.
   (the sensitive gate holds in the form too). `OccupationPresenter` adds the credit list;
   `Presenters\ContributorPresenter` serves `/contributors/{id}`. All three pages are `noindex`
   (D61–D63). `Presenters\FieldDisplay` turns a stored value into reader text for both.
+- **Micro-tasks (M17):** `Presenters\MicroTaskPresenter` serves the "Check facts" page (`/tasks`,
+  signed in, `noindex`): one question with the value as reader text, how many people must agree and
+  how many questions the person answered (D64).
 
 See [the module rules](../README.md).

@@ -39,6 +39,7 @@ return [
             'auth/*' => ['auth'],
             'occupations/*' => ['occupations', 'contribute'],
             'contributors/*' => ['contribute'],
+            'tasks/*' => ['tasks', 'occupations'],
             'settings/contributions' => ['contribute'],
             'search/*' => ['search'],
             'dashboard' => ['shell'],
@@ -167,6 +168,11 @@ return [
     | Error reports are limited per IP address (kept only in the cache), suggestions per person.
     | Starting values, to be tuned with real use.
     |
+    | Micro-tasks (PLAN M17, A11b, A11c, D64–D65): questions are made from the values of these waves; a
+    | value becomes community_supported after this many agreeing answers with no dissent. A contributor
+    | becomes trusted after this many accepted contributions (accepted proposals plus answers that
+    | agreed with a reached consensus) and this many days since signup.
+    |
     */
 
     'community' => [
@@ -175,6 +181,11 @@ return [
         'daily_changes_new_account' => 10,
         'error_reports_per_hour' => 10,
         'suggestions_per_minute' => 6,
+        'task_waves' => [1],
+        'consensus_agreements' => 3,
+        'answers_per_minute' => 20,
+        'trusted_after_contributions' => 50,
+        'trusted_after_days' => 30,
     ],
 
     'publishing' => [

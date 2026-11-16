@@ -12,6 +12,7 @@ return [
         'occupations' => 'Occupations',
         'log_in' => 'Log in',
         'register' => 'Register',
+        'tasks' => 'Check facts',
         'dashboard' => 'Dashboard',
         'settings' => 'Settings',
         'log_out' => 'Log out',

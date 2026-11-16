@@ -4,7 +4,11 @@ use App\Models\User;
 use App\Modules\AiPipeline\Data\AiRequest;
 use App\Modules\AiPipeline\Drivers\FakeDriver;
 use App\Modules\AiPipeline\Models\AiRun;
+use App\Modules\Community\Actions\AnswerVerificationTask;
+use App\Modules\Community\Actions\GenerateVerificationTasks;
 use App\Modules\Community\Enums\Role;
+use App\Modules\Community\Enums\TaskAnswer;
+use App\Modules\Community\Models\VerificationTask;
 use App\Modules\Knowledge\Actions\RecordRevision;
 use App\Modules\Knowledge\Actions\SyncFieldDefinitions;
 use App\Modules\Knowledge\Data\Actor;
@@ -417,4 +421,37 @@ function wave1Output(array $values = []): array
         fn (mixed $value): array => ['value' => $value, 'confidence' => 0.6],
         array_replace($defaults, $values),
     )];
+}
+
+/*
+|--------------------------------------------------------------------------
+| Micro-tasks (PLAN M17)
+|--------------------------------------------------------------------------
+|
+| Call wave1Setup() first: the tasks ask about real Wave 1 fields on a listed occupation.
+|
+*/
+
+/**
+ * Records a value of a Wave 1 field (by a new AI run unless an actor is given) on a listed occupation
+ * and makes the micro-tasks. Returns the open task about that value.
+ */
+function taskFor(string $field = 'physical_workload', mixed $value = 3, ?Actor $actor = null, ?Occupation $occupation = null): VerificationTask
+{
+    $occupation ??= listedOccupation();
+    $revision = recordValue(FieldDefinition::query()->where('key', $field)->sole(), $value, $actor, occupationId: $occupation->id);
+    app(GenerateVerificationTasks::class)->handle();
+
+    return VerificationTask::query()->where('revision_id', $revision->id)->sole();
+}
+
+/**
+ * One answer by a person (a new contributor unless one is given). Returns that person.
+ */
+function answerTask(VerificationTask $task, TaskAnswer $answer, ?User $user = null): User
+{
+    $user ??= User::factory()->create();
+    app(AnswerVerificationTask::class)->handle($task->id, $user->id, $answer);
+
+    return $user;
 }

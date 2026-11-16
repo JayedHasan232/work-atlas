@@ -60,14 +60,24 @@ export default function PublicLayout({
                                     </Link>
                                 </li>
                                 {auth.user ? (
-                                    <li>
-                                        <Link
-                                            href={dashboard()}
-                                            className={linkClass}
-                                        >
-                                            {t('common.nav.dashboard')}
-                                        </Link>
-                                    </li>
+                                    <>
+                                        <li>
+                                            <Link
+                                                href={localizePath('/tasks')}
+                                                className={linkClass}
+                                            >
+                                                {t('common.nav.tasks')}
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                href={dashboard()}
+                                                className={linkClass}
+                                            >
+                                                {t('common.nav.dashboard')}
+                                            </Link>
+                                        </li>
+                                    </>
                                 ) : (
                                     <>
                                         <li>

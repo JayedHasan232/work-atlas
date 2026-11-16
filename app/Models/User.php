@@ -34,6 +34,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Role $role
  * @property int $accepted_proposals_count
  * @property int $rejected_proposals_count
+ * @property int $confirmed_answers_count
  * @property bool $anonymous_credit
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -51,6 +52,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
     protected $attributes = [
         'role' => 'contributor',
         'accepted_proposals_count' => 0,
+        'confirmed_answers_count' => 0,
         'rejected_proposals_count' => 0,
         'anonymous_credit' => false,
     ];
@@ -68,6 +70,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail, Pas
             'two_factor_confirmed_at' => 'datetime',
             'role' => Role::class,
             'accepted_proposals_count' => 'integer',
+            'confirmed_answers_count' => 'integer',
             'rejected_proposals_count' => 'integer',
             'anonymous_credit' => 'boolean',
         ];

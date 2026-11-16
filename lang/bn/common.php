@@ -12,6 +12,7 @@ return [
         'occupations' => 'পেশা',
         'log_in' => 'লগ ইন',
         'register' => 'নিবন্ধন',
+        'tasks' => 'তথ্য যাচাই',
         'dashboard' => 'ড্যাশবোর্ড',
         'settings' => 'সেটিংস',
         'log_out' => 'লগ আউট',
