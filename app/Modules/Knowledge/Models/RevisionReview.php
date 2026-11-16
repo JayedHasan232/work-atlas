@@ -3,6 +3,7 @@
 namespace App\Modules\Knowledge\Models;
 
 use App\Models\User;
+use App\Modules\Knowledge\Enums\FieldStatus;
 use App\Modules\Knowledge\Enums\ReviewDecision;
 use App\Modules\Knowledge\Models\Concerns\AppendOnly;
 use Database\Factories\Knowledge\RevisionReviewFactory;
@@ -21,9 +22,11 @@ use Illuminate\Support\Carbon;
  * @property int $reviewer_id
  * @property ReviewDecision $decision
  * @property string|null $comment
+ * @property int|null $replaces_revision_id
+ * @property FieldStatus|null $old_status
  * @property Carbon|null $created_at
  */
-#[Fillable(['revision_id', 'reviewer_id', 'decision', 'comment'])]
+#[Fillable(['revision_id', 'reviewer_id', 'decision', 'comment', 'replaces_revision_id', 'old_status'])]
 #[UseFactory(RevisionReviewFactory::class)]
 class RevisionReview extends Model
 {
@@ -41,6 +44,7 @@ class RevisionReview extends Model
     {
         return [
             'decision' => ReviewDecision::class,
+            'old_status' => FieldStatus::class,
         ];
     }
 

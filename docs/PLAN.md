@@ -646,6 +646,23 @@ Tests
   `Observations` (Phase 2).
 - **D23** The Laravel arch preset assumes a flat app (enums in `App\Enums`, models in `App\Models`), so it
   skips `App\Modules`; `Arch/ModuleLayoutTest` applies the same placement rules inside each module.
+- **D24** (M5) A revision is marked `proposed` when it is written and never changes; a pending proposal is
+  a proposed revision without a review. The current revision and slot status a change replaced are
+  stored with the change (`replaces_revision_id`, `old_status`: on the revision for a direct write, on
+  the accepting review for a proposal), because a revert must restore the old value's sources and
+  status, which `old_value` alone doesn't carry.
+- **D25** (M5) Until roles exist (M8), every person's write is a proposal and every person may change a
+  status, review and revert. Accepting a proposal makes it `verified` ("a reviewer approved it"). AI
+  runs never change a status, review or revert. `review_priority`: 0 nothing waits, 10 a proposal
+  waits; it drops back to 0 when the last pending proposal is reviewed.
+- **D26** (M5) `null` and `"unknown"` are stored as null. `requires_source` applies only to a known value
+  (rule 2: no source, no value). An unknown value stays `ai_draft` even with a source. Text needs a
+  supported locale; other types have none.
+- **D27** (M5) Status transition table in `FieldStatus::allowedTargets()` and
+  `docs/architecture/data-model.md`: up the ladder or to `disputed`; `ai_draft` is never a target.
+- **D28** (M5) Every Knowledge action locks the slot row first. A slot is created with
+  `ON CONFLICT DO NOTHING`, so two first writes don't collide. `ConcurrentWriteTest` holds the lock
+  from a second database connection and checks that the write waits at the locking read.
 
 ## Maintainer decisions (answered 2026-11-16)
 
@@ -735,6 +752,14 @@ is written down so the choice can be reversed later.
    an anonymous user row, shown as "deleted contributor", so the history and its credit stay intact.
    It does not block anything today: nothing writes revisions until M5, and contributors arrive in
    M16. Decide before M8 ships signup.
+7. **O7 — AI over a `community_supported` value** (raised in M5). The rules protect only `verified`
+   values, so a new AI run replaces a community-supported value and drops it to `ai_draft`. Proposal:
+   treat `community_supported` like `verified` (the AI write becomes a proposal), so community work is
+   never undone by a re-run. Decide before the first paid AI run (M10).
+8. **O8 — History of status changes** (raised in M5). Revisions record every value change, but
+   `ChangeStatus` only updates the slot, so who verified or disputed a value, and when, is not kept.
+   Proposal: an append-only `status_changes` table (slot, from, to, actor, reason, time) added in M8
+   with the roles. Decide before M8.
 
 ---
 
