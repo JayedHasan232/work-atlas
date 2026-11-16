@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Monthly restore test (PLAN M22): restores the newest backup into a throwaway database and prints
+# row counts, so the result can be logged in docs/ops/restore.md. Run it on the staging server or a
+# maintainer's machine, never on production, with the offline age identity:
+#
+#   work-atlas-restore-test --identity ~/keys/work-atlas-backup.agekey [--remote r2:work-atlas-backups]
+#
+# Needs: rclone (configured remote), age, pg_restore and psql (PostgreSQL 18) and a role that may
+# create databases.
+set -euo pipefail
+
+identity=""
+remote="${R2_REMOTE:-r2:work-atlas-backups}"
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --identity) identity="$2"; shift 2 ;;
+        --remote) remote="$2"; shift 2 ;;
+        *) echo "unknown option: $1" >&2; exit 2 ;;
+    esac
+done
+
+[ -r "${identity}" ] || { echo "--identity must point to the age private key" >&2; exit 2; }
+
+latest="$(rclone lsf --files-only "${remote}/db/" | sort | tail -n 1)"
+[ -n "${latest}" ] || { echo "no backup found in ${remote}/db/" >&2; exit 1; }
+
+workdir="$(mktemp -d)"
+db="work_atlas_restore_$(date -u +%Y%m%d%H%M%S)"
+trap 'rm -rf "${workdir}"; dropdb --if-exists "${db}" >/dev/null 2>&1 || true' EXIT
+
+started="$(date -u +%s)"
+rclone copyto "${remote}/db/${latest}" "${workdir}/backup.dump.age"
+age --decrypt --identity "${identity}" --output "${workdir}/backup.dump" "${workdir}/backup.dump.age"
+createdb "${db}"
+pg_restore --no-owner --no-privileges --exit-on-error --dbname="${db}" "${workdir}/backup.dump"
+finished="$(date -u +%s)"
+
+count() { psql --dbname="${db}" --tuples-only --no-align --command="select count(*) from $1"; }
+
+echo "Restore test $(date -u +%F): ${latest}"
+echo "  minutes: $(( (finished - started + 59) / 60 ))"
+for table in occupations occupation_names field_values revisions sources users ai_runs; do
+    echo "  ${table}: $(count "${table}")"
+done
+echo "Log this in docs/ops/restore.md (no personal data)."

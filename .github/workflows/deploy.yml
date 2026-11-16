@@ -1,0 +1,79 @@
+name: Deploy
+
+# PLAN M22 (A12): one-step deploy from `main` with Deployer, then a smoke test against the live site.
+# Inactive until a maintainer sets the repository variable DEPLOY_ENABLED to "true" and fills the
+# `production` / `staging` environments (docs/ops/server.md):
+#   secrets:   DEPLOY_SSH_KEY (private key of the deploy user), DEPLOY_KNOWN_HOSTS, DEPLOY_HOST,
+#              SMOKE_URL (the site's URL; for staging include the basic-auth user and password)
+# Production deploys only from `main` (automatically after CI passed there, or by hand); staging can be
+# deployed by hand from any branch.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: Where to deploy
+        type: choice
+        options: [staging, production]
+        default: staging
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.stage || 'production' }}
+  cancel-in-progress: false
+
+env:
+  PHP_VERSION: '8.4'
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.stage || 'production' }}
+    if: >-
+      vars.DEPLOY_ENABLED == 'true' && (
+        (github.event_name == 'workflow_dispatch' && (inputs.stage == 'staging' || github.ref == 'refs/heads/main')) ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+      )
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.stage || 'production' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: none
+          coverage: none
+
+      - name: Install Deployer
+        run: composer install --no-interaction --no-progress --prefer-dist --no-scripts
+
+      - name: SSH key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 0600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Deploy
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          STAGE: ${{ inputs.stage || 'production' }}
+          REVISION: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: vendor/bin/dep deploy "$STAGE" --revision="$REVISION" --no-interaction
+
+      - name: Smoke test (server-rendered page)
+        env:
+          SMOKE_URL: ${{ secrets.SMOKE_URL }}
+        run: scripts/ci/ssr-smoke "$SMOKE_URL"

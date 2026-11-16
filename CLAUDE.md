@@ -197,6 +197,8 @@ Services: PostgreSQL 18 and Redis (`docker compose up -d`, or native; see CONTRI
   (daily in the scheduler; it also runs after each counted contribution)
 - `php artisan atlas:user:promote {email} {role}` — give a person a role (contributor, trusted, reviewer, expert,
   maintainer); only maintainers can open `/admin` and `/horizon`
+- `php artisan db:seed --class=StagingSeeder` — fake example occupations for staging (refuses production); server setup,
+  deploys and backups: `docs/ops/server.md`, `docs/ops/restore.md`
 - `php artisan atlas:translation-types` — regenerate the React `TranslationKey` type from `lang/en`
   (Vite runs it on build and when `lang/en` changes)
 

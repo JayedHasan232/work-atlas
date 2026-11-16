@@ -7,8 +7,10 @@ use App\Modules\Knowledge\Events\CurrentValueChanged;
 use App\Modules\Knowledge\Events\FieldStatusChanged;
 use App\Modules\Publishing\Actions\QueueIndexGateCheck;
 use App\Modules\Taxonomy\Actions\SyncOccupationNames;
+use App\Support\Monitoring\CheckHealth;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
@@ -89,6 +91,9 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(function (CurrentValueChanged|FieldStatusChanged $event): void {
             app(QueueIndexGateCheck::class)->handle($event->occupationId);
         });
+
+        // `/up` checks the database and Redis (PLAN M22).
+        Event::listen(DiagnosingHealth::class, CheckHealth::class);
     }
 
     protected function configureDefaults(): void

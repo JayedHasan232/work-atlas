@@ -1,0 +1,9 @@
+# Work Atlas (PLAN M22). Installed by ops/provision.sh as /etc/cron.d/work-atlas.
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Laravel scheduler (micro-tasks, trust promotion, AI batch polling).
+* * * * * deploy cd /var/www/work-atlas/current && php artisan schedule:run >> /dev/null 2>&1
+
+# Nightly encrypted database backup to R2, 02:30 Asia/Dhaka (20:30 UTC). See docs/ops/restore.md.
+30 20 * * * postgres /usr/local/bin/work-atlas-backup >> /var/log/work-atlas/backup.log 2>&1

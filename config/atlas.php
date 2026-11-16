@@ -233,6 +233,24 @@ return [
         'notice' => 'Every value has a status. ai_draft values are unchecked AI drafts. Sensitive values (income, health, legal) appear only once verified. Not medical, legal or financial advice.',
     ],
 
+    /*
+    | Self-hosted Umami (PLAN M22, A12): the only analytics, off until both values are set. It never
+    | sends query strings (the guide's answers live there, D73) and honours Do Not Track.
+    */
+    'analytics' => [
+        'umami_script' => env('UMAMI_SCRIPT_URL'),
+        'umami_website_id' => env('UMAMI_WEBSITE_ID'),
+    ],
+
+    /*
+    | Staging (PLAN M22): with APP_ENV=staging every request except `/up` needs HTTP basic auth, and
+    | every response is `noindex`. Without a user and password set, staging lets nobody in.
+    */
+    'staging' => [
+        'basic_auth_user' => env('STAGING_BASIC_AUTH_USER'),
+        'basic_auth_password' => env('STAGING_BASIC_AUTH_PASSWORD'),
+    ],
+
     'publishing' => [
         'page_waves' => [0, 1],
         'medical_groups' => ['health'],

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Nightly encrypted database backup to Cloudflare R2 (PLAN M22, A12).
+#
+# Runs as the postgres user from /etc/cron.d/work-atlas. The dump is encrypted with `age` to a public
+# key before it leaves the server; the private key is kept offline by the maintainers, so neither the
+# server nor R2 can read a backup. Settings come from /etc/work-atlas/backup.env:
+#
+#   DB_NAME          database to dump (work_atlas)
+#   AGE_RECIPIENT    age public key (age1...)
+#   R2_REMOTE        rclone remote and bucket, e.g. r2:work-atlas-backups
+#   RETENTION_DAYS   delete backups older than this (default 35)
+#
+# The restore runbook is docs/ops/restore.md.
+set -euo pipefail
+
+# shellcheck source=/dev/null
+source /etc/work-atlas/backup.env
+
+: "${DB_NAME:?DB_NAME is not set}"
+: "${AGE_RECIPIENT:?AGE_RECIPIENT is not set}"
+: "${R2_REMOTE:?R2_REMOTE is not set}"
+RETENTION_DAYS="${RETENTION_DAYS:-35}"
+RCLONE=(rclone --config /etc/work-atlas/rclone.conf)
+
+stamp="$(date -u +%Y-%m-%dT%H%M%SZ)"
+target="${R2_REMOTE}/db/${DB_NAME}-${stamp}.dump.age"
+
+pg_dump --format=custom --no-owner --no-privileges --dbname="${DB_NAME}" \
+    | age --encrypt --recipient "${AGE_RECIPIENT}" \
+    | "${RCLONE[@]}" rcat "${target}"
+
+size="$("${RCLONE[@]}" size --json "${target}" | sed -n 's/.*"bytes":\([0-9]*\).*/\1/p')"
+
+if [ -z "${size}" ] || [ "${size}" -lt 1024 ]; then
+    echo "$(date -u +%FT%TZ) backup FAILED: ${target} is missing or too small (${size:-0} bytes)" >&2
+    exit 1
+fi
+
+"${RCLONE[@]}" delete --min-age "${RETENTION_DAYS}d" "${R2_REMOTE}/db/"
+
+echo "$(date -u +%FT%TZ) backup ok: ${target} (${size} bytes)"

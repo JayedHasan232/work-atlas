@@ -644,6 +644,15 @@ Acceptance
 Tests
 - `Feature/HealthCheckTest`, post-deploy e2e smoke against staging, restore-test log entry.
 
+Status: repo side done (D77–D79); the live part waits on O1 (domain) and H9 (accounts). In the repo:
+`ops/provision.sh` (idempotent; Nginx, PHP-FPM, PostgreSQL 18, Redis, supervisor for Horizon and SSR,
+cron, firewall, SSH keys only), the nightly encrypted backup and the restore-test script
+(`ops/backup/`), `deploy.php` and `.github/workflows/deploy.yml` (off until `DEPLOY_ENABLED`), Sentry
+with personal-data scrubbing, Umami behind config, the staging gate and `StagingSeeder`, `/up`
+checking the database and Redis, and the runbooks `docs/ops/server.md` and `docs/ops/restore.md`.
+Not done until a maintainer has the accounts: the first deploy, the first restore test and its log
+line, a test exception in Sentry, SPF/DKIM/DMARC, the uptime check.
+
 ### M23 — Beta readiness
 
 Depends on: all of the above · Blocked by: —
@@ -1015,6 +1024,21 @@ Tests
   a hand-written spec gives exact schemas without a new dependency. `OpenApiSpecTest` keeps it honest:
   every `/api/v1` route is described, and real responses are validated against schemas that allow no
   extra properties, so a new response field fails until it is described and checked for personal data.
+- **D77** (M22) Error reports carry no personal data by construction: `send_default_pii` and SQL
+  bindings are fixed off in `config/sentry.php` (not env switches), and `ErrorReportScrubber` drops the
+  user, server name, cookies, headers, body and query string (the guide's answers live there, D73),
+  and masks email and IP addresses in messages. Umami sends no query strings or hashes and honours
+  Do Not Track. Both stay off until configured.
+- **D78** (M22) Backups are encrypted with `age` to a public key before they leave the server; the
+  private key is kept offline by two maintainers, so neither the server nor R2 can read a backup.
+  The restore test runs on staging or a maintainer's machine, never on production.
+- **D79** (M22) Deploys build the front end on the server (Node.js is installed by the provisioning
+  script) rather than shipping build artefacts, to keep one deploy path. The deploy workflow does
+  nothing until the maintainer sets `DEPLOY_ENABLED`; production deploys only from `main`. Staging
+  is private by HTTP basic auth that fails closed, `noindex` on every response, and gets fake data
+  only from `StagingSeeder`, which runs without Faker (no dev dependencies on servers) and refuses
+  production. `/up` checks the database and Redis so the uptime check and the post-deploy smoke catch
+  a broken queue or database, not only a running PHP.
 
 ## Maintainer decisions (answered 2026-11-16)
 
