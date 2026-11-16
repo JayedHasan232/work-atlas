@@ -134,8 +134,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | What the public occupation page shows (PLAN M13): the field waves, the field groups that carry
-    | the "not medical advice" note (rule 7), and the size of an index page. Every page is noindex
-    | during the Phase 1 beta (rule 12; the index gate comes in M14).
+    | the "not medical advice" note (rule 7), and the size of an index page. Whether a page may be
+    | indexed is the index gate's decision (below).
     |
     */
 
@@ -143,6 +143,26 @@ return [
         'page_waves' => [0, 1],
         'medical_groups' => ['health'],
         'per_page' => 50,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Index gate
+    |--------------------------------------------------------------------------
+    |
+    | A11a: during the Phase 1 beta every page is noindex and the sitemap lists nothing (`enabled`
+    | false). From Phase 2 an occupation page is indexed when at least `min_share` of the fields of
+    | `waves` have reached `min_status`, and every field in `required` has reached its status (the
+    | description reviewed). A field without a value counts as not reached. PLAN M14, D55.
+    |
+    */
+
+    'index_gate' => [
+        'enabled' => (bool) env('ATLAS_INDEX_GATE', false),
+        'waves' => [1, 2],
+        'min_share' => 0.8,
+        'min_status' => 'community_supported',
+        'required' => ['description' => 'verified'],
     ],
 
 ];

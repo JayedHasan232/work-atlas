@@ -26,6 +26,21 @@ final class PublicOccupations
     }
 
     /**
+     * The slugs of the indexable occupations, for the sitemap.
+     *
+     * @return list<string>
+     */
+    public function indexableSlugs(): array
+    {
+        return array_values(array_map(strval(...), Occupation::query()
+            ->whereIn('publish_state', PublishState::public())
+            ->where('indexable', true)
+            ->orderBy('slug')
+            ->pluck('slug')
+            ->all()));
+    }
+
+    /**
      * @return list<OccupationListItem>
      */
     public function inGroup(string $code, string $locale): array
@@ -81,6 +96,7 @@ final class PublicOccupations
             slug: $occupation->slug,
             iscoCode: $occupation->isco_code,
             names: $names[$occupation->id] ?? [],
+            indexable: $occupation->indexable,
         ), $occupations));
     }
 }

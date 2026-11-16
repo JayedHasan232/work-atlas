@@ -436,6 +436,10 @@ Acceptance
 Tests
 - `Feature/Publishing/IndexGateTest` (threshold dataset), `NoindexHeaderTest`, `SitemapTest`.
 
+Status: done (`IndexGate`, `EvaluateIndexGate`, `RecomputeIndexableJob`, `atlas:index-gate:recompute`,
+`RobotsTag` on every web page, `/sitemap.xml`, `/robots.txt`; D55–D57). The gate is off
+(`ATLAS_INDEX_GATE=false`) until Phase 2; the Phase 2 threshold is configured and tested.
+
 ### M15 — Bangla/English search
 
 Depends on: M11, M13 · Blocked by: — (benchmark queries come from H2)
@@ -823,6 +827,29 @@ Tests
   in the reader's language, `atlas.publishing.per_page` per page) and `/occupations/groups/{code}`
   (child groups with counts, or a unit group's occupations). CI's SSR smoke renders a placeholder
   occupation from `SsrSmokeSeeder`, which has names only and no field values.
+- **D55** (M14) The A11a rule is `config('atlas.index_gate')`: an occupation page passes when at
+  least `min_share` (0.8) of the fields of `waves` (1 and 2) have reached `min_status`
+  (`community_supported`), and every field in `required` has reached its own status (`description`:
+  `verified`). A field reaches a status when it has a value and every current value (each language)
+  is at least that far up the ladder; `disputed` and "no value yet" never reach. `enabled` is false in
+  Phase 1, so nothing passes. The thresholds are a first proposal, to be checked with real Wave 1 and
+  2 data before the gate is turned on.
+- **D56** (M14) `occupations.indexable` stores the answer. A changed value (`CurrentValueChanged`) or
+  status (`FieldStatusChanged`, new) queues `RecomputeIndexableJob` after the commit, once per
+  occupation at a time, only while the gate is on; `atlas:index-gate:recompute` catches up after the
+  gate is turned on or its thresholds change. Only a listed or published occupation can be indexable.
+  `Publishing\Http\Middleware\RobotsTag` replaces D54's `NoIndex` and runs on every web page: a page
+  is indexable only when the gate is on and the page qualifies (public pages registered per language
+  do; an occupation page only when `indexable`; sign-in, settings and the dashboard never). Otherwise
+  it sends `X-Robots-Tag: noindex` and a `robots` prop that the Blade layout renders as
+  `<meta name="robots">`, so the tag is in the HTML even without SSR. Turning the gate off makes every
+  page noindex again at once, whatever the stored flags say.
+- **D57** (M14) `/sitemap.xml` is empty while the gate is off. When on, it lists the home page, the
+  occupation index, the contribution terms and every indexable occupation page, each in both
+  languages with `xhtml:link` hreflang alternates. Group pages may be indexed but are not listed:
+  crawlers reach them from the index. `/robots.txt` allows public pages (a blocked page could not
+  show its `noindex`), blocks `/admin`, `/horizon`, `/dashboard` and `/settings`, and names the
+  sitemap. It replaces the static `public/robots.txt`.
 
 ## Maintainer decisions (answered 2026-11-16)
 

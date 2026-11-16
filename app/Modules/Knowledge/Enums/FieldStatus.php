@@ -35,4 +35,17 @@ enum FieldStatus: string
     {
         return in_array($target, $this->allowedTargets(), true);
     }
+
+    /**
+     * Whether this status is at least as far up the ladder as $minimum. A disputed value is never
+     * far enough, whatever the minimum (the index gate, PLAN D55).
+     */
+    public function atLeast(self $minimum): bool
+    {
+        $ladder = [self::AiDraft, self::Sourced, self::CommunitySupported, self::Verified];
+        $position = array_search($this, $ladder, true);
+        $required = array_search($minimum, $ladder, true);
+
+        return $position !== false && $required !== false && $position >= $required;
+    }
 }

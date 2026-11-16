@@ -3,6 +3,10 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        {{-- Rule 12 (PLAN M14): in the server HTML even without SSR, and left alone by the client. --}}
+        @if (is_string($page['props']['robots'] ?? null))
+            <meta name="robots" content="{{ $page['props']['robots'] }}">
+        @endif
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
