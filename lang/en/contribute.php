@@ -1,0 +1,88 @@
+<?php
+
+// Error reports, suggested changes, credit and contributor profiles (PLAN M16).
+return [
+    'report' => [
+        'title' => 'Report a mistake',
+        'intro' => 'Tell us what is wrong on this page. You do not need an account, and we do not keep your IP address.',
+        'field' => 'Which part is wrong?',
+        'whole_page' => 'The whole page, or something not listed',
+        'message' => 'What is wrong?',
+        'message_hint' => 'Say what is wrong and, if you know, what is right. Please do not write personal details.',
+        'honeypot' => 'Leave this empty',
+        'submit' => 'Send report',
+        'thanks' => 'Thank you. Your report is in the review queue.',
+        'back' => 'Back to the occupation',
+    ],
+
+    'suggest' => [
+        'title' => 'Suggest a change',
+        'button' => 'Suggest a change',
+        'report' => 'Report',
+        'current' => 'Now',
+        'yours' => 'Your suggestion',
+        'nothing_yet' => 'No value yet',
+        'withheld' => 'Not shown until it is verified',
+        'not_chosen' => 'Not chosen yet',
+        'preview' => 'Before and after',
+        'value' => 'Your value',
+        'yes' => 'Yes',
+        'no' => 'No',
+        'sources' => 'Sources',
+        'sources_hint' => 'Where can a reviewer check this? Add a web page you read.',
+        'sources_required' => 'This field needs at least one source.',
+        'source_url' => 'Web address',
+        'source_title' => 'Title (optional)',
+        'source_publisher' => 'Publisher (optional)',
+        'source_accessed' => 'Date you read it',
+        'add_source' => 'Add a source',
+        'remove_source' => 'Remove this source',
+        'comment' => 'Comment (optional)',
+        'comment_hint' => 'Why should this change? A reviewer reads this.',
+        'interest' => 'Conflict of interest',
+        'interest_hint' => 'For example: you run a training centre, or employ people in this work. Declaring it does not stop your suggestion; it helps the reviewer.',
+        'interest_none' => 'I have no conflict of interest',
+        'interest_declared' => 'I have an interest',
+        'interest_note' => 'Describe your interest',
+        'review_note' => 'A reviewer checks a suggestion before it changes the page, unless your role allows direct edits.',
+        'license' => 'Your contribution is published under CC BY-SA 4.0, with your name in the history.',
+        'submit' => 'Send suggestion',
+        'proposed' => 'Thank you. Your suggestion waits for a review.',
+        'applied' => 'Thank you. Your change is on the page.',
+        'back' => 'Back to the occupation',
+    ],
+
+    'credits' => [
+        'heading' => 'Contributors',
+        'none' => 'No person has contributed to this page yet. AI drafts are not credited.',
+        'anonymous' => 'Anonymous contributors: :count',
+        'contributions' => 'changes: :count',
+    ],
+
+    'profile' => [
+        'since' => 'Contributing since :date',
+        'contributions' => 'Changes in the record: :count',
+        'note' => 'Counted are changes that are part of the record: applied directly, or accepted by a reviewer.',
+        'occupations' => 'Occupations worked on',
+        'no_occupations' => 'None yet.',
+    ],
+
+    'settings' => [
+        'title' => 'Contributions',
+        'description' => 'How your name appears in the credit',
+        'anonymous' => 'Credit me anonymously',
+        'anonymous_hint' => 'Your changes still count, but your name is not shown on occupation pages and you have no public profile page.',
+        'save' => 'Save',
+        'saved' => 'Saved.',
+    ],
+
+    'errors' => [
+        'message' => 'Write what is wrong, in at most 2,000 characters.',
+        'field' => 'This part of the page does not exist.',
+        'limit' => 'You have reached today\'s limit of changes. Please try again tomorrow.',
+        'source_required' => 'This field needs at least one source.',
+        'invalid_source' => 'A source is not valid: check the web address and the date.',
+        'invalid_value' => 'This value does not fit the field.',
+        'occupation' => 'This occupation has no public page.',
+    ],
+];

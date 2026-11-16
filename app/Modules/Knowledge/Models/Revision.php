@@ -33,9 +33,10 @@ use Illuminate\Support\Carbon;
  * @property float|null $confidence
  * @property int|null $replaces_revision_id
  * @property FieldStatus|null $old_status
+ * @property string|null $declared_interest
  * @property Carbon|null $created_at
  */
-#[Fillable(['field_value_id', 'old_value', 'new_value', 'user_id', 'ai_run_id', 'comment', 'reverts_revision_id', 'proposed', 'confidence', 'replaces_revision_id', 'old_status'])]
+#[Fillable(['field_value_id', 'old_value', 'new_value', 'user_id', 'ai_run_id', 'comment', 'reverts_revision_id', 'proposed', 'confidence', 'replaces_revision_id', 'old_status', 'declared_interest'])]
 #[UseFactory(RevisionFactory::class)]
 class Revision extends Model
 {

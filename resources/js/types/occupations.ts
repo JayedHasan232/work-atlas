@@ -28,6 +28,8 @@ export type PublicField = {
     value: DisplayValue | null;
     valueLocale: Locale | null;
     sources: number[];
+    suggestUrl: string;
+    reportUrl: string;
 };
 
 export type FieldSection = {
@@ -73,6 +75,14 @@ export type PublicOccupation = {
     sources: PublicSource[];
     unverified: boolean;
     changedAt: string | null;
+    reportUrl: string;
+    credits: Credits;
+};
+
+/** The people credited on a page (PLAN M16): named ones first, then how many stayed anonymous. */
+export type Credits = {
+    people: { name: string; url: string; contributions: number }[];
+    anonymous: number;
 };
 
 export type OccupationLink = {

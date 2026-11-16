@@ -58,6 +58,8 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            // A one-time notice after a form (PLAN M16: report sent, suggestion saved), as a translation key.
+            'notice' => fn (): ?string => is_string($notice = $request->session()->get('notice')) ? $notice : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

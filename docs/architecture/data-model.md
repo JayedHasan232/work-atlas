@@ -1,6 +1,6 @@
 # Data model
 
-The core tables from M4, with the roles and consent from M8. Migrations in `database/migrations/`
+The core tables from M4, with the roles and consent from M8 and the error reports from M16. Migrations in `database/migrations/`
 are the source of truth; this page explains them. Later milestones add `observations`,
 `submissions`, `verification_tasks` and `discussions`.
 
@@ -23,11 +23,25 @@ erDiagram
     revisions ||--o{ revision_reviews : reviewed
     users ||--o{ revision_reviews : reviewer
     users ||--o{ contribution_consents : agreed
+    occupations ||--o{ error_reports : "reported (M16)"
+    field_definitions |o--o{ error_reports : "about a field"
+    users |o--o{ error_reports : "reporter, handler"
 
     users {
         string role "contributor, trusted, reviewer, expert, maintainer (M8)"
         int accepted_proposals_count "trust counter"
         int rejected_proposals_count "trust counter"
+        boolean anonymous_credit "credit without the name (M16)"
+    }
+    error_reports {
+        bigint occupation_id FK "deleted with the occupation"
+        bigint field_definition_id FK "nullable: the whole page"
+        string locale
+        text message "no IP address, no contact detail"
+        bigint user_id FK "nullable: anonymous reader"
+        string state "open, resolved, dismissed, spam"
+        bigint handled_by FK
+        timestamptz handled_at
     }
     contribution_consents {
         bigint user_id FK "deleted with the user"
@@ -113,6 +127,7 @@ erDiagram
         decimal confidence "AI only, 0 to 1"
         bigint replaces_revision_id FK "current before this one"
         string old_status "slot status before this one"
+        text declared_interest "conflict of interest the person declared (M16)"
         timestamptz created_at "no updated_at"
     }
     revision_reviews {
@@ -160,7 +175,7 @@ erDiagram
 | Taxonomy | `isco_groups`, `occupations`, `occupation_names` | `IscoGroup`, `Occupation`, `OccupationName` |
 | Knowledge | `field_definitions`, `field_values`, `revisions`, `revision_reviews`, `sources`, `revision_source` | `FieldDefinition`, `FieldValue`, `Revision`, `RevisionReview`, `Source` |
 | AiPipeline | `ai_runs` | `AiRun` |
-| Community | `contribution_consents` (and `users.role`, trust counters) | `ContributionConsent` (`App\Models\User` stays the auth model) |
+| Community | `contribution_consents`, `error_reports` (and `users.role`, trust counters, `users.anonymous_credit`) | `ContributionConsent` (`App\Models\User` stays the auth model) |
 
 A module never reads another module's tables or models. Across modules, rows are linked by a foreign
 key, and the model keeps only the id (`FieldValue::$occupation_id`, `Revision::$ai_run_id`).

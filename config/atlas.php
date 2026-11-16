@@ -37,7 +37,9 @@ return [
             'welcome' => ['home'],
             'contribution-terms' => ['terms'],
             'auth/*' => ['auth'],
-            'occupations/*' => ['occupations'],
+            'occupations/*' => ['occupations', 'contribute'],
+            'contributors/*' => ['contribute'],
+            'settings/contributions' => ['contribute'],
             'search/*' => ['search'],
             'dashboard' => ['shell'],
             'settings/*' => ['shell', 'settings'],
@@ -153,6 +155,26 @@ return [
     'search' => [
         'min_similarity' => 0.4,
         'per_page' => 20,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Community limits
+    |--------------------------------------------------------------------------
+    |
+    | Spam limits (PLAN M16, A15, D62). An account is new for its first days; a new account may write
+    | fewer changes a day, and its links wait for a review. Reviewers and above have no daily limit.
+    | Error reports are limited per IP address (kept only in the cache), suggestions per person.
+    | Starting values, to be tuned with real use.
+    |
+    */
+
+    'community' => [
+        'new_account_days' => 7,
+        'daily_changes' => 50,
+        'daily_changes_new_account' => 10,
+        'error_reports_per_hour' => 10,
+        'suggestions_per_minute' => 6,
     ],
 
     'publishing' => [

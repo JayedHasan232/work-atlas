@@ -8,6 +8,7 @@ return [
         'profile' => 'প্রোফাইল',
         'security' => 'নিরাপত্তা',
         'appearance' => 'দেখার ধরন',
+        'contributions' => 'অবদান',
     ],
 
     'profile' => [
