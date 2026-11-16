@@ -36,5 +36,9 @@ Everything the public can read.
   pages (`noindex`): the threads (filtered by field), the posts, and the hide and show links for
   moderators. A hidden post's text and author are left out for everyone else (D70). The occupation
   page links its talk page and, per field, a "Discuss" link.
+- **Guide and compare (M20):** `Presenters\GuidePresenter` turns the matches into reasons (the value
+  as reader text and its status) and limits; `Presenters\ComparePresenter` builds the side-by-side
+  rows with the sensitive-field gate (D72–D74). `RobotsTxt` keeps answered guides and compare pages
+  out of crawling.
 
 See [the module rules](../README.md).

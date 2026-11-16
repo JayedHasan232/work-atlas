@@ -42,6 +42,7 @@ return [
             'tasks/*' => ['tasks', 'occupations'],
             'moderation/*' => ['moderation', 'occupations', 'talk'],
             'talk/*' => ['talk', 'occupations'],
+            'discovery/*' => ['guide', 'occupations'],
             'settings/contributions' => ['contribute'],
             'search/*' => ['search'],
             'dashboard' => ['shell'],
@@ -223,6 +224,21 @@ return [
         'page_waves' => [0, 1],
         'medical_groups' => ['health'],
         'per_page' => 50,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Discovery
+    |--------------------------------------------------------------------------
+    |
+    | The guided filter and compare (PLAN M20, D72–D73). `max_matches` is how many matches the filter
+    | shows; `compare_waves` are the waves whose fields the compare page puts side by side.
+    |
+    */
+
+    'discovery' => [
+        'max_matches' => 30,
+        'compare_waves' => [1],
     ],
 
     /*

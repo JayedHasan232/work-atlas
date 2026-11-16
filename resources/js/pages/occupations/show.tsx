@@ -291,6 +291,13 @@ export default function OccupationShow({
                                 count: formatNumber(occupation.talkCount),
                             })}
                         </Link>
+                        <Link
+                            href={occupation.compareUrl}
+                            data-test="compare-link"
+                            className="ml-2 inline-block rounded-md border px-3 py-1.5 text-sm hover:bg-muted"
+                        >
+                            {t('occupations.show.compare_button')}
+                        </Link>
                     </div>
                 </section>
 

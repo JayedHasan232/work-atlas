@@ -44,6 +44,7 @@ return [
         'report_body' => 'Tell us what is wrong on this page. You do not need an account.',
         'report_button' => 'Report a mistake',
         'discuss' => 'Discuss',
+        'compare_button' => 'Compare with other occupations',
         'talk_button' => 'Talk page (:count discussions)',
         'attribution' => 'Written by Work Atlas contributors. AI drafts are checked by people before they are trusted.',
         'license' => 'You may reuse this page under CC BY-SA 4.0.',
