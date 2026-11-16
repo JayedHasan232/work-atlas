@@ -40,5 +40,9 @@ Everything the public can read.
   as reader text and its status) and limits; `Presenters\ComparePresenter` builds the side-by-side
   rows with the sensitive-field gate (D72–D74). `RobotsTxt` keeps answered guides and compare pages
   out of crawling.
+- **Public API v1 (M21):** `Presenters\ApiPresenter` and `Http\Controllers\Api\*` serve `/api/v1`
+  (`routes/api.php`), rate-limited (`throttle:public-api`) and open to any origin for reads
+  (`config/cors.php`). `OpenApiSpec` reads the hand-written description in
+  `resources/api/openapi.v1.yaml` for `/api/v1/openapi.json` and the `/developers` page (D75–D76). `Http\ApiResponse` sends the JSON.
 
 See [the module rules](../README.md).

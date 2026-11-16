@@ -1,0 +1,365 @@
+openapi: 3.1.0
+info:
+    title: Work Atlas public API
+    version: 1.0.0
+    summary: Read-only open data about occupations in Bangladesh.
+    description: |
+        Read-only, no key needed. Data and text are CC BY-SA 4.0 — credit "Work Atlas contributors".
+        Every field value has a status (ai_draft, sourced, community_supported, verified, disputed).
+        ai_draft values are unchecked AI drafts. Sensitive values (income, health, legal) are withheld
+        until verified. Not medical, legal or financial advice. Rate limit: 60 requests per minute per
+        IP address.
+    license:
+        name: CC BY-SA 4.0 (data); AGPL-3.0-or-later (code)
+        url: https://creativecommons.org/licenses/by-sa/4.0/
+servers:
+    - url: /api/v1
+paths:
+    /occupations:
+        get:
+            operationId: listOccupations
+            summary: The public occupations, a page at a time.
+            parameters:
+                - name: group
+                  in: query
+                  required: false
+                  description: Only occupations in this ISCO-08 group (1 to 4 digits).
+                  schema: { type: string, pattern: '^[0-9]{1,4}$' }
+                - name: page
+                  in: query
+                  required: false
+                  schema: { type: integer, minimum: 1, default: 1 }
+                - name: per_page
+                  in: query
+                  required: false
+                  schema:
+                      { type: integer, minimum: 1, maximum: 100, default: 50 }
+            responses:
+                '200':
+                    description: One page of occupations.
+                    content:
+                        application/json:
+                            schema:
+                                { $ref: '#/components/schemas/OccupationList' }
+                '422': { $ref: '#/components/responses/Invalid' }
+                '429': { $ref: '#/components/responses/TooManyRequests' }
+    /occupations/{slug}:
+        get:
+            operationId: getOccupation
+            summary: One occupation with its field values and sources.
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema: { type: string, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' }
+            responses:
+                '200':
+                    description: The occupation.
+                    content:
+                        application/json:
+                            schema:
+                                {
+                                    $ref: '#/components/schemas/OccupationResponse',
+                                }
+                '301':
+                    description: The occupation was merged into another; Location points to it.
+                '404': { $ref: '#/components/responses/NotFound' }
+                '429': { $ref: '#/components/responses/TooManyRequests' }
+    /fields:
+        get:
+            operationId: listFields
+            summary: What each field means, its options and scale anchors.
+            responses:
+                '200':
+                    description: The field definitions.
+                    content:
+                        application/json:
+                            schema: { $ref: '#/components/schemas/FieldList' }
+                '429': { $ref: '#/components/responses/TooManyRequests' }
+    /search:
+        get:
+            operationId: searchOccupations
+            summary: Occupations by any of their names, local and regional ones included.
+            parameters:
+                - name: q
+                  in: query
+                  required: true
+                  schema: { type: string, minLength: 1, maxLength: 100 }
+                - name: locale
+                  in: query
+                  required: false
+                  schema: { type: string, enum: [bn, en], default: bn }
+                - name: limit
+                  in: query
+                  required: false
+                  schema:
+                      { type: integer, minimum: 1, maximum: 50, default: 20 }
+            responses:
+                '200':
+                    description: Matching occupations, best first.
+                    content:
+                        application/json:
+                            schema:
+                                { $ref: '#/components/schemas/SearchResults' }
+                '422': { $ref: '#/components/responses/Invalid' }
+                '429': { $ref: '#/components/responses/TooManyRequests' }
+    /openapi.json:
+        get:
+            operationId: getOpenApi
+            summary: This description, as JSON.
+            responses:
+                '200':
+                    description: The OpenAPI document.
+                    content:
+                        application/json:
+                            schema: { type: object }
+components:
+    responses:
+        Invalid:
+            description: A parameter is not valid.
+            content:
+                application/json:
+                    schema: { $ref: '#/components/schemas/Error' }
+        NotFound:
+            description: No public occupation has this slug.
+            content:
+                application/json:
+                    schema: { $ref: '#/components/schemas/Error' }
+        TooManyRequests:
+            description: Too many requests; wait for the seconds in Retry-After.
+    schemas:
+        Error:
+            type: object
+            required: [message]
+            properties:
+                message: { type: string }
+                errors:
+                    type: object
+                    additionalProperties:
+                        { type: array, items: { type: string } }
+        Meta:
+            allOf:
+                - { $ref: '#/components/schemas/MetaBase' }
+            unevaluatedProperties: false
+        MetaBase:
+            type: object
+            required: [license, license_url, attribution, notice]
+            properties:
+                license: { type: string }
+                license_url: { type: string, format: uri }
+                attribution: { type: string }
+                notice: { type: string }
+        LocalizedText:
+            type: object
+            description: Text by language code (bn, en).
+            additionalProperties: { type: string }
+        Status:
+            type: string
+            enum: [ai_draft, sourced, community_supported, verified, disputed]
+        OccupationSummary:
+            allOf:
+                - { $ref: '#/components/schemas/OccupationBase' }
+            unevaluatedProperties: false
+        OccupationBase:
+            type: object
+            required: [slug, isco_code, names, url, page_url]
+            properties:
+                slug: { type: string }
+                isco_code:
+                    {
+                        type: string,
+                        description: ISCO-08 unit group (4 digits).,
+                    }
+                names: { $ref: '#/components/schemas/LocalizedText' }
+                url:
+                    {
+                        type: string,
+                        format: uri,
+                        description: This occupation in the API.,
+                    }
+                page_url:
+                    { type: string, format: uri, description: The public page. }
+        OccupationList:
+            type: object
+            additionalProperties: false
+            required: [data, meta, links]
+            properties:
+                data:
+                    type: array
+                    items: { $ref: '#/components/schemas/OccupationSummary' }
+                meta:
+                    allOf:
+                        - { $ref: '#/components/schemas/MetaBase' }
+                    type: object
+                    unevaluatedProperties: false
+                    properties:
+                        pagination:
+                            type: object
+                            additionalProperties: false
+                            required: [page, per_page, total, last_page]
+                            properties:
+                                page: { type: integer }
+                                per_page: { type: integer }
+                                total: { type: integer }
+                                last_page: { type: integer }
+                    required: [pagination]
+                links:
+                    type: object
+                    additionalProperties: false
+                    required: [self, prev, next]
+                    properties:
+                        self: { type: string, format: uri }
+                        prev: { type: [string, 'null'], format: uri }
+                        next: { type: [string, 'null'], format: uri }
+        Group:
+            type: object
+            additionalProperties: false
+            required: [code, title]
+            properties:
+                code: { type: string }
+                title: { $ref: '#/components/schemas/LocalizedText' }
+        FieldValue:
+            type: object
+            additionalProperties: false
+            required: [locale, status, changed_at, withheld, value, sources]
+            properties:
+                locale:
+                    {
+                        type: [string, 'null'],
+                        description: Null for a value that is the same in every language.,
+                    }
+                status: { $ref: '#/components/schemas/Status' }
+                changed_at: { type: [string, 'null'], format: date-time }
+                withheld:
+                    type: boolean
+                    description: True for a sensitive value that is not verified yet; value and sources are then left out.
+                value:
+                    description: The stored value. Its shape follows the field type (see /fields); "unknown" is a valid value.
+                sources:
+                    type: array
+                    items:
+                        {
+                            type: integer,
+                            description: An id in the occupation's sources.,
+                        }
+        Field:
+            type: object
+            additionalProperties: false
+            required: [key, version, group, type, values]
+            properties:
+                key: { type: string }
+                version: { type: integer }
+                group: { type: string }
+                type: { $ref: '#/components/schemas/FieldType' }
+                values:
+                    type: array
+                    items: { $ref: '#/components/schemas/FieldValue' }
+        FieldType:
+            type: string
+            enum: [scale_1_5, enum, multi_enum, boolean, band, text, name_list]
+        Source:
+            type: object
+            additionalProperties: false
+            required:
+                [id, url, publisher, title, license, accessed_on, archive_url]
+            properties:
+                id: { type: integer }
+                url: { type: string, format: uri }
+                publisher: { type: [string, 'null'] }
+                title: { type: [string, 'null'] }
+                license: { type: [string, 'null'] }
+                accessed_on: { type: string, format: date }
+                archive_url: { type: [string, 'null'], format: uri }
+        Occupation:
+            allOf:
+                - { $ref: '#/components/schemas/OccupationBase' }
+            type: object
+            unevaluatedProperties: false
+            required: [groups, fields, sources]
+            properties:
+                groups:
+                    type: array
+                    description: The ISCO-08 groups from the broadest to the unit group.
+                    items: { $ref: '#/components/schemas/Group' }
+                fields:
+                    type: array
+                    items: { $ref: '#/components/schemas/Field' }
+                sources:
+                    type: array
+                    items: { $ref: '#/components/schemas/Source' }
+        OccupationResponse:
+            type: object
+            additionalProperties: false
+            required: [data, meta]
+            properties:
+                data: { $ref: '#/components/schemas/Occupation' }
+                meta: { $ref: '#/components/schemas/Meta' }
+        FieldDefinition:
+            type: object
+            additionalProperties: false
+            required:
+                [
+                    key,
+                    version,
+                    wave,
+                    group,
+                    type,
+                    label,
+                    help,
+                    options,
+                    option_labels,
+                    anchors,
+                    sensitive,
+                    requires_source,
+                ]
+            properties:
+                key: { type: string }
+                version: { type: integer }
+                wave: { type: integer }
+                group: { type: string }
+                type: { $ref: '#/components/schemas/FieldType' }
+                label: { $ref: '#/components/schemas/LocalizedText' }
+                help: { $ref: '#/components/schemas/LocalizedText' }
+                options:
+                    type: [array, 'null']
+                    items: { type: string }
+                option_labels:
+                    type: [object, 'null']
+                    additionalProperties:
+                        { $ref: '#/components/schemas/LocalizedText' }
+                anchors:
+                    type: [object, 'null']
+                    description: Scale anchors by language, then scale point 1–5.
+                    additionalProperties:
+                        type: object
+                        additionalProperties: { type: string }
+                sensitive: { type: boolean }
+                requires_source: { type: boolean }
+        FieldList:
+            type: object
+            additionalProperties: false
+            required: [data, meta]
+            properties:
+                data:
+                    type: array
+                    items: { $ref: '#/components/schemas/FieldDefinition' }
+                meta: { $ref: '#/components/schemas/Meta' }
+        SearchHit:
+            allOf:
+                - { $ref: '#/components/schemas/OccupationBase' }
+            type: object
+            unevaluatedProperties: false
+            required: [matched_name, matched_locale, match]
+            properties:
+                matched_name: { type: string }
+                matched_locale: { type: string }
+                match: { type: string, enum: [exact, prefix, similar] }
+        SearchResults:
+            type: object
+            additionalProperties: false
+            required: [data, meta]
+            properties:
+                data:
+                    type: array
+                    items: { $ref: '#/components/schemas/SearchHit' }
+                meta: { $ref: '#/components/schemas/Meta' }

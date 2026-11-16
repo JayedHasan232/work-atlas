@@ -60,6 +60,9 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('suggestions', fn (Request $request): Limit => Limit::perMinute(Config::integer('atlas.community.suggestions_per_minute'))
             ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
 
+        RateLimiter::for('public-api', fn (Request $request): Limit => Limit::perMinute(Config::integer('atlas.api.per_minute'))
+            ->by((string) $request->ip()));
+
         RateLimiter::for('answers', fn (Request $request): Limit => Limit::perMinute(Config::integer('atlas.community.answers_per_minute'))
             ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
