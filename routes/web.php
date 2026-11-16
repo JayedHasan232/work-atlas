@@ -2,12 +2,17 @@
 
 use App\Http\Controllers\ContributionTermsController;
 use App\Http\Controllers\LocaleController;
+use App\Modules\Community\Http\Controllers\Web\EditSuggestionController;
+use App\Modules\Community\Http\Controllers\Web\ErrorReportController;
+use App\Modules\Publishing\Http\Controllers\Web\ContributorController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationGroupController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationIndexController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationPageController;
+use App\Modules\Publishing\Http\Controllers\Web\ReportFormController;
 use App\Modules\Publishing\Http\Controllers\Web\RobotsTxtController;
 use App\Modules\Publishing\Http\Controllers\Web\SearchController;
 use App\Modules\Publishing\Http\Controllers\Web\SitemapController;
+use App\Modules\Publishing\Http\Controllers\Web\SuggestFormController;
 use App\Support\Localization\LocalizedRoutes;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +29,22 @@ LocalizedRoutes::register(function () {
     Route::get('occupations/{slug}', OccupationPageController::class)
         ->where('slug', '[a-z0-9]+(-[a-z0-9]+)*')
         ->name('occupations.show');
+
+    // Contributions (PLAN M16): anyone reports an error; a signed-in person suggests a change.
+    Route::where(['slug' => '[a-z0-9]+(-[a-z0-9]+)*', 'field' => '[a-z0-9_]+'])->group(function () {
+        Route::get('occupations/{slug}/report', ReportFormController::class)->name('occupations.report');
+        Route::post('occupations/{slug}/report', ErrorReportController::class)
+            ->middleware('throttle:error-reports')
+            ->name('occupations.report.store');
+
+        Route::middleware(['auth', 'verified'])->group(function () {
+            Route::get('occupations/{slug}/suggest/{field}', SuggestFormController::class)->name('occupations.suggest');
+            Route::post('occupations/{slug}/suggest/{field}', EditSuggestionController::class)
+                ->middleware('throttle:suggestions')
+                ->name('occupations.suggest.store');
+        });
+    });
+    Route::get('contributors/{id}', ContributorController::class)->whereNumber('id')->name('contributors.show');
 
     // Search (PLAN M15).
     Route::get('search', SearchController::class)->name('search');

@@ -17,6 +17,8 @@ declare module '@inertiajs/core' {
             translations: Translations;
             /** Set on pages kept out of search engines (rule 12). */
             robots?: string | null;
+            /** A one-time notice after a form, as a translation key (PLAN M16). */
+            notice?: string | null;
             [key: string]: unknown;
         };
     }

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Knowledge\Models;
 
+use App\Modules\Knowledge\Data\FieldDefinitionData;
 use App\Modules\Knowledge\Enums\FieldType;
 use Database\Factories\Knowledge\FieldDefinitionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -65,5 +66,23 @@ class FieldDefinition extends Model
     public function values(): HasMany
     {
         return $this->hasMany(FieldValue::class);
+    }
+
+    public function toData(): FieldDefinitionData
+    {
+        return new FieldDefinitionData(
+            key: $this->key,
+            version: $this->version,
+            wave: $this->wave,
+            group: $this->group,
+            type: $this->type,
+            label: $this->label ?? [],
+            help: $this->help ?? [],
+            options: $this->options,
+            optionLabels: $this->option_labels,
+            anchors: $this->anchors,
+            sensitive: $this->sensitive,
+            requiresSource: $this->requires_source,
+        );
     }
 }

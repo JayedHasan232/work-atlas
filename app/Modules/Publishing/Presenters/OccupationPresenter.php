@@ -2,11 +2,11 @@
 
 namespace App\Modules\Publishing\Presenters;
 
-use App\Modules\Knowledge\Data\FieldDefinitionData;
+use App\Modules\Community\Queries\PublicContributors;
 use App\Modules\Knowledge\Data\FieldSlot;
-use App\Modules\Knowledge\Data\SlotValue;
 use App\Modules\Knowledge\Enums\FieldStatus;
 use App\Modules\Knowledge\Enums\FieldType;
+use App\Modules\Knowledge\Queries\ContributionCredits;
 use App\Modules\Knowledge\Queries\OccupationFields;
 use App\Modules\Taxonomy\Data\OccupationListItem;
 use App\Modules\Taxonomy\Queries\IscoGroups;
@@ -23,6 +23,9 @@ final class OccupationPresenter
     public function __construct(
         private readonly OccupationFields $fields,
         private readonly IscoGroups $groups,
+        private readonly FieldDisplay $display,
+        private readonly ContributionCredits $credits,
+        private readonly PublicContributors $contributors,
     ) {}
 
     /**
@@ -54,7 +57,7 @@ final class OccupationPresenter
                 continue;
             }
 
-            $field = $this->field($slot, $locale, $sources);
+            $field = $this->field($slot, $occupation->slug, $locale, $sources);
             $unverified = $unverified || ($field['status'] !== null && $field['status'] !== FieldStatus::Verified->value);
             $group = $slot->definition->group;
 
@@ -85,7 +88,41 @@ final class OccupationPresenter
             'sources' => $sources->all(),
             'unverified' => $unverified,
             'changedAt' => $changedAt?->toIso8601String(),
+            'reportUrl' => LocalizedRoutes::path('occupations.report', ['slug' => $occupation->slug], $locale),
+            'credits' => $this->credits($occupation->id, $locale),
         ];
+    }
+
+    /**
+     * The people credited on this page (PLAN M16): named ones with a link to their profile, most changes
+     * first, and how many chose to stay anonymous.
+     *
+     * @return array{people: list<array{name: string, url: string, contributions: int}>, anonymous: int}
+     */
+    private function credits(int $occupationId, string $locale): array
+    {
+        $credits = $this->credits->forOccupation($occupationId);
+        $named = $this->contributors->named(array_map(fn ($credit): int => $credit->userId, $credits));
+        $people = [];
+        $anonymous = 0;
+
+        foreach ($credits as $credit) {
+            $contributor = $named[$credit->userId] ?? null;
+
+            if ($contributor === null) {
+                $anonymous++;
+
+                continue;
+            }
+
+            $people[] = [
+                'name' => $contributor->name,
+                'url' => LocalizedRoutes::path('contributors.show', ['id' => $contributor->id], $locale),
+                'contributions' => $credit->contributions,
+            ];
+        }
+
+        return ['people' => $people, 'anonymous' => $anonymous];
     }
 
     /**
@@ -159,15 +196,17 @@ final class OccupationPresenter
     /**
      * @return array<string, mixed>
      */
-    private function field(FieldSlot $slot, string $locale, SourceNumbers $sources): array
+    private function field(FieldSlot $slot, string $slug, string $locale, SourceNumbers $sources): array
     {
         $definition = $slot->definition;
-        $value = $this->pick($slot->values, $locale);
+        $value = $this->display->pick($slot->values, $locale);
 
         $field = [
             'key' => $definition->key,
-            'label' => $this->text($definition->label, $locale) ?? $definition->key,
-            'help' => $this->text($definition->help, $locale),
+            'suggestUrl' => LocalizedRoutes::path('occupations.suggest', ['slug' => $slug, 'field' => $definition->key], $locale),
+            'reportUrl' => LocalizedRoutes::path('occupations.report', ['slug' => $slug], $locale).'?field='.rawurlencode($definition->key),
+            'label' => $this->display->text($definition->label, $locale) ?? $definition->key,
+            'help' => $this->display->text($definition->help, $locale),
             'status' => $value?->status->value,
             'withheld' => false,
             'value' => null,
@@ -185,67 +224,9 @@ final class OccupationPresenter
         }
 
         return [
-            'value' => $this->display($definition, $value->value, $locale),
+            'value' => $this->display->display($definition, $value->value, $locale),
             'valueLocale' => $value->locale,
             'sources' => array_map(fn ($source): int => $sources->number($source), $value->sources),
         ] + $field;
-    }
-
-    /**
-     * The value in the reader's language, else the one without a language, else any.
-     *
-     * @param  list<SlotValue>  $values
-     */
-    private function pick(array $values, string $locale): ?SlotValue
-    {
-        foreach ([$locale, null] as $wanted) {
-            foreach ($values as $value) {
-                if ($value->locale === $wanted) {
-                    return $value;
-                }
-            }
-        }
-
-        return $values[0] ?? null;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function display(FieldDefinitionData $definition, mixed $value, string $locale): array
-    {
-        if ($value === null) {
-            return ['kind' => 'unknown'];
-        }
-
-        return match ($definition->type) {
-            FieldType::Scale1To5 => [
-                'kind' => 'scale',
-                'point' => (int) $value,
-                'anchor' => $this->text(array_map(
-                    fn (array $points): string => $points[(int) $value] ?? '',
-                    $definition->anchors ?? [],
-                ), $locale),
-            ],
-            FieldType::Enum, FieldType::Band, FieldType::MultiEnum => [
-                'kind' => 'options',
-                'labels' => array_map(
-                    fn (mixed $option): string => $this->text($definition->optionLabels[(string) $option] ?? [], $locale) ?? (string) $option,
-                    is_array($value) ? array_values($value) : [$value],
-                ),
-            ],
-            FieldType::Boolean => ['kind' => 'boolean', 'value' => (bool) $value],
-            default => ['kind' => 'text', 'text' => is_scalar($value) ? (string) $value : ''],
-        };
-    }
-
-    /**
-     * @param  array<string, string>  $texts  by locale
-     */
-    private function text(array $texts, string $locale): ?string
-    {
-        $text = $texts[$locale] ?? $texts[Config::string('app.fallback_locale')] ?? null;
-
-        return $text === null || $text === '' ? null : $text;
     }
 }

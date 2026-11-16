@@ -25,7 +25,9 @@ use Illuminate\Support\Facades\DB;
  * - a person's write is a proposal until roles exist (M8: contributors propose, trusted contributors
  *   write descriptive fields directly);
  * - a second opinion (an AI run's cross-check value, D50) is always a proposal and leaves the queue
- *   order to RecordCrossCheck.
+ *   order to RecordCrossCheck;
+ * - a person's write marked `needsReview` is a proposal whatever their role (PLAN M16), and only a
+ *   person declares an interest.
  *
  * Throws a KnowledgeRuleViolation, and writes nothing, when a rule is broken.
  */
@@ -46,6 +48,10 @@ final class RecordRevision
             throw InvalidFieldValue::because($definition->key, 'only an AI run gives a second opinion');
         }
 
+        if ($input->actor->isAi() && ($input->declaredInterest !== null || $input->needsReview)) {
+            throw InvalidFieldValue::because($definition->key, 'only a person declares an interest or asks for a review');
+        }
+
         $sourceIds = $this->checkSources($definition, $value, $input->sourceIds);
 
         return DB::transaction(function () use ($input, $definition, $value, $sourceIds): Revision {
@@ -54,6 +60,7 @@ final class RecordRevision
             // A verified value changes only through a review. Otherwise an AI write applies at once; a
             // person's applies when their role allows it on this field (Role::appliesDirectly, D36).
             $proposed = $input->secondOpinion
+                || $input->needsReview
                 || $slot->status === FieldStatus::Verified
                 || (! $input->actor->isAi() && ! $input->actor->personRole()->appliesDirectly($definition->sensitive));
 
@@ -67,6 +74,7 @@ final class RecordRevision
                 'confidence' => $input->confidence,
                 'replaces_revision_id' => $proposed ? null : $current?->id,
                 'old_status' => $proposed || $current === null ? null : $slot->status,
+                'declared_interest' => $this->declaredInterest($input->declaredInterest),
             ]);
 
             if ($sourceIds !== []) {
@@ -92,6 +100,13 @@ final class RecordRevision
 
             return $revision;
         });
+    }
+
+    private function declaredInterest(?string $text): ?string
+    {
+        $text = $text === null ? null : trim($text);
+
+        return $text === '' ? null : $text;
     }
 
     private function checkConfidence(FieldDefinition $definition, RevisionInput $input): void

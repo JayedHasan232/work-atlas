@@ -1,8 +1,9 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import FieldValue from '@/components/occupations/field-value';
 import StatusBadge from '@/components/occupations/status-badge';
 import { useTranslation } from '@/lib/i18n';
 import type { PublicOccupation } from '@/types/occupations';
+import type { TranslationKey } from '@/types/translation-keys.generated';
 
 const CONTENT_LICENSE_URL = 'https://creativecommons.org/licenses/by-sa/4.0/';
 
@@ -17,11 +18,20 @@ export default function OccupationShow({
     occupation: PublicOccupation;
 }) {
     const { t, formatNumber, formatDate } = useTranslation();
+    const { notice } = usePage().props;
 
     return (
         <>
             <Head title={occupation.name} />
             <article className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8">
+                {typeof notice === 'string' && (
+                    <p
+                        role="status"
+                        className="rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-100"
+                    >
+                        {t(notice as TranslationKey)}
+                    </p>
+                )}
                 <header className="flex flex-col gap-3">
                     {occupation.groups.length > 0 && (
                         <nav aria-label={t('common.ui.breadcrumb')}>
@@ -164,6 +174,26 @@ export default function OccupationShow({
                                                 ))}
                                             </p>
                                         )}
+                                        <p className="flex flex-wrap gap-x-4 text-sm">
+                                            <Link
+                                                href={field.suggestUrl}
+                                                className="underline underline-offset-4"
+                                            >
+                                                {t('contribute.suggest.button')}
+                                                <span className="sr-only">
+                                                    {`: ${field.label}`}
+                                                </span>
+                                            </Link>
+                                            <Link
+                                                href={field.reportUrl}
+                                                className="underline underline-offset-4"
+                                            >
+                                                {t('contribute.suggest.report')}
+                                                <span className="sr-only">
+                                                    {`: ${field.label}`}
+                                                </span>
+                                            </Link>
+                                        </p>
                                     </dd>
                                 </div>
                             ))}
@@ -237,14 +267,59 @@ export default function OccupationShow({
                         {t('occupations.show.report_body')}
                     </p>
                     <div>
-                        <button
-                            type="button"
-                            disabled
-                            className="rounded-md border px-3 py-1.5 text-sm opacity-60"
+                        <Link
+                            href={occupation.reportUrl}
+                            className="inline-block rounded-md border px-3 py-1.5 text-sm hover:bg-muted"
                         >
                             {t('occupations.show.report_button')}
-                        </button>
+                        </Link>
                     </div>
+                </section>
+
+                <section
+                    aria-labelledby="credits"
+                    className="flex flex-col gap-2"
+                >
+                    <h2 id="credits" className="text-lg font-semibold">
+                        {t('contribute.credits.heading')}
+                    </h2>
+                    {occupation.credits.people.length === 0 &&
+                    occupation.credits.anonymous === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                            {t('contribute.credits.none')}
+                        </p>
+                    ) : (
+                        <ul className="flex flex-col gap-1 text-sm">
+                            {occupation.credits.people.map((person) => (
+                                <li key={person.url}>
+                                    <Link
+                                        href={person.url}
+                                        className="underline underline-offset-4"
+                                    >
+                                        {person.name}
+                                    </Link>{' '}
+                                    <span className="text-muted-foreground">
+                                        (
+                                        {t('contribute.credits.contributions', {
+                                            count: formatNumber(
+                                                person.contributions,
+                                            ),
+                                        })}
+                                        )
+                                    </span>
+                                </li>
+                            ))}
+                            {occupation.credits.anonymous > 0 && (
+                                <li className="text-muted-foreground">
+                                    {t('contribute.credits.anonymous', {
+                                        count: formatNumber(
+                                            occupation.credits.anonymous,
+                                        ),
+                                    })}
+                                </li>
+                            )}
+                        </ul>
+                    )}
                 </section>
 
                 <footer className="flex flex-col gap-1 border-t pt-4 text-sm text-muted-foreground">

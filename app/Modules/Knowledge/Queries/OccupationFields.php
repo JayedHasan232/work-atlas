@@ -3,7 +3,6 @@
 namespace App\Modules\Knowledge\Queries;
 
 use App\Modules\Knowledge\Data\CitedSource;
-use App\Modules\Knowledge\Data\FieldDefinitionData;
 use App\Modules\Knowledge\Data\FieldSlot;
 use App\Modules\Knowledge\Data\SlotValue;
 use App\Modules\Knowledge\Models\FieldDefinition;
@@ -49,7 +48,7 @@ final class OccupationFields
             $slots[] = [
                 'order' => [$chosen->wave, $versions->min('id')],
                 'slot' => new FieldSlot(
-                    definition: $this->definition($chosen),
+                    definition: $chosen->toData(),
                     values: array_values(($values->get($chosen->id) ?? collect())
                         ->map(fn (FieldValue $value): SlotValue => $this->value($value))
                         ->all()),
@@ -60,24 +59,6 @@ final class OccupationFields
         usort($slots, fn (array $a, array $b): int => $a['order'] <=> $b['order']);
 
         return array_column($slots, 'slot');
-    }
-
-    private function definition(FieldDefinition $definition): FieldDefinitionData
-    {
-        return new FieldDefinitionData(
-            key: $definition->key,
-            version: $definition->version,
-            wave: $definition->wave,
-            group: $definition->group,
-            type: $definition->type,
-            label: $definition->label ?? [],
-            help: $definition->help ?? [],
-            options: $definition->options,
-            optionLabels: $definition->option_labels,
-            anchors: $definition->anchors,
-            sensitive: $definition->sensitive,
-            requiresSource: $definition->requires_source,
-        );
     }
 
     private function value(FieldValue $value): SlotValue

@@ -27,7 +27,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 final class AdminPanelServiceProvider extends PanelProvider
 {
     /** Modules with admin resources. */
-    private const array MODULES = ['Taxonomy', 'Knowledge', 'AiPipeline'];
+    private const array MODULES = ['Taxonomy', 'Knowledge', 'AiPipeline', 'Community'];
 
     public function panel(Panel $panel): Panel
     {

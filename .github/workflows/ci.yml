@@ -158,6 +158,7 @@ jobs:
           scripts/ci/ssr-smoke http://127.0.0.1:8000/occupations
           scripts/ci/ssr-smoke http://127.0.0.1:8000/en/occupations/groups/7126
           scripts/ci/ssr-smoke "http://127.0.0.1:8000/search?q=ssr"
+          scripts/ci/ssr-smoke http://127.0.0.1:8000/en/occupations/ssr-smoke/report
       - name: Server logs
         if: failure()
         run: tail -n 50 ssr.log serve.log storage/logs/*.log || true

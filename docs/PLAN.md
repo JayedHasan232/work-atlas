@@ -487,6 +487,11 @@ Tests
 - `Feature/Community/ErrorReportTest` (anonymous, rate limit), `EditSuggestionTest`, `CreditsTest`,
   `AnonymousContributorTest`, `NewAccountLimitTest`, `Browser/SuggestEditTest`.
 
+Status: done (D61–D63): error reports with honeypot, rate limit and an admin queue; edit suggestions
+per field type with sources, comment, conflict-of-interest declaration and a before-and-after
+preview; new-account limits; credit on each occupation page, contributor profiles and anonymous
+credit in settings. Open: Turnstile (O14); O6 and O11 are still undecided.
+
 ### M17 — Micro-task verification
 
 Depends on: M12, M16 · Blocked by: —
@@ -877,6 +882,27 @@ Tests
   (`query,expected_slug,locale,note`); `atlas:search:benchmark --report` writes
   `docs/decisions/search-benchmark.md`. A query whose occupation is not in the database counts as a
   miss and is named in the report.
+- **D61** (M16) A reader's error report is its own table, `error_reports` (occupation, optional field,
+  locale, message, optional signed-in user, state open → resolved / dismissed / spam, who handled it
+  and when). No IP address, user agent or contact detail is stored (rule 8); the rate limit (per IP,
+  `atlas.community.error_reports_per_hour`) lives only in the cache. A filled honeypot field gets the
+  same thank-you and stores nothing. Maintainers handle reports in the Filament queue
+  (`/admin/error-reports`, list and one report); `HandleErrorReport` also accepts reviewers, for a
+  later queue in the public site. A report never changes a value; a person fixes it through a
+  suggestion.
+- **D62** (M16) Edit suggestions go through `RecordRevision` with `Actor::user`, so the role matrix
+  (D36) decides: a contributor's change is a proposal, a trusted person's applies at once on a
+  non-sensitive field. Two new revision inputs: `declaredInterest` (stored in
+  `revisions.declared_interest`, shown to the reviewer) and `needsReview` (forces a proposal); an AI
+  run can set neither. Limits (`atlas.community`): 50 changes a day, 10 in an account's first 7 days,
+  counted over the last 24 hours; reviewers and above have none. A new account's links (a source, or
+  a URL in the comment or the declaration) always wait for a review, even from a trusted person.
+  Names (`name_list`) are not suggested here; they go through an error report and the list review.
+- **D63** (M16) Credit is computed, never stored: a person is credited for a revision they wrote that
+  is part of the record, applied directly or accepted by a reviewer. Open and rejected proposals do
+  not count; AI runs are not people. The occupation page lists named people (most changes first) and
+  a count of anonymous ones; `users.anonymous_credit` (Settings → Contributions) hides the name and
+  the profile page. Profile pages (`/contributors/{id}`) are always `noindex`.
 
 ## Maintainer decisions (answered 2026-11-16)
 
@@ -970,7 +996,9 @@ is written down so the choice can be reversed later.
    an anonymous user row, shown as "deleted contributor", so the history and its credit stay intact.
    It does not block anything today: nothing writes revisions until M5, and contributors arrive in
    M16. Decide before M8 ships signup. M8 built signup without it: nothing is deployed until M22,
-   and no account can be deleted yet while it has revisions. Still to decide before M16.
+   and no account can be deleted yet while it has revisions. Still to decide before M16. M16 shipped
+   without it (contributors can write revisions now); still to decide before outside contributors
+   are invited.
 7. **O7 — AI over a `community_supported` value** (raised in M5). The rules protect only `verified`
    values, so a new AI run replaces a community-supported value and drops it to `ai_draft`. Proposal:
    treat `community_supported` like `verified` (the AI write becomes a proposal), so community work is
@@ -994,7 +1022,8 @@ is written down so the choice can be reversed later.
     without a source becomes `community_supported` (with a source, `sourced`). One person is not yet
     "the community". Proposal: keep it for now, and in
     M16 (micro-tasks) make `community_supported` need agreement from several people, with a single
-    person's write staying at the status it would have as a draft. Decide before M16.
+    person's write staying at the status it would have as a draft. Decide before M16. M16 kept the
+    current rule (not guessed); M17 (micro-tasks) is where agreement from several people is built.
 12. **O12 — Contribution terms text** (raised in M8). The page (`/contribution-terms`, `lang/*/terms.php`)
     is a draft marked as such: CC BY-SA 4.0 for contributions, history with authors, share only what
     you may share, private submissions stay private, respect. It is legal text, so Jayed approves it
@@ -1007,6 +1036,12 @@ is written down so the choice can be reversed later.
     merge. It is a repository security setting, so Jayed decides: allow `pull_request_target` for
     this repo in Settings → Actions (see gh.io/securely-using-pull_request_target), or move both
     checks to `pull_request` with read-only permissions.
+14. **O14 — Turnstile on the error report** (raised in M16). A15 asks for Turnstile behind a config
+    flag. Checking a Turnstile answer is an HTTP call to Cloudflare, and `Arch/AiGatewayOnlyTest`
+    allows outside HTTP only in the AI drivers. Tests are not weakened to make room, so the flag is
+    not built yet. Proposal: a small `Community\Support\Turnstile` client as the one named exception
+    in that arch test, off by default. Using Cloudflare Turnstile is also a new external service on a
+    public page (CLAUDE.md), so Jayed decides both. Until then: honeypot + rate limit (D61).
 
 ---
 

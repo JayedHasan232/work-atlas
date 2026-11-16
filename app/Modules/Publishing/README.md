@@ -23,5 +23,11 @@ Everything the public can read.
 - **Search page (M15):** `/search?q=` renders `Presenters\SearchPresenter` (Taxonomy's search, with the
   name that matched); result pages are never indexed and are blocked in `robots.txt` (PLAN D60). The
   public layout has a search box in the header.
+- **Contributions (M16):** each field on an occupation page links to its suggestion form
+  (`/occupations/{slug}/suggest/{field}`, signed in) and the report form
+  (`/occupations/{slug}/report`, no login), both built by `Presenters\ContributionFormPresenter`
+  (the sensitive gate holds in the form too). `OccupationPresenter` adds the credit list;
+  `Presenters\ContributorPresenter` serves `/contributors/{id}`. All three pages are `noindex`
+  (D61–D63). `Presenters\FieldDisplay` turns a stored value into reader text for both.
 
 See [the module rules](../README.md).

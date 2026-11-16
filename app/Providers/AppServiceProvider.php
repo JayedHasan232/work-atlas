@@ -7,9 +7,13 @@ use App\Modules\Knowledge\Events\FieldStatusChanged;
 use App\Modules\Publishing\Actions\QueueIndexGateCheck;
 use App\Modules\Taxonomy\Actions\SyncOccupationNames;
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -30,6 +34,20 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->listenAcrossModules();
+        $this->configureRateLimits();
+    }
+
+    /**
+     * Contribution limits (PLAN M16, A15). Error reports are counted per IP address and suggestions per
+     * person; the counters live only in the cache, never in the database.
+     */
+    protected function configureRateLimits(): void
+    {
+        RateLimiter::for('error-reports', fn (Request $request): Limit => Limit::perHour(Config::integer('atlas.community.error_reports_per_hour'))
+            ->by((string) $request->ip()));
+
+        RateLimiter::for('suggestions', fn (Request $request): Limit => Limit::perMinute(Config::integer('atlas.community.suggestions_per_minute'))
+            ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
 
     /**

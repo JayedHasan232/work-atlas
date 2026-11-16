@@ -29,6 +29,11 @@ What is known about each occupation, field by field, with its history.
   priority (model disagreements first); `Queries\DisagreementReport` is the CSV in /admin (D50).
 - **Public read (M13):** `Queries\OccupationFields` gives an occupation's fields of some waves with
   their current national values and sources, unfiltered; Publishing decides what a reader sees (D52).
+- **People's changes (M16):** a `RevisionInput` can carry `declaredInterest` (a conflict of interest,
+  in `revisions.declared_interest`) and `needsReview` (always a proposal, for a new account's
+  links); an AI run can set neither (D62). `Queries\ContributionCredits` computes credit from
+  revisions: applied or accepted changes by people (D63). `FieldDefinitionByKey::latest()` gives a
+  field with its definition.
 - **Sources:** `RecordSource` records a source once per url, access date and details (M6).
 - **Tables:** see [the data model](../../../docs/architecture/data-model.md).
 
