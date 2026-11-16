@@ -56,7 +56,8 @@ Forgot? Fix the last commit with `git commit --amend -s --no-edit`, or every com
   smoke, end-to-end, and the DCO check.
 - **Migrations are reversible.** Never edit a merged migration; add a new one.
 - **Bangla and English.** Every user-facing string goes through translation keys in both `lang/bn` and
-  `lang/en`. No hard-coded UI text.
+  `lang/en`. No hard-coded UI text. Add a key to both languages, then list its group for the page in
+  `config/atlas.php` if the page doesn't get it yet. `scripts/ci/check-translations` must pass.
 - **No secrets.** Only `.env.example` goes in the repo. No personal data in fixtures, seeds or dumps.
 - Fill in the checklist in the pull request template.
 

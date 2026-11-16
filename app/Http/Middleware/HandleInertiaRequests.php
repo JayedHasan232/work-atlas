@@ -2,8 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Localization\SharedLocalization;
+use Closure;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
+use Symfony\Component\HttpFoundation\Response;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -24,6 +28,19 @@ class HandleInertiaRequests extends Middleware
     public function version(Request $request): ?string
     {
         return parent::version($request);
+    }
+
+    /**
+     * `localization` and `translations` depend on the page's component and the final locale, so they
+     * are shared as a provider that Inertia resolves when the page renders.
+     *
+     * @param  Closure(Request): Response  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        Inertia::share(new SharedLocalization);
+
+        return parent::handle($request, $next);
     }
 
     /**

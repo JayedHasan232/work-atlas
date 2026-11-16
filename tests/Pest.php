@@ -24,3 +24,34 @@ pest()->extend(TestCase::class)
         $this->withVite();
     })
     ->in('Browser');
+
+/*
+|--------------------------------------------------------------------------
+| Modules
+|--------------------------------------------------------------------------
+|
+| The modules under app/Modules (see app/Modules/README.md). The arch tests check each one; a test
+| fails when this list and the folders disagree.
+|
+*/
+
+/**
+ * @return list<string>
+ */
+function atlasModules(): array
+{
+    return ['Taxonomy', 'Knowledge', 'Observations', 'Community', 'AiPipeline', 'Discovery', 'Publishing'];
+}
+
+/**
+ * The namespaces inside each module that other code must not use.
+ *
+ * @return list<string>
+ */
+function modulePrivateNamespaces(string $module): array
+{
+    return array_map(
+        fn (string $part): string => "App\\Modules\\{$module}\\{$part}",
+        ['Models', 'Jobs', 'Policies', 'Http', 'Filament'],
+    );
+}

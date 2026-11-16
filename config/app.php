@@ -78,9 +78,11 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    // Bangla first, English alongside. These are project rules, not per-environment settings, so they
+    // are not read from .env. Supported locales and their URL prefixes live in config/atlas.php.
+    'locale' => 'bn',
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => 'en',
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 

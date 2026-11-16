@@ -1,8 +1,15 @@
 <?php
 
+use App\Http\Controllers\LocaleController;
+use App\Support\Localization\LocalizedRoutes;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'welcome')->name('home');
+// Public pages: Bangla at the root, English under /en (decision A10).
+LocalizedRoutes::register(function () {
+    Route::inertia('/', 'welcome')->name('home');
+});
+
+Route::post('locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');

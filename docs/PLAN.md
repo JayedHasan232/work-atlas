@@ -134,7 +134,8 @@ Tasks
   the groups a page needs). Typed `t()` helper in React. Bangla-digit and date (Asia/Dhaka) formatters.
 - Self-hosted, subset Bangla web font with `font-display: swap`.
 - Public base layout: header, language switcher, footer with license notices (CC BY-SA, AGPL).
-- Translate the starter kit's auth screens to Bangla.
+- Translate the starter kit's auth screens to Bangla (done for every kit screen: auth, settings,
+  dashboard and the app shell).
 - `app/Modules/*` skeleton with a short README per module; autoloading.
 - Arch tests for module boundaries and thin controllers.
 - CI translation parity check (`scripts/ci/check-translations`).
@@ -611,6 +612,24 @@ Tests
   `vp check`) instead of ESLint + Prettier, so we don't fight the kit's defaults. Markdown, license
   texts and `data/` are excluded from formatting.
 - **D12** Tests run on PostgreSQL, not sqlite: later milestones rely on triggers and `pg_trgm`.
+- **D13** Locale URLs (A10): public pages are registered twice, Bangla at the root (`home`) and
+  English under `/en` (`en.home`); the locale lives in the route action. Auth, settings and dashboard
+  have one URL each and take the locale from the session (last public page or the switcher), else
+  `bn`. Only public pages carry `hreflang` alternates, `x-default` (Bangla) and a canonical URL.
+- **D14** Translations are PHP groups in `lang/{bn,en}/`; a page receives only the groups listed for
+  its component in `config/atlas.php`. Vendor sentences (Fortify, passkeys, mail) live in
+  `lang/{bn,en}.json`. The React `TranslationKey` type is generated from `lang/en` and gitignored.
+- **D15** `scripts/ci/check-translations` fails CI on a key missing in either language, an empty
+  value, or different `:placeholder` names.
+- **D16** Font: Noto Sans Bengali (OFL-1.1), self-hosted from `@fontsource`, Bengali and Latin subsets,
+  weights 400/500/600, `font-display: swap`. It replaces the kit's Bunny Fonts CDN, a third party.
+- **D17** The default locale `bn` is set in `config/app.php`, not in `.env`: it is a project rule,
+  not a per-environment setting.
+- **D18** Module boundaries: a module's `Models`, `Jobs`, `Policies`, `Http` and `Filament` are
+  private; other modules and `app/*` outside `Modules` may use its `Actions`, `Queries`, `Data`,
+  `Enums` and `Events`. Controllers use no DB facade, query builder or models
+  (`Arch/ModuleBoundariesTest`, `Arch/ThinControllersTest`). The kit's settings controllers still call
+  `$request->user()` until they move to `Community` actions in M8.
 
 ## Maintainer decisions (answered 2026-11-16)
 
