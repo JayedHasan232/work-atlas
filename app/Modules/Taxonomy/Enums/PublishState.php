@@ -11,4 +11,7 @@ enum PublishState: string
     case Listed = 'listed';
     case Published = 'published';
     case Merged = 'merged';
+
+    // A candidate the list review turned down (D46). Kept, so a rerun does not propose it as new.
+    case Rejected = 'rejected';
 }

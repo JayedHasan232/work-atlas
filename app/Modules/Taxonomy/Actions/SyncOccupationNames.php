@@ -3,6 +3,8 @@
 namespace App\Modules\Taxonomy\Actions;
 
 use App\Modules\Taxonomy\Enums\NameType;
+use App\Modules\Taxonomy\Enums\PublishState;
+use App\Modules\Taxonomy\Models\Occupation;
 use App\Modules\Taxonomy\Models\OccupationName;
 
 /**
@@ -25,6 +27,11 @@ final class SyncOccupationNames
     public function handle(int $occupationId, string $locale, mixed $names): void
     {
         OccupationName::query()->where('occupation_id', $occupationId)->where('locale', $locale)->delete();
+
+        // A merged occupation's names live on as aliases of the one it was merged into (M11).
+        if (Occupation::query()->whereKey($occupationId)->where('publish_state', PublishState::Merged)->exists()) {
+            return;
+        }
 
         $rows = [];
 

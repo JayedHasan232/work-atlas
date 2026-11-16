@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ContributionTermsController;
 use App\Http\Controllers\LocaleController;
+use App\Modules\Publishing\Http\Controllers\Web\OccupationPageController;
 use App\Support\Localization\LocalizedRoutes;
 use Illuminate\Support\Facades\Route;
 
@@ -9,6 +10,9 @@ use Illuminate\Support\Facades\Route;
 LocalizedRoutes::register(function () {
     Route::inertia('/', 'welcome')->name('home');
     Route::get('contribution-terms', ContributionTermsController::class)->name('contribution-terms');
+    Route::get('occupations/{slug}', OccupationPageController::class)
+        ->where('slug', '[a-z0-9]+(-[a-z0-9]+)*')
+        ->name('occupations.show');
 });
 
 Route::post('locale', [LocaleController::class, 'update'])->name('locale.update');

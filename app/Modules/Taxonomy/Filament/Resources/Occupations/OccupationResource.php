@@ -3,6 +3,7 @@
 namespace App\Modules\Taxonomy\Filament\Resources\Occupations;
 
 use App\Modules\Taxonomy\Enums\PublishState;
+use App\Modules\Taxonomy\Filament\ListReview;
 use App\Modules\Taxonomy\Filament\Resources\Occupations\Pages\ListOccupations;
 use App\Modules\Taxonomy\Filament\Resources\Occupations\Pages\ViewOccupation;
 use App\Modules\Taxonomy\Models\Occupation;
@@ -20,7 +21,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 /**
- * Admin view of occupations (M8): list and show only.
+ * Admin view of occupations (M8), with the list-review actions (M11). The actions write through
+ * Taxonomy Actions only; the resource itself never creates, edits or deletes a record.
  */
 final class OccupationResource extends ReadOnlyResource
 {
@@ -38,6 +40,18 @@ final class OccupationResource extends ReadOnlyResource
         return __('admin.occupations.plural');
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Occupation::query()->where('publish_state', PublishState::Candidate)->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeTooltip(): string
+    {
+        return __('admin.review.candidates_badge');
+    }
+
     public static function infolist(Schema $schema): Schema
     {
         return $schema->components([
@@ -47,6 +61,8 @@ final class OccupationResource extends ReadOnlyResource
             TextEntry::make('publish_state')->label(__('admin.fields.publish_state'))->badge(),
             IconEntry::make('indexable')->label(__('admin.fields.indexable'))->boolean(),
             TextEntry::make('merged_into_id')->label(__('admin.fields.merged_into_id'))->placeholder('—'),
+            TextEntry::make('reviewed_at')->label(__('admin.fields.reviewed_at'))->dateTime()->timezone('Asia/Dhaka')->placeholder('—'),
+            TextEntry::make('review_note')->label(__('admin.fields.review_note'))->placeholder('—'),
             RepeatableEntry::make('names')->label(__('admin.fields.names'))->columns(4)->schema([
                 TextEntry::make('locale')->label(__('admin.fields.locale')),
                 TextEntry::make('name')->label(__('admin.fields.name')),
@@ -71,7 +87,7 @@ final class OccupationResource extends ReadOnlyResource
             ->filters([
                 SelectFilter::make('publish_state')->label(__('admin.fields.publish_state'))->options(PublishState::class),
             ])
-            ->recordActions([ViewAction::make()]);
+            ->recordActions([ViewAction::make(), ...ListReview::occupationActions()]);
     }
 
     public static function getPages(): array

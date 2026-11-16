@@ -47,10 +47,25 @@ erDiagram
         string slug UK "ASCII, both locales (A10)"
         string isco_code FK
         string bsco_code
-        string publish_state "candidate, listed, published, merged"
-        bool indexable "never for merged"
+        string publish_state "candidate, listed, published, merged, rejected"
+        bool indexable "never for merged or rejected"
         bigint merged_into_id FK "set iff merged"
         bigint ai_run_id FK "the run that proposed it (M10)"
+        bigint reviewed_by_id FK "list review (M11)"
+        timestamptz reviewed_at
+        text review_note
+    }
+    duplicate_candidates {
+        bigint occupation_id FK "lower id"
+        bigint other_occupation_id FK "higher id"
+        numeric similarity "0-1"
+        string locale
+        text name
+        text other_name
+        string status "open, merged, kept_separate"
+        bigint decided_by_id FK
+        timestamptz decided_at
+        text decision_note
     }
     occupation_names {
         bigint occupation_id FK "copy of the names field (D44)"
@@ -161,10 +176,14 @@ Each is a constraint, so it holds even for raw SQL. The tests are in
   two "all regions" rows can't coexist.
 - **Statuses and types** are check constraints, not Postgres enum types, so a later value is a small
   migration. PHP enums mirror them: `FieldStatus`, `FieldType`, `ReviewDecision`, `PublishState`,
-  `NameType`, `AiRunStatus`.
+  `NameType`, `AiRunStatus`, `DuplicateStatus`.
 - **ISCO codes**: digits only, length = level, and the parent is the code minus its last digit.
 - **Merges**: `merged_into_id` is set if and only if `publish_state = 'merged'`. A merged occupation is
   never `indexable` and never points to itself.
+- **List review (M11)**: `reviewed_by_id` and `reviewed_at` are set together; a rejected occupation
+  is never indexable. `duplicate_candidates` holds each pair once (`occupation_id < other_occupation_id`,
+  unique), and a decided pair has `decided_by_id` and `decided_at`; a GIN trigram index on
+  `occupation_names.normalized_name` serves the detector (PLAN D47).
 - **Names**: one primary name per occupation and locale. Regional names carry a region; others don't.
 - **Field definitions**: `key` + `version` is unique. A change of meaning, options or anchors is a new
   version. 1–5 scales need anchors in `bn` and `en`; choice fields need options.
