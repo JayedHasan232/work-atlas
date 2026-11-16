@@ -1,8 +1,8 @@
 # Data model
 
-The core tables from M4, with the roles and consent from M8 and the error reports from M16. Migrations in `database/migrations/`
+The core tables from M4, with the roles and consent from M8, the error reports from M16 and the micro-tasks from M17. Migrations in `database/migrations/`
 are the source of truth; this page explains them. Later milestones add `observations`,
-`submissions`, `verification_tasks` and `discussions`.
+`submissions` and `discussions`.
 
 ```mermaid
 erDiagram
@@ -26,12 +26,32 @@ erDiagram
     occupations ||--o{ error_reports : "reported (M16)"
     field_definitions |o--o{ error_reports : "about a field"
     users |o--o{ error_reports : "reporter, handler"
+    field_values ||--o{ verification_tasks : "asked about (M17)"
+    revisions ||--o| verification_tasks : "the asked value"
+    verification_tasks ||--o{ verification_answers : answers
+    users ||--o{ verification_answers : "one per task"
 
     users {
         string role "contributor, trusted, reviewer, expert, maintainer (M8)"
         int accepted_proposals_count "trust counter"
         int rejected_proposals_count "trust counter"
         boolean anonymous_credit "credit without the name (M16)"
+        int confirmed_answers_count "answers that agreed with a consensus (M17)"
+    }
+    verification_tasks {
+        bigint field_value_id FK
+        bigint revision_id FK "unique: one task per revision"
+        bigint occupation_id FK
+        bigint author_user_id FK "nullable: never asked of the author"
+        string state "open, supported, disputed, stale"
+        int priority "the slot's review priority"
+        timestamptz resolved_at
+    }
+    verification_answers {
+        bigint verification_task_id FK
+        bigint user_id FK "unique with the task"
+        string answer "agree, disagree, skip"
+        timestamptz created_at
     }
     error_reports {
         bigint occupation_id FK "deleted with the occupation"
@@ -175,7 +195,7 @@ erDiagram
 | Taxonomy | `isco_groups`, `occupations`, `occupation_names` | `IscoGroup`, `Occupation`, `OccupationName` |
 | Knowledge | `field_definitions`, `field_values`, `revisions`, `revision_reviews`, `sources`, `revision_source` | `FieldDefinition`, `FieldValue`, `Revision`, `RevisionReview`, `Source` |
 | AiPipeline | `ai_runs` | `AiRun` |
-| Community | `contribution_consents`, `error_reports` (and `users.role`, trust counters, `users.anonymous_credit`) | `ContributionConsent` (`App\Models\User` stays the auth model) |
+| Community | `contribution_consents`, `error_reports`, `verification_tasks`, `verification_answers` (and `users.role`, trust counters, `users.anonymous_credit`) | `ContributionConsent` (`App\Models\User` stays the auth model) |
 
 A module never reads another module's tables or models. Across modules, rows are linked by a foreign
 key, and the model keeps only the id (`FieldValue::$occupation_id`, `Revision::$ai_run_id`).
@@ -203,6 +223,8 @@ Each is a constraint, so it holds even for raw SQL. The tests are in
   is never indexable. `duplicate_candidates` holds each pair once (`occupation_id < other_occupation_id`,
   unique), and a decided pair has `decided_by_id` and `decided_at`; a GIN trigram index on
   `occupation_names.normalized_name` serves the detector (PLAN D47).
+- **Micro-tasks (M17)**: one task per revision (unique `revision_id`), one answer per person and task
+  (unique), and the task states and answers are check constraints (PLAN D64).
 - **Names**: one primary name per occupation and locale. Regional names carry a region; others don't.
 - **Field definitions**: `key` + `version` is unique. A change of meaning, options or anchors is a new
   version. 1–5 scales need anchors in `bn` and `en`; choice fields need options.

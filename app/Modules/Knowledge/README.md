@@ -34,6 +34,10 @@ What is known about each occupation, field by field, with its history.
   links); an AI run can set neither (D62). `Queries\ContributionCredits` computes credit from
   revisions: applied or accepted changes by people (D63). `FieldDefinitionByKey::latest()` gives a
   field with its definition.
+- **Micro-tasks (M17):** `Queries\VerifiableValues` lists the values a micro-task may ask about
+  (current, national, `ai_draft` or `sourced`, not sensitive, not a name list). `ApplyConsensus` sets
+  `community_supported` or `disputed` from a consensus, only if the value is still the asked one; a
+  dispute raises the review priority to 15, which `ChangeStatus` clears (D64).
 - **Sources:** `RecordSource` records a source once per url, access date and details (M6).
 - **Tables:** see [the data model](../../../docs/architecture/data-model.md).
 

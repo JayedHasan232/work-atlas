@@ -38,8 +38,8 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Contribution limits (PLAN M16, A15). Error reports are counted per IP address and suggestions per
-     * person; the counters live only in the cache, never in the database.
+     * Contribution limits (PLAN M16, A15). Error reports are counted per IP address, suggestions and
+     * micro-task answers (M17) per person; the counters live only in the cache, never in the database.
      */
     protected function configureRateLimits(): void
     {
@@ -47,6 +47,9 @@ class AppServiceProvider extends ServiceProvider
             ->by((string) $request->ip()));
 
         RateLimiter::for('suggestions', fn (Request $request): Limit => Limit::perMinute(Config::integer('atlas.community.suggestions_per_minute'))
+            ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
+
+        RateLimiter::for('answers', fn (Request $request): Limit => Limit::perMinute(Config::integer('atlas.community.answers_per_minute'))
             ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
 

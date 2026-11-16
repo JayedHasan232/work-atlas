@@ -45,6 +45,9 @@ class FieldValue extends Model
     /** A proposed revision waits for a review. */
     public const int PRIORITY_PENDING_PROPOSAL = 10;
 
+    /** Someone disagreed in a micro-task (PLAN M17): the value is disputed. */
+    public const int PRIORITY_COMMUNITY_DISSENT = 15;
+
     /** Two models gave different values (D50): the top of the queue. */
     public const int PRIORITY_MODELS_DISAGREE = 20;
 

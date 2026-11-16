@@ -4,7 +4,9 @@ use App\Http\Controllers\ContributionTermsController;
 use App\Http\Controllers\LocaleController;
 use App\Modules\Community\Http\Controllers\Web\EditSuggestionController;
 use App\Modules\Community\Http\Controllers\Web\ErrorReportController;
+use App\Modules\Community\Http\Controllers\Web\TaskAnswerController;
 use App\Modules\Publishing\Http\Controllers\Web\ContributorController;
+use App\Modules\Publishing\Http\Controllers\Web\MicroTaskController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationGroupController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationIndexController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationPageController;
@@ -45,6 +47,15 @@ LocalizedRoutes::register(function () {
         });
     });
     Route::get('contributors/{id}', ContributorController::class)->whereNumber('id')->name('contributors.show');
+
+    // Micro-tasks (PLAN M17): one yes/no question at a time, for signed-in people.
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('tasks', MicroTaskController::class)->name('tasks.show');
+        Route::post('tasks/{task}', TaskAnswerController::class)
+            ->whereNumber('task')
+            ->middleware('throttle:answers')
+            ->name('tasks.answer');
+    });
 
     // Search (PLAN M15).
     Route::get('search', SearchController::class)->name('search');

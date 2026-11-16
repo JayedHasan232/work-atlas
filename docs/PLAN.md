@@ -511,6 +511,12 @@ Tests
 - `Feature/Community/ConsensusTest` (dataset), `OneAnswerPerUserTest`, `DissentDisputesTest`,
   `TrustPromotionTest`, `Browser/MicroTaskMobileTest`.
 
+Status: done (D64–D65): yes/no questions with "not sure" on the "Check facts" page (`/tasks`), made
+hourly by `atlas:tasks:generate`; ordered by review priority, then oldest, because page views are not
+counted (D65). Consensus and dissent move the status through `Knowledge\Actions\ApplyConsensus`;
+trust promotion runs after each counted contribution and daily (`atlas:trust:promote`). Pick-one
+questions come later. The consensus history lives in the task and answer rows while O8 is open.
+
 ### M18 — Moderation tools
 
 Depends on: M16, M17 · Blocked by: —
@@ -903,6 +909,22 @@ Tests
   not count; AI runs are not people. The occupation page lists named people (most changes first) and
   a count of anonymous ones; `users.anonymous_credit` (Settings → Contributions) hides the name and
   the profile page. Profile pages (`/contributors/{id}`) are always `noindex`.
+- **D64** (M17) Micro-tasks ask one yes/no question ("Is this right?") about the current value of a
+  Wave 1 field (`atlas.community.task_waves`) that is `ai_draft` or `sourced`, not sensitive, not a
+  name list, on a public occupation; "not sure" skips it for that person. Pick-one questions come
+  later: on a 1–5 scale people pick slightly different points, so an exact match would rarely reach
+  consensus. One task per revision; a changed value or an occupation that is no longer public makes
+  the task stale. One answer per person and task (unique index), never about a value the person
+  wrote. Three agreeing answers and no dissent (`consensus_agreements`) → `community_supported`; one
+  "no" → `disputed`, with review priority 15 (between a pending proposal, 10, and models that
+  disagreed, 20); a reviewer's later status change clears it. Answers are rate-limited per person
+  (`answers_per_minute`). Status changes go through `ApplyConsensus`, a Knowledge action, because a
+  consensus is not a person: `ChangeStatus` needs a person actor.
+- **D65** (M17) "Accepted contributions" for trust (A11c) = accepted proposals + answers that agreed
+  with a reached consensus (`users.confirmed_answers_count`); both thresholds are in config. Only
+  contributors are promoted, never lowered; a maintainer-set role is left alone. Tasks are ordered by
+  review priority, then oldest, not by page views: the app does not count page views (Umami is
+  separate and private).
 
 ## Maintainer decisions (answered 2026-11-16)
 
