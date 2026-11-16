@@ -1,0 +1,35 @@
+name: Data problem / তথ্যে ভুল
+description: An occupation is missing, or its information is wrong or disrespectful. / কোনো পেশা নেই, বা তার তথ্য ভুল বা অসম্মানজনক।
+labels: ["data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please don't include anyone's personal details. / কারও ব্যক্তিগত তথ্য লিখবেন না।
+  - type: input
+    id: occupation
+    attributes:
+      label: Occupation (Bangla or English name) / পেশার নাম (বাংলা বা ইংরেজি)
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or missing? / কী ভুল বা কী নেই?
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source, if you have one / উৎস (থাকলে)
+      description: A link or document that supports the correction. Numbers need a source. / সংশোধনের পক্ষে লিংক বা নথি। সংখ্যার জন্য উৎস লাগবে।
+  - type: dropdown
+    id: coi
+    attributes:
+      label: Conflict of interest / স্বার্থের সংঘাত
+      description: Do you work for, own or promote a business connected to this? / এর সাথে যুক্ত কোনো ব্যবসায় কি আপনি কাজ করেন, মালিক, বা প্রচার করেন?
+      options:
+        - "No / না"
+        - "Yes / হ্যাঁ"
+    validations:
+      required: true

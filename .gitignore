@@ -1,0 +1,38 @@
+# Working notes for AI/maintainer sessions (not committed)
+/progress/
+
+# Secrets
+.env
+.env.*
+!.env.example
+auth.json
+
+# Dependencies and build output
+/node_modules
+/vendor
+/public/build
+/public/hot
+/public/storage
+/bootstrap/ssr
+/storage/*.key
+/storage/pail
+
+# Test and tool caches
+/.phpunit.cache
+.phpunit.result.cache
+.phpactor.json
+__pycache__/
+.venv/
+
+# Logs
+npm-debug.log
+yarn-error.log
+
+# Editors and OS
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+.DS_Store
+.claude/settings.local.json

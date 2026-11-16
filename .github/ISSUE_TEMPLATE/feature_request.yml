@@ -1,0 +1,16 @@
+name: Idea or feature / প্রস্তাব
+description: Suggest an improvement. / কোনো উন্নতির প্রস্তাব দিন।
+labels: ["idea"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve, and for whom? / এতে কার কোন সমস্যার সমাধান হবে?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea / আপনার প্রস্তাব
+    validations:
+      required: true

@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Self-test for scripts/ci/check-dco. Builds throwaway repositories and checks that the script
+# passes signed commits and fails unsigned or mismatched ones.
+#
+# Usage: scripts/ci/check-dco-selftest
+set -euo pipefail
+
+check="$(cd "$(dirname "$0")" && pwd)/check-dco"
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+
+# Ignore the caller's git config (signing keys, hooks, templates).
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
+export GIT_AUTHOR_NAME="Test Author" GIT_AUTHOR_EMAIL="author@example.com"
+export GIT_COMMITTER_NAME="Test Author" GIT_COMMITTER_EMAIL="author@example.com"
+
+failures=0
+
+new_repo() {
+  rm -rf "$work/repo"
+  git init -q -b main "$work/repo"
+  cd "$work/repo"
+  git commit -q --allow-empty -m "base"
+  base=$(git rev-parse HEAD)
+}
+
+commit() { git commit -q --allow-empty "$@"; }
+
+expect() {
+  local want=$1 name=$2 got=0
+  "$check" "$base" HEAD > "$work/out" 2>&1 || got=$?
+  if { [ "$want" = pass ] && [ "$got" -eq 0 ]; } || { [ "$want" = fail ] && [ "$got" -eq 1 ]; }; then
+    echo "ok    ${name}"
+  else
+    echo "FAIL  ${name} (wanted ${want}, exit ${got})"
+    sed 's/^/      /' "$work/out"
+    failures=$((failures + 1))
+  fi
+}
+
+new_repo
+commit -s -m "signed"
+expect pass "signed commit passes"
+
+new_repo
+commit -m "unsigned"
+expect fail "unsigned commit fails"
+
+new_repo
+commit -s -m "signed"
+commit -m "unsigned"
+expect fail "one unsigned commit among signed ones fails"
+
+new_repo
+commit -m "wrong email" -m "Signed-off-by: Test Author <someone-else@example.com>"
+expect fail "sign-off with a different email fails"
+
+new_repo
+commit -m "no name" -m "Signed-off-by: <author@example.com>"
+expect fail "sign-off without a name fails"
+
+new_repo
+commit -m "upper case" -m "Signed-off-by: Test Author <AUTHOR@Example.com>"
+expect pass "email match ignores case"
+
+new_repo
+commit -m "mentioned in body" -m "Signed-off-by: Test Author <author@example.com> was here" -m "Reviewed-by: X <x@example.com>"
+expect fail "sign-off text that isn't a trailer fails"
+
+new_repo
+git switch -q -c topic
+commit -s -m "signed on topic"
+git switch -q main
+commit -s -m "signed on main"
+git merge -q --no-ff --no-edit topic
+expect pass "unsigned merge commit is skipped"
+
+new_repo
+expect pass "empty range passes"
+
+if [ "$failures" -gt 0 ]; then
+  echo "${failures} self-test case(s) failed." >&2
+  exit 1
+fi
+echo "All check-dco self-tests passed."

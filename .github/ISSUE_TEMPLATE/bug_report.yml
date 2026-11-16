@@ -1,0 +1,33 @@
+name: Bug report / ত্রুটি
+description: Something in the code or site doesn't work as it should. / কোড বা সাইটে কিছু ঠিকমতো কাজ করছে না।
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Security or privacy problem? Don't file it here.** See SECURITY.md.
+        **নিরাপত্তা বা গোপনীয়তার সমস্যা এখানে লিখবেন না।** SECURITY.md দেখুন।
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? / কী হয়েছে?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect? / কী হওয়ার কথা ছিল?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / কীভাবে আবার ঘটানো যায়
+      placeholder: |
+        1.
+        2.
+        3.
+  - type: input
+    id: where
+    attributes:
+      label: Page, device and browser / কোন পাতা, ডিভাইস ও ব্রাউজার
