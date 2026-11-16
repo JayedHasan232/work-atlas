@@ -16,7 +16,7 @@ declare module '@inertiajs/core' {
             localization: Localization;
             translations: Translations;
             /** Set on pages kept out of search engines (rule 12). */
-            robots?: string;
+            robots?: string | null;
             [key: string]: unknown;
         };
     }

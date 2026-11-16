@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Modules\Knowledge\Events\CurrentValueChanged;
+use App\Modules\Knowledge\Events\FieldStatusChanged;
+use App\Modules\Publishing\Actions\QueueIndexGateCheck;
 use App\Modules\Taxonomy\Actions\SyncOccupationNames;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -44,6 +46,13 @@ class AppServiceProvider extends ServiceProvider
             if ($event->fieldKey === SyncOccupationNames::FIELD_KEY && $event->locale !== null && $event->region === null) {
                 app(SyncOccupationNames::class)->handle($event->occupationId, $event->locale, $event->value);
             }
+        });
+
+        // The index gate (PLAN M14): a new value or status may change whether a page is indexable.
+        // Nothing to do while the gate is off; `atlas:index-gate:recompute` catches up when it is
+        // turned on.
+        Event::listen(function (CurrentValueChanged|FieldStatusChanged $event): void {
+            app(QueueIndexGateCheck::class)->handle($event->occupationId);
         });
     }
 

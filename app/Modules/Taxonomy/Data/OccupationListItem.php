@@ -15,5 +15,6 @@ final readonly class OccupationListItem
         public string $slug,
         public string $iscoCode,
         public array $names,
+        public bool $indexable = false,
     ) {}
 }

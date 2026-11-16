@@ -4,6 +4,7 @@ namespace App\Modules\Knowledge\Actions;
 
 use App\Modules\Knowledge\Data\Actor;
 use App\Modules\Knowledge\Enums\FieldStatus;
+use App\Modules\Knowledge\Events\FieldStatusChanged;
 use App\Modules\Knowledge\Exceptions\StatusTransitionNotAllowed;
 use App\Modules\Knowledge\Models\FieldValue;
 use Illuminate\Support\Facades\DB;
@@ -42,8 +43,11 @@ final class ChangeStatus
                 throw StatusTransitionNotAllowed::because('the current value has no source');
             }
 
+            $from = $slot->status;
             $slot->status = $target;
             $slot->save();
+
+            event(new FieldStatusChanged($slot->occupation_id, $slot->field_definition_id, $from, $target));
 
             return $slot;
         });

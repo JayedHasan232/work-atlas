@@ -3,10 +3,12 @@
 namespace App\Modules\Publishing\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Publishing\PageRobots;
 use App\Modules\Publishing\Presenters\OccupationPresenter;
 use App\Modules\Taxonomy\Queries\OccupationBySlug;
 use App\Modules\Taxonomy\Queries\PublicOccupations;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -24,6 +26,8 @@ final class OccupationPageController extends Controller
         OccupationBySlug $slugs,
         PublicOccupations $occupations,
         OccupationPresenter $presenter,
+        PageRobots $robots,
+        Request $request,
     ): Response|RedirectResponse {
         $address = $slugs->handle($slug);
 
@@ -36,6 +40,7 @@ final class OccupationPageController extends Controller
         }
 
         $occupation = $occupations->find($address->occupationId) ?? abort(404);
+        $robots->decide($request, $occupation->indexable);
 
         return Inertia::render('occupations/show', [
             'occupation' => $presenter->present($occupation, App::getLocale()),
