@@ -92,6 +92,7 @@ final class OccupationPresenter
             'changedAt' => $changedAt?->toIso8601String(),
             'reportUrl' => LocalizedRoutes::path('occupations.report', ['slug' => $occupation->slug], $locale),
             'talkUrl' => LocalizedRoutes::path('talk.index', ['slug' => $occupation->slug], $locale),
+            'compareUrl' => LocalizedRoutes::path('compare.index', [], $locale).'?'.http_build_query(['o' => [$occupation->slug]]),
             'talkCount' => $this->discussions->visibleThreadCount($occupation->id),
             'credits' => $this->credits($occupation->id, $locale),
         ];

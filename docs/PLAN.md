@@ -584,6 +584,17 @@ Tests
   `NoFilterAnswersStoredTest`, `Arch/ForbiddenWordingTest` (scans `lang/` and `data/prompts/` for
   "perfect job", "AI-proof", "future-proof" and Bangla equivalents), `Browser/GuidedFilterMobileTest`.
 
+Status: done (D72–D74): `/guide` asks nine questions mapped to Wave 1 fields and lists the listed
+occupations that match, each with its reasons, the status of the data behind every reason, and its
+limits (not known yet, fits only in part, training needed, unverified data), plus the general limits
+of the results. `/compare` shows two or three occupations side by side, with a search to add one; the
+home page links the guide and every occupation page links the compare page. The answers live only in
+the address bar: no table, no session (the "previous page" address the session keeps drops the query
+for the guide), and the guide and compare pages are always `noindex` and kept out of crawling in
+`robots.txt`. Known limit: the completion event fires only once the self-hosted Umami script is on the
+page, which comes with the production setup (M22). Income, demand,
+health and AI exposure are not part of the matching until their waves exist.
+
 ### M21 — Public read-only API v1 + OpenAPI
 
 Depends on: M13, M15 · Blocked by: —
@@ -969,6 +980,23 @@ Tests
   check. Posts and thread titles get the link and organisation flags of D67; there is no conflict-of-
   interest field on a post, so the "interest" flag does not apply. A thread may name one field by its
   key (current field definitions only). There is no editing of one's own post in Phase 1.
+- **D72** (M20) The guided filter matches only on Wave 1 values (the newest field version, no region,
+  no locale). A known value that goes against an answer leaves the occupation out; a missing value,
+  "unknown" or a disputed value never does, it shows as "not known yet" instead. Some answers fit only
+  in part: part-time "sometimes", rotating shifts, and a vocational certificate (something a person can
+  still earn; a person who has one counts as SSC level for schooling). Every question has an open
+  answer ("any", "can wait", …) that adds no condition. The physical question asks what the person
+  wants, never what they are able to do (rule 7). Order: more fitting answers (a full fit counts
+  twice a partial one), then fewer unknowns. A sensitive value that is not verified is not matched on.
+- **D73** (M20) The answers belong to the person (rule 8): they are only in the page address, never
+  in a table, a log row or the session. The session's "previous page" address keeps only the path for
+  the guide (`App\Http\Middleware\StartSession`). Answered guide pages and compare pages are `noindex`
+  and disallowed in `robots.txt`. The only analytics is an anonymous `guide_completed` event, sent only
+  when the self-hosted Umami script is on the page.
+- **D74** (M20) Compare takes up to three occupations by slug in the address (`?o[]=…`), follows a
+  merged occupation's old slug, and shows the fields of the configured waves
+  (`atlas.discovery.compare_waves`, Wave 1 now) except names and free text, each value with its status;
+  the sensitive-field gate applies as on the occupation page.
 
 ## Maintainer decisions (answered 2026-11-16)
 

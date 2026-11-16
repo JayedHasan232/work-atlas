@@ -78,6 +78,7 @@ export type PublicOccupation = {
     changedAt: string | null;
     reportUrl: string;
     talkUrl: string;
+    compareUrl: string;
     talkCount: number;
     credits: Credits;
 };

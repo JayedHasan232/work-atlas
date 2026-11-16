@@ -13,6 +13,8 @@ use App\Modules\Community\Http\Controllers\Web\Moderation\ReviewQueueController;
 use App\Modules\Community\Http\Controllers\Web\Moderation\ReviewSlotController;
 use App\Modules\Community\Http\Controllers\Web\Moderation\TalkQueueController;
 use App\Modules\Community\Http\Controllers\Web\TaskAnswerController;
+use App\Modules\Discovery\Http\Controllers\Web\CompareController;
+use App\Modules\Discovery\Http\Controllers\Web\GuideController;
 use App\Modules\Publishing\Http\Controllers\Web\ContributorController;
 use App\Modules\Publishing\Http\Controllers\Web\MicroTaskController;
 use App\Modules\Publishing\Http\Controllers\Web\OccupationGroupController;
@@ -98,6 +100,10 @@ LocalizedRoutes::register(function () {
 
     // Search (PLAN M15).
     Route::get('search', SearchController::class)->name('search');
+
+    // Guided filter and compare (PLAN M20): the answers and the chosen occupations live in the URL.
+    Route::get('guide', GuideController::class)->name('guide.index');
+    Route::get('compare', CompareController::class)->name('compare.index');
 });
 
 // For crawlers (PLAN M14): not localized.
