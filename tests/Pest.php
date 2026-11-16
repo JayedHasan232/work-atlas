@@ -180,3 +180,69 @@ function iscoGroupsByCode(): array
 {
     return IscoGroup::query()->get()->keyBy('code')->all();
 }
+
+/*
+|--------------------------------------------------------------------------
+| Field definition files
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Writes field files into a new temporary folder and returns it, e.g.
+ * fieldDirectory(['wave1.v1.yaml' => $yaml]).
+ *
+ * @param  array<string, string>  $files
+ */
+function fieldDirectory(array $files): string
+{
+    $directory = sys_get_temp_dir().'/work-atlas-fields-'.bin2hex(random_bytes(8));
+    mkdir($directory);
+
+    foreach ($files as $name => $contents) {
+        file_put_contents("{$directory}/{$name}", $contents);
+    }
+
+    register_shutdown_function(function () use ($directory): void {
+        array_map('unlink', glob("{$directory}/*") ?: []);
+        @rmdir($directory);
+    });
+
+    return $directory;
+}
+
+/**
+ * A small, valid wave 1 file: one 1–5 scale and one enum. $changes replaces parts of the text.
+ *
+ * @param  array<string, string>  $changes
+ */
+function sampleFieldFile(array $changes = []): string
+{
+    $yaml = <<<'YAML'
+        wave: 1
+        fields:
+          - key: sample_scale
+            version: 1
+            group: workload
+            type: scale_1_5
+            label: { bn: "নমুনা স্কেল", en: "Sample scale" }
+            help: { bn: "নমুনা সাহায্য", en: "Sample help" }
+            anchors:
+              1: { bn: "এক", en: "One" }
+              2: { bn: "দুই", en: "Two" }
+              3: { bn: "তিন", en: "Three" }
+              4: { bn: "চার", en: "Four" }
+              5: { bn: "পাঁচ", en: "Five" }
+          - key: sample_choice
+            version: 1
+            group: conditions
+            type: enum
+            label: { bn: "নমুনা বাছাই", en: "Sample choice" }
+            help: { bn: "নমুনা সাহায্য", en: "Sample help" }
+            options:
+              - { key: first, bn: "প্রথম", en: "First" }
+              - { key: second, bn: "দ্বিতীয়", en: "Second" }
+
+        YAML;
+
+    return strtr($yaml, $changes);
+}

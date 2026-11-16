@@ -1,0 +1,194 @@
+# Wave 1 field definitions, version 1 (PLAN M7, Appendix A, A5).
+#
+# Draft: the anchors, bands and labels wait for the maintainer's approval (PLAN O2).
+# Run `php artisan atlas:fields:sync` after a change, then `php artisan atlas:fields:generate`.
+#
+# A field's meaning is its type, options and anchors. Once a field has values, changing any of them
+# needs a new version of the field (a new `wave1.v2.yaml` entry); the sync refuses an in-place change.
+# Labels and help text can be reworded in place. Anchors describe the workload, never the worth of the
+# work (rule 1). All Wave 1 fields are not sensitive and need no source (A5).
+#
+# A band is a range; each band includes its lower bound (1–3 months means 1 month up to, not
+# including, 3 months).
+
+wave: 1
+fields:
+  - key: education_required
+    version: 1
+    group: entry
+    type: enum
+    label: { bn: "প্রয়োজনীয় শিক্ষা", en: "Education needed" }
+    help:
+      bn: "এই কাজ শুরু করতে সাধারণত সবচেয়ে কম কোন পর্যন্ত পড়াশোনা লাগে।"
+      en: "The lowest level of schooling usually needed to start this work."
+    options:
+      - { key: none, bn: "প্রাতিষ্ঠানিক শিক্ষা লাগে না", en: "No formal schooling needed" }
+      - { key: read_write, bn: "পড়তে ও লিখতে পারা", en: "Can read and write" }
+      - { key: primary, bn: "প্রাথমিক (পঞ্চম শ্রেণি)", en: "Primary (class 5)" }
+      - { key: ssc, bn: "এসএসসি বা সমমান", en: "SSC or equivalent" }
+      - { key: hsc, bn: "এইচএসসি বা সমমান", en: "HSC or equivalent" }
+      - { key: vocational, bn: "কারিগরি সনদ বা ডিপ্লোমা", en: "Vocational certificate or diploma" }
+      - { key: bachelors, bn: "স্নাতক", en: "Bachelor's degree" }
+      - { key: masters_or_higher, bn: "স্নাতকোত্তর বা তার বেশি", en: "Master's degree or higher" }
+
+  - key: formal_training
+    version: 1
+    group: entry
+    type: enum
+    label: { bn: "আনুষ্ঠানিক প্রশিক্ষণ", en: "Formal training" }
+    help:
+      bn: "কোনো কোর্স, সনদ বা লাইসেন্স লাগে কিনা। অনেক কাজ হাতে-কলমে, ওস্তাদের কাছে শেখা যায়।"
+      en: "Whether a course, certificate or licence is needed. Much work is learned on the job, from an experienced worker."
+    options:
+      - { key: not_needed, bn: "লাগে না", en: "Not needed" }
+      - { key: helpful, bn: "থাকলে সুবিধা হয়", en: "Helpful" }
+      - { key: required, bn: "লাগে (লাইসেন্স বা সনদ)", en: "Required (licence or certificate)" }
+
+  - key: physical_workload
+    version: 1
+    group: workload
+    type: scale_1_5
+    label: { bn: "শারীরিক পরিশ্রম", en: "Physical workload" }
+    help:
+      bn: "একটা সাধারণ কাজের দিনে শরীরের ওপর কতটা চাপ পড়ে।"
+      en: "How hard a usual working day is on the body."
+    anchors:
+      1:
+        bn: "দিনের বেশির ভাগ সময় বসে কাজ, হালকা হাতের কাজ (অফিস সহকারী, কল সেন্টার কর্মী)"
+        en: "Sitting most of the day, light hand work (office clerk, call-centre agent)"
+      2:
+        bn: "বেশির ভাগ সময় দাঁড়িয়ে বা হেঁটে, হালকা জিনিস (দোকানের বিক্রয়কর্মী, শিক্ষক)"
+        en: "Mostly standing or walking, light items (shop salesperson, teacher)"
+      3:
+        bn: "সারা দিন দাঁড়িয়ে বা চলাফেরা করে, নিয়মিত হালকা থেকে মাঝারি ভার তোলা (রাঁধুনি, বিদ্যুৎ মিস্ত্রি)"
+        en: "On your feet all day with regular light-to-medium lifting (cook, electrician)"
+      4:
+        bn: "প্রায়ই ভার তোলা, বহন করা আর ঝুঁকে কাজ; বেশির ভাগ দিন ক্লান্তিকর (রাজমিস্ত্রি, মৌসুমে মাঠের কৃষিকাজ)"
+        en: "Frequent lifting, carrying and bending; tiring most days (mason, field farm work in season)"
+      5:
+        bn: "দিনের বেশির ভাগ সময় ভারী জিনিস তোলা ও বহন (নির্মাণ শ্রমিক, মালবাহী শ্রমিক)"
+        en: "Heavy lifting and carrying most of the day (construction labourer, porter)"
+
+  - key: mental_workload
+    version: 1
+    group: workload
+    type: scale_1_5
+    label: { bn: "মানসিক চাপ ও দায়িত্ব", en: "Mental workload" }
+    help:
+      bn: "কতটা চিন্তা, সিদ্ধান্ত আর দায়িত্ব নিয়ে কাজ করতে হয়।"
+      en: "How much thinking, deciding and responsibility the work takes."
+    anchors:
+      1:
+        bn: "একই ধরনের কাজ বারবার, সিদ্ধান্ত কম (প্যাকিং লাইনের কাজ)"
+        en: "Routine, repetitive tasks with few decisions (packing-line work)"
+      2:
+        bn: "নিয়মিত কাজ, কিছুটা বিচার-বিবেচনা লাগে (দোকান সহকারী, ডেলিভারি রাইডার)"
+        en: "Routine with some judgement (shop assistant, delivery rider)"
+      3:
+        bn: "নিয়মিত সমস্যা সমাধান, মাঝারি দায়িত্ব (বিদ্যুৎ মিস্ত্রি, হিসাবরক্ষক)"
+        en: "Regular problem solving, moderate responsibility (electrician, accountant)"
+      4:
+        bn: "বেশির ভাগ দিন জটিল সমস্যা, বা অন্যের নিরাপত্তা বা টাকার দায়িত্ব (নার্স, সফটওয়্যার প্রকৌশলী)"
+        en: "Complex problems or responsibility for other people's safety or money most days (nurse, software engineer)"
+      5:
+        bn: "সময়ের চাপে সারাক্ষণ বড় ঝুঁকির সিদ্ধান্ত (শল্যচিকিৎসক, বিমান চলাচল নিয়ন্ত্রক)"
+        en: "Constant high-stakes decisions under time pressure (surgeon, air traffic controller)"
+
+  - key: work_setting
+    version: 1
+    group: conditions
+    type: multi_enum
+    label: { bn: "কাজের জায়গা", en: "Where the work is done" }
+    help:
+      bn: "কাজটা সাধারণত কোথায় হয়। একাধিক হতে পারে।"
+      en: "Where the work usually happens. More than one can apply."
+    options:
+      - { key: indoor, bn: "ঘরের ভেতরে", en: "Indoors" }
+      - { key: outdoor, bn: "বাইরে, খোলা জায়গায়", en: "Outdoors" }
+      - { key: on_the_move, bn: "চলার পথে (যানবাহন বা ভ্রমণ)", en: "On the move (vehicle or travel)" }
+      - { key: home_based, bn: "বাড়ি থেকে", en: "Home-based" }
+
+  - key: work_time
+    version: 1
+    group: conditions
+    type: multi_enum
+    label: { bn: "কাজের সময়", en: "Working hours" }
+    help:
+      bn: "দিনের কোন সময়ে সাধারণত কাজ হয়। একাধিক হতে পারে।"
+      en: "When in the day the work usually happens. More than one can apply."
+    options:
+      - { key: day, bn: "দিনে", en: "Day" }
+      - { key: evening, bn: "সন্ধ্যায়", en: "Evening" }
+      - { key: night, bn: "রাতে", en: "Night" }
+      - { key: rotating_shifts, bn: "পালা করে শিফট", en: "Rotating shifts" }
+      - { key: self_set, bn: "নিজের ঠিক করা সময়ে", en: "Self-set hours" }
+
+  - key: seasonal
+    version: 1
+    group: conditions
+    type: enum
+    label: { bn: "মৌসুম", en: "Seasons" }
+    help:
+      bn: "কাজটা সারা বছর থাকে, নাকি কোনো মৌসুমে (ধান কাটা, ঈদ, শীতের বিয়ের মৌসুম, বর্ষা) বাড়ে বা শুধু তখনই থাকে।"
+      en: "Whether the work is there all year, or grows or exists only in some seasons (harvest, Eid, the winter wedding season, the monsoon)."
+    options:
+      - { key: year_round, bn: "সারা বছর", en: "Year-round" }
+      - { key: year_round_with_peaks, bn: "সারা বছর, কিছু মৌসুমে বেশি", en: "Year-round, busier in some seasons" }
+      - { key: seasonal_only, bn: "শুধু কিছু মৌসুমে", en: "Only in some seasons" }
+
+  - key: time_to_learn
+    version: 1
+    group: entry
+    type: band
+    label: { bn: "শিখতে কত সময় লাগে", en: "Time to learn" }
+    help:
+      bn: "একেবারে শুরু থেকে মোটামুটি নিজে নিজে কাজটা করতে পারার মতো শিখতে সাধারণত কত সময় লাগে।"
+      en: "How long it usually takes, starting from nothing, to learn the work well enough to do it on your own."
+    options:
+      - { key: under_1_month, bn: "১ মাসের কম", en: "Under 1 month" }
+      - { key: months_1_3, bn: "১–৩ মাস", en: "1–3 months" }
+      - { key: months_3_12, bn: "৩–১২ মাস", en: "3–12 months" }
+      - { key: years_1_2, bn: "১–২ বছর", en: "1–2 years" }
+      - { key: years_2_5, bn: "২–৫ বছর", en: "2–5 years" }
+      - { key: over_5_years, bn: "৫ বছরের বেশি", en: "Over 5 years" }
+
+  - key: time_to_first_income
+    version: 1
+    group: entry
+    type: band
+    label: { bn: "প্রথম আয় পর্যন্ত সময়", en: "Time to first income" }
+    help:
+      bn: "শেখা বা প্রস্তুতি শুরু করার দিন থেকে প্রথম আয় হাতে আসা পর্যন্ত সাধারণত কত সময় লাগে। শেখার সময় থেকে আলাদা: অনেক কাজে শেখার সময়ই আয় শুরু হয়।"
+      en: "How long it usually takes from the day you start learning or preparing until the first income. Not the same as time to learn: in much work, income starts while you learn."
+    options:
+      - { key: within_week, bn: "এক সপ্তাহের মধ্যে", en: "Within a week" }
+      - { key: under_1_month, bn: "১ মাসের কম", en: "Under 1 month" }
+      - { key: months_1_6, bn: "১–৬ মাস", en: "1–6 months" }
+      - { key: months_6_12, bn: "৬–১২ মাস", en: "6–12 months" }
+      - { key: years_1_3, bn: "১–৩ বছর", en: "1–3 years" }
+      - { key: over_3_years, bn: "৩ বছরের বেশি", en: "Over 3 years" }
+
+  - key: part_time_possible
+    version: 1
+    group: conditions
+    type: enum
+    label: { bn: "খণ্ডকালীন করা যায়", en: "Part-time possible" }
+    help:
+      bn: "পুরো দিন না দিয়ে, দিনের বা সপ্তাহের কিছু সময়ে এই কাজ করা যায় কিনা।"
+      en: "Whether the work can be done for part of the day or week instead of full days."
+    options:
+      - { key: "no", bn: "না", en: "No" }
+      - { key: sometimes, bn: "কখনো কখনো", en: "Sometimes" }
+      - { key: "yes", bn: "হ্যাঁ", en: "Yes" }
+
+  - key: available_in
+    version: 1
+    group: conditions
+    type: multi_enum
+    label: { bn: "কোথায় এই কাজ হয়", en: "Where this work is found" }
+    help:
+      bn: "গ্রামে, শহরে, নাকি দুই জায়গাতেই এই কাজ সাধারণত পাওয়া যায়। কতটা চাহিদা আছে, তা এখানে নয়; সেটা আলাদাভাবে, উৎসসহ দেখানো হবে।"
+      en: "Whether this work is usually found in villages, towns and cities, or both. Not how much demand there is (that is Wave 3)."
+    options:
+      - { key: rural, bn: "গ্রামে", en: "Rural" }
+      - { key: urban, bn: "শহরে", en: "Urban" }
