@@ -9,6 +9,7 @@ use App\Modules\Taxonomy\Exceptions\UnknownUnitGroup;
 use App\Modules\Taxonomy\Models\IscoGroup;
 use App\Modules\Taxonomy\Models\Occupation;
 use App\Modules\Taxonomy\Models\OccupationName;
+use App\Modules\Taxonomy\Queries\IscoHierarchy;
 
 /**
  * The AI request that asks which occupations in Bangladesh belong to one unit group (PLAN M10,
@@ -18,6 +19,8 @@ use App\Modules\Taxonomy\Models\OccupationName;
  */
 final class BuildExpansionRequest
 {
+    public function __construct(private readonly IscoHierarchy $hierarchy) {}
+
     public const string PROMPT_KEY = 'taxonomy/expand-unit-group';
 
     public const int PROMPT_VERSION = 1;
@@ -34,23 +37,12 @@ final class BuildExpansionRequest
                 'isco_code' => $group->code,
                 'group_title_en' => $group->title_en,
                 'group_title_bn' => $group->title_bn ?? 'unknown',
-                'hierarchy' => $this->hierarchy($group),
+                'hierarchy' => $this->hierarchy->handle($group->code),
                 'existing_occupations' => $this->existing($group->code),
             ],
             provider: $provider ?? (string) config('atlas.ai.tasks.taxonomy_expand.provider'),
             model: $model ?? (string) config('atlas.ai.tasks.taxonomy_expand.model'),
         );
-    }
-
-    private function hierarchy(IscoGroup $group): string
-    {
-        $codes = array_map(fn (int $length): string => substr($group->code, 0, $length), [1, 2, 3, 4]);
-        $titles = IscoGroup::query()->whereIn('code', $codes)->pluck('title_en', 'code');
-
-        return implode(' > ', array_map(
-            fn (string $code): string => trim($code.' '.($titles[$code] ?? '')),
-            $codes,
-        ));
     }
 
     private function existing(string $iscoCode): string

@@ -2,7 +2,9 @@
 
 namespace App\Modules\Knowledge\Models;
 
+use App\Modules\Knowledge\Enums\CrossCheck;
 use App\Modules\Knowledge\Enums\FieldStatus;
+use Carbon\CarbonInterface;
 use Database\Factories\Knowledge\FieldValueFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -25,10 +27,12 @@ use Illuminate\Support\Carbon;
  * @property int|null $current_revision_id
  * @property FieldStatus $status
  * @property int $review_priority
+ * @property CrossCheck|null $cross_check
+ * @property CarbonInterface|null $cross_checked_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['occupation_id', 'field_definition_id', 'locale', 'region', 'current_revision_id', 'status', 'review_priority'])]
+#[Fillable(['occupation_id', 'field_definition_id', 'locale', 'region', 'current_revision_id', 'status', 'review_priority', 'cross_check', 'cross_checked_at'])]
 #[UseFactory(FieldValueFactory::class)]
 class FieldValue extends Model
 {
@@ -38,8 +42,11 @@ class FieldValue extends Model
     /** Nothing waits for a review. */
     public const int PRIORITY_NONE = 0;
 
-    /** A proposed revision waits for a review. Later milestones add higher levels (model disagreement). */
+    /** A proposed revision waits for a review. */
     public const int PRIORITY_PENDING_PROPOSAL = 10;
+
+    /** Two models gave different values (D50): the top of the queue. */
+    public const int PRIORITY_MODELS_DISAGREE = 20;
 
     /** @var array<string, mixed> */
     protected $attributes = [
@@ -55,6 +62,8 @@ class FieldValue extends Model
         return [
             'status' => FieldStatus::class,
             'review_priority' => 'integer',
+            'cross_check' => CrossCheck::class,
+            'cross_checked_at' => 'datetime',
         ];
     }
 

@@ -23,7 +23,9 @@ use Illuminate\Support\Facades\DB;
  *   the review queue (rule 4);
  * - any other AI write becomes the current value as `ai_draft`, or `sourced` with a source (rule 3);
  * - a person's write is a proposal until roles exist (M8: contributors propose, trusted contributors
- *   write descriptive fields directly).
+ *   write descriptive fields directly);
+ * - a second opinion (an AI run's cross-check value, D50) is always a proposal and leaves the queue
+ *   order to RecordCrossCheck.
  *
  * Throws a KnowledgeRuleViolation, and writes nothing, when a rule is broken.
  */
@@ -39,6 +41,11 @@ final class RecordRevision
         $definition = FieldDefinition::query()->findOrFail($input->fieldDefinitionId);
         $value = $this->validateValue->handle($definition, $input->value, $input->locale, $input->region);
         $this->checkConfidence($definition, $input);
+
+        if ($input->secondOpinion && ! $input->actor->isAi()) {
+            throw InvalidFieldValue::because($definition->key, 'only an AI run gives a second opinion');
+        }
+
         $sourceIds = $this->checkSources($definition, $value, $input->sourceIds);
 
         return DB::transaction(function () use ($input, $definition, $value, $sourceIds): Revision {
@@ -46,7 +53,8 @@ final class RecordRevision
             $current = $slot->currentRevision;
             // A verified value changes only through a review. Otherwise an AI write applies at once; a
             // person's applies when their role allows it on this field (Role::appliesDirectly, D36).
-            $proposed = $slot->status === FieldStatus::Verified
+            $proposed = $input->secondOpinion
+                || $slot->status === FieldStatus::Verified
                 || (! $input->actor->isAi() && ! $input->actor->personRole()->appliesDirectly($definition->sensitive));
 
             $revision = Revision::query()->create([
@@ -65,9 +73,9 @@ final class RecordRevision
                 $revision->sources()->attach($sourceIds);
             }
 
-            if ($proposed) {
+            if ($proposed && ! $input->secondOpinion) {
                 $slot->review_priority = max($slot->review_priority, FieldValue::PRIORITY_PENDING_PROPOSAL);
-            } else {
+            } elseif (! $proposed) {
                 $slot->current_revision_id = $revision->id;
                 $slot->status = match (true) {
                     $value !== null && $sourceIds !== [] => FieldStatus::Sourced,

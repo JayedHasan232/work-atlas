@@ -371,6 +371,13 @@ Tests
 
 Depends on: M7, M9, M11 · Blocked by: O3 (budget go-ahead)
 
+Status: the code is done (prompt `wave1/fields` v1, agreement rules, second-opinion revisions, the
+cross-check on the slot, the review queue, `atlas:wave1:generate`, the Filament report with CSV;
+D50, D51). The run itself waits for: O2 (anchors approved), O3 (two providers and a budget), O7 and
+O10 (before the first paid run), the M10 list run and its review (M11), and Jayed's approval of
+prompt v1 after a pilot. Each occupation is one queued job with two calls (as in M10, D45); the
+provider batch API is left for the full run.
+
 Tasks
 - Wave 1 prompts with anchors and full context (ISCO code, bn/en names, aliases, Bangladesh).
 - Batch runs on model A and model B. A's value is the current `ai_draft`; B's is stored as a proposed
@@ -780,6 +787,20 @@ Tests
 - **D49** (M11) `/occupations/{slug}` (and `/en/occupations/{slug}`) exists now only to 301-redirect
   a merged slug to the canonical one, following the merge chain (at most 10 steps); everything else is
   404 until the page itself (M13).
+- **D50** (M12) Cross-check. Model A's answer is written like any AI value (current `ai_draft`, or a
+  proposal on a verified value). Model B's answer is a **second opinion**: an AI revision that is
+  always a proposal and does not raise the queue on its own (`RevisionInput::$secondOpinion`). The
+  result is saved on the slot (`field_values.cross_check`: agreed or disagreed, with the time). A
+  disagreement raises `review_priority` to 20, above a pending proposal (10); an agreement leaves it.
+  Agreement: 1–5 scales at most 1 apart; bands the same or neighbours; option lists share at least
+  half of all options given (|A ∩ B| / |A ∪ B| ≥ 0.5); everything else exactly equal; "unknown" agrees
+  only with "unknown". Both answers are written in one transaction, or nothing; a failed call writes
+  nothing, and a rerun reuses the run that succeeded.
+- **D51** (M12) The Wave 1 prompt holds no anchor or option: they are rendered from the field
+  definitions into `{{ fields }}`, so the prompt file stays fixed while the input hash still changes
+  with a new field version. The fields must be exactly the ones the prompt's schema asks for; a new
+  field or version needs a new prompt version. The two models come from `atlas.ai.tasks.wave1.a` and
+  `.b` and must differ. Wave 1 covers `listed` and `published` occupations only.
 
 ## Maintainer decisions (answered 2026-11-16)
 
