@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Prompt and schema files are immutable (CLAUDE.md, "Rules enforced in code").
+#
+# A committed file under data/prompts or data/schemas never changes, moves or disappears: ai_runs
+# records which prompt version produced each draft, so that version must stay readable as it was.
+# A change is a new file with the next version number (fields.v2.json next to fields.v1.json).
+# Adding files is always fine.
+#
+# Compares <head> with its merge base with <base>, so changes on the base branch don't count.
+#
+# Usage: scripts/ci/check-immutable <base> <head>
+set -euo pipefail
+
+if [ "$#" -ne 2 ]; then
+  echo "usage: $0 <base> <head>" >&2
+  exit 2
+fi
+
+base=$1
+head=$2
+paths=(data/prompts data/schemas)
+changed=0
+
+while IFS=$'\t' read -r status path; do
+  [ -n "${status:-}" ] || continue
+  case "$status" in
+    A) echo "added    ${path}" ;;
+    *)
+      echo "CHANGED  ${path} (${status})"
+      changed=$((changed + 1))
+      ;;
+  esac
+done < <(git diff --no-renames --name-status "${base}...${head}" -- "${paths[@]}")
+
+if [ "$changed" -gt 0 ]; then
+  cat >&2 <<MSG
+
+${changed} committed prompt or schema file(s) were changed, moved or deleted.
+These files are immutable: restore them and add a new version instead (for example
+data/prompts/wave1/fields.v2.md next to fields.v1.md). See docs/PLAN.md (D42).
+MSG
+  exit 1
+fi
+
+echo "No committed prompt or schema file was changed."

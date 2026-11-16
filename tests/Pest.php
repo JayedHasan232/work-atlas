@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\User;
+use App\Modules\AiPipeline\Data\AiRequest;
+use App\Modules\AiPipeline\Drivers\FakeDriver;
 use App\Modules\AiPipeline\Models\AiRun;
 use App\Modules\Community\Enums\Role;
 use App\Modules\Knowledge\Actions\RecordRevision;
@@ -254,4 +256,44 @@ function sampleFieldFile(array $changes = []): string
         YAML;
 
     return strtr($yaml, $changes);
+}
+
+/*
+|--------------------------------------------------------------------------
+| AI gateway
+|--------------------------------------------------------------------------
+|
+| Tests never reach a real provider: fakeAi() binds a FakeDriver, points the registry at the test
+| prompts in tests/Fixtures/{prompts,schemas} and removes the retry waits.
+|
+*/
+
+function fakeAi(): FakeDriver
+{
+    $fake = new FakeDriver;
+    app()->instance(FakeDriver::class, $fake);
+
+    config([
+        'atlas.ai.prompts_path' => base_path('tests/Fixtures/prompts'),
+        'atlas.ai.schemas_path' => base_path('tests/Fixtures/schemas'),
+        'atlas.ai.retry.backoff_ms' => [0, 0],
+    ]);
+
+    return $fake;
+}
+
+/**
+ * A request for the test prompt test/sample v1 through the fake provider.
+ *
+ * @param  array<string, string>  $values
+ */
+function sampleAiRequest(array $values = [], string $model = 'fake-model', string $provider = 'fake'): AiRequest
+{
+    return new AiRequest(
+        promptKey: 'test/sample',
+        promptVersion: 1,
+        values: $values + ['occupation' => 'Electrician', 'isco_code' => '7411'],
+        provider: $provider,
+        model: $model,
+    );
 }

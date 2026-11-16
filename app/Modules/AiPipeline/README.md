@@ -11,4 +11,30 @@ Every call to an AI model.
   files never change in place; a change is a new `vN` file. Tests use the fake driver; a paid run
   needs the maintainer's go-ahead and a dry-run cost estimate.
 
+## How a call works (M9)
+
+```php
+$result = app(AiGateway::class)->complete(new AiRequest(
+    promptKey: 'wave1/fields', promptVersion: 1,
+    values: ['occupation' => '…', 'isco_code' => '7411'],
+    provider: 'fake', model: 'fake-model',
+));
+// $result->succeeded(), $result->output (the parsed JSON), $result->runId
+```
+
+1. `PromptRegistry` reads `data/prompts/<key>.v<N>.md` and its schema (front matter, PLAN D42) and
+   fills the `{{ placeholders }}`.
+2. The gateway estimates the cost and refuses above `AI_MAX_BATCH_USD` (0 by default) or for a model
+   without a price (D41). `estimate()` is the dry run.
+3. It creates the `ai_runs` row (`running`), calls the driver with retries, then stores the raw output,
+   tokens and cost, and marks the run `succeeded` only if the output matches the schema (D43).
+4. Batches: `submitBatch()` makes a run per request and sends them together; the `PollAiBatch` job
+   calls `collectBatch()` until the provider is done.
+
+Run it from a job (`Jobs\RunAiCompletion`, `Jobs\PollAiBatch`), never inside a web request.
+
+**Drivers.** Only `Drivers\FakeDriver` exists; the two real providers wait for O3. In tests, `fakeAi()`
+(tests/Pest.php) binds a `FakeDriver` you script with `respondWithJson()`, `respond()`, `failWith()` and
+`holdBatches()`, and points the registry at `tests/Fixtures/{prompts,schemas}`.
+
 See [the module rules](../README.md).
