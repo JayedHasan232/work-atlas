@@ -106,8 +106,20 @@ jobs:
   ssr-smoke:
     name: SSR smoke
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: work_atlas
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: work_atlas
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U work_atlas -d work_atlas"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      # The home page needs no database; keep sessions and cache in memory.
+      # The occupation pages read one placeholder occupation (SsrSmokeSeeder) from the database
+      # named in .env.example, since `artisan serve` does not pass the job's env to the app.
       SESSION_DRIVER: array
       CACHE_STORE: array
     steps:
@@ -131,12 +143,20 @@ jobs:
           cp .env.example .env
           php artisan key:generate
           npm run build:ssr
+          php artisan migrate --force
+          php artisan db:seed --class=SsrSmokeSeeder --force
       - name: Start the SSR server and the app
         run: |
           php artisan inertia:start-ssr > ssr.log 2>&1 &
           php artisan serve --host=127.0.0.1 --port=8000 > serve.log 2>&1 &
       - name: The home page is rendered on the server
         run: scripts/ci/ssr-smoke http://127.0.0.1:8000/
+      - name: Occupation pages are rendered on the server, in Bangla and English
+        run: |
+          scripts/ci/ssr-smoke http://127.0.0.1:8000/occupations/ssr-smoke
+          scripts/ci/ssr-smoke http://127.0.0.1:8000/en/occupations/ssr-smoke
+          scripts/ci/ssr-smoke http://127.0.0.1:8000/occupations
+          scripts/ci/ssr-smoke http://127.0.0.1:8000/en/occupations/groups/7126
       - name: Server logs
         if: failure()
         run: tail -n 50 ssr.log serve.log storage/logs/*.log || true

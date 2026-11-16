@@ -9,6 +9,7 @@ return [
         'label' => 'প্রধান',
         'account' => 'অ্যাকাউন্ট',
         'home' => 'প্রথম পাতা',
+        'occupations' => 'পেশা',
         'log_in' => 'লগ ইন',
         'register' => 'নিবন্ধন',
         'dashboard' => 'ড্যাশবোর্ড',

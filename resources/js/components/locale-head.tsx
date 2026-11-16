@@ -5,7 +5,7 @@ import { Head, usePage } from '@inertiajs/react';
  * the default (`x-default`), since the site is Bangla first.
  */
 export default function LocaleHead() {
-    const { localization } = usePage().props;
+    const { localization, robots } = usePage().props;
     const alternates = localization.locales.filter(
         (option): option is typeof option & { url: string } =>
             option.url !== null,
@@ -14,6 +14,9 @@ export default function LocaleHead() {
 
     return (
         <Head>
+            {robots !== undefined && (
+                <meta head-key="robots" name="robots" content={robots} />
+            )}
             {localization.canonical !== null && (
                 <link
                     head-key="canonical"

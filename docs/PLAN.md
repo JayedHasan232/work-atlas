@@ -413,6 +413,11 @@ Tests
 - `Feature/Publishing/OccupationPageTest`, `Feature/Publishing/SensitiveFieldGateTest`
   (props + HTML), `BrowseByGroupTest`, `Browser/OccupationPageTest`.
 
+Status: done (`OccupationPresenter` and `BrowsePresenter`, `/occupations`, `/occupations/groups/{code}`
+and `/occupations/{slug}` in bn and en, SSR smoke on an occupation page; D52–D54). The pages show
+placeholder text until the M12 run (O2, O3); the report-error button is a disabled placeholder until
+M16; contributor names on the page wait for the credit work.
+
 ### M14 — Index gate and sitemap
 
 Depends on: M13 · Blocked by: —
@@ -801,6 +806,23 @@ Tests
   with a new field version. The fields must be exactly the ones the prompt's schema asks for; a new
   field or version needs a new prompt version. The two models come from `atlas.ai.tasks.wave1.a` and
   `.b` and must differ. Wave 1 covers `listed` and `published` occupations only.
+- **D52** (M13) A `listed` or `published` occupation has a public page; a candidate, a rejected
+  occupation or an unknown slug is 404, a merged slug 301 (D49). The page shows the fields of the
+  waves in `atlas.publishing.page_waves` (0 names, 1 now), national values only (regional values come
+  with Wave 3). For each key it uses the newest definition version that has a value, so a new version
+  does not blank the page before the next run. A field without a value says "not filled in yet" and
+  has no status badge; `"unknown"` says "not known yet". Text values carry their language (`lang`).
+- **D53** (M13) The sensitive-field gate is in `Publishing\Presenters\OccupationPresenter`, the only
+  public read path (the API reuses it). A sensitive value that is not `verified`, `disputed`
+  included, is sent as `withheld` with its status and without its value or sources, so neither the
+  props nor the HTML hold it. Field groups in `atlas.publishing.medical_groups` carry the "not medical
+  advice" note.
+- **D54** (M13) Until the index gate (M14), every occupation route is noindex through
+  `Publishing\Http\Middleware\NoIndex`: an `X-Robots-Tag` header and a `robots` prop rendered as a
+  meta tag by `LocaleHead`. Browse is `/occupations` (major groups and an index sorted by primary name
+  in the reader's language, `atlas.publishing.per_page` per page) and `/occupations/groups/{code}`
+  (child groups with counts, or a unit group's occupations). CI's SSR smoke renders a placeholder
+  occupation from `SsrSmokeSeeder`, which has names only and no field values.
 
 ## Maintainer decisions (answered 2026-11-16)
 

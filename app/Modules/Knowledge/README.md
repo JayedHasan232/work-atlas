@@ -27,6 +27,8 @@ What is known about each occupation, field by field, with its history.
 - **Cross-check (M12):** a `RevisionInput` with `secondOpinion` is an AI value kept as a proposal;
   `RecordCrossCheck` saves the two-model result on the slot. `Queries\ReviewQueue` lists slots by
   priority (model disagreements first); `Queries\DisagreementReport` is the CSV in /admin (D50).
+- **Public read (M13):** `Queries\OccupationFields` gives an occupation's fields of some waves with
+  their current national values and sources, unfiltered; Publishing decides what a reader sees (D52).
 - **Sources:** `RecordSource` records a source once per url, access date and details (M6).
 - **Tables:** see [the data model](../../../docs/architecture/data-model.md).
 

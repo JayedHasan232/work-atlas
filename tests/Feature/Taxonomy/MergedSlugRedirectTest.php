@@ -9,7 +9,7 @@ use App\Modules\Taxonomy\Models\IscoGroup;
 
 /*
  * D5: a merged occupation's old slug redirects (301) to the occupation it was merged into, in the
- * same language. The page itself comes in M13; until then other slugs are not found.
+ * same language. Any other slug either has its own page (M13) or is not found.
  */
 
 beforeEach(function () {
@@ -27,6 +27,6 @@ it('redirects a merged slug permanently, in Bangla and in English', function () 
 
 it('does not redirect an unknown slug or an occupation that was not merged', function () {
     $this->get('/occupations/nobody')->assertNotFound();
-    $this->get('/occupations/plumber')->assertNotFound();
+    $this->get('/occupations/plumber')->assertOk();
     $this->get('/occupations/Not_A_Slug')->assertNotFound();
 });

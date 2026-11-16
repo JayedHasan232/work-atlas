@@ -10,7 +10,11 @@ Everything the public can read.
 - **Rules (each has a test):** pages are `noindex` (meta and `X-Robots-Tag`, left out of the sitemap)
   until their fields pass `config('atlas.index_gate')`, which is off in Phase 1. No personal data in
   dumps or the public API.
-- **Occupation address (M11):** `/occupations/{slug}` only 301-redirects a merged slug to the
-  occupation it was merged into (PLAN D49); the page itself comes in M13.
+- **Occupation pages (M13):** `/occupations/{slug}` renders a listed or published occupation through
+  `Presenters\OccupationPresenter` (names, ISCO path, fields with a status each, numbered sources)
+  and 301-redirects a merged slug (PLAN D49, D52). `Presenters\BrowsePresenter` serves
+  `/occupations` and `/occupations/groups/{code}`. The sensitive gate is in `OccupationPresenter`
+  (D53). `Http\Middleware\NoIndex` keeps every occupation route out of search engines until the
+  index gate (D54).
 
 See [the module rules](../README.md).

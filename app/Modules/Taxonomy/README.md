@@ -27,5 +27,7 @@ The list of occupations and how they are named.
   (`RejectCandidate`), corrects names (`UpdateOccupationNames`), merges (`MergeOccupations`, D48) or
   keeps a pair separate (`KeepSeparate`), from the Filament screens in `Filament/`.
   `Queries\OccupationBySlug` follows a merge to the canonical slug (D49).
+- **Browsing (M13):** `Queries\PublicOccupations` (listed and published only, by primary name) and
+  `Queries\IscoGroups` (a group, its path, its children with counts) feed the public pages.
 
 See [the module rules](../README.md).

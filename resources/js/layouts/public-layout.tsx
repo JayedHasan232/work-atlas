@@ -49,6 +49,14 @@ export default function PublicLayout({
                         <LanguageSwitcher />
                         <nav aria-label={t('common.nav.account')}>
                             <ul className="flex items-center gap-1">
+                                <li>
+                                    <Link
+                                        href={localizePath('/occupations')}
+                                        className={linkClass}
+                                    >
+                                        {t('common.nav.occupations')}
+                                    </Link>
+                                </li>
                                 {auth.user ? (
                                     <li>
                                         <Link
