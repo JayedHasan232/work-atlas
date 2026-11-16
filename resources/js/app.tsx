@@ -16,7 +16,8 @@ void createInertiaApp({
         switch (true) {
             case name === 'welcome' ||
                 name === 'contribution-terms' ||
-                name.startsWith('occupations/'):
+                name.startsWith('occupations/') ||
+                name.startsWith('search/'):
                 return PublicLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;

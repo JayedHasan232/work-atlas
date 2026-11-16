@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Taxonomy;
 
+use App\Modules\Taxonomy\Actions\NormalizeForSearch;
 use App\Modules\Taxonomy\Enums\NameType;
 use App\Modules\Taxonomy\Models\Occupation;
 use App\Modules\Taxonomy\Models\OccupationName;
@@ -29,6 +30,7 @@ class OccupationNameFactory extends Factory
             'locale' => 'en',
             'name' => $name,
             'normalized_name' => mb_strtolower($name),
+            'search_key' => mb_strtolower($name),
             'type' => NameType::Alias,
             'region' => null,
         ];
@@ -46,6 +48,11 @@ class OccupationNameFactory extends Factory
 
     public function bangla(string $name): static
     {
-        return $this->state(['locale' => 'bn', 'name' => $name, 'normalized_name' => mb_strtolower($name)]);
+        return $this->state([
+            'locale' => 'bn',
+            'name' => $name,
+            'normalized_name' => mb_strtolower($name),
+            'search_key' => app(NormalizeForSearch::class)->handle($name),
+        ]);
     }
 }

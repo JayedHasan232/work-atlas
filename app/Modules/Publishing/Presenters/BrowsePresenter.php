@@ -19,6 +19,7 @@ final class BrowsePresenter
     public function __construct(
         private readonly IscoGroups $groups,
         private readonly PublicOccupations $occupations,
+        private readonly OccupationLinks $links,
     ) {}
 
     /**
@@ -31,7 +32,7 @@ final class BrowsePresenter
 
         return [
             'groups' => array_map(fn (GroupCount $count): array => $this->groupLink($count->group, $locale, $count->occupations), $this->groups->children()),
-            'occupations' => array_map(fn (OccupationListItem $item): array => $this->item($item, $locale), $result->items),
+            'occupations' => array_map(fn (OccupationListItem $item): array => $this->links->link($item, $locale), $result->items),
             'pagination' => [
                 'total' => $result->total,
                 'page' => $result->page,
@@ -63,7 +64,7 @@ final class BrowsePresenter
                 $this->groups->children($code),
             ),
             'occupations' => $isUnitGroup ? array_map(
-                fn (OccupationListItem $item): array => $this->item($item, $locale),
+                fn (OccupationListItem $item): array => $this->links->link($item, $locale),
                 $this->occupations->inGroup($code, $locale),
             ) : [],
         ];
@@ -81,22 +82,6 @@ final class BrowsePresenter
             'titleLocale' => $group->titleLocale($locale),
             'url' => LocalizedRoutes::path('occupations.groups.show', ['code' => $group->code], $locale),
             'occupations' => $occupations,
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function item(OccupationListItem $item, string $locale): array
-    {
-        $nameLocale = isset($item->names[$locale]) ? $locale : array_key_first($item->names);
-
-        return [
-            'slug' => $item->slug,
-            'iscoCode' => $item->iscoCode,
-            'name' => $nameLocale === null ? $item->slug : $item->names[$nameLocale],
-            'nameLocale' => $nameLocale ?? 'en',
-            'url' => LocalizedRoutes::path('occupations.show', ['slug' => $item->slug], $locale),
         ];
     }
 }

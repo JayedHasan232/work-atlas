@@ -19,7 +19,10 @@ final class SyncOccupationNames
 {
     public const string FIELD_KEY = 'names';
 
-    public function __construct(private readonly NormalizeName $normalize) {}
+    public function __construct(
+        private readonly NormalizeName $normalize,
+        private readonly NormalizeForSearch $searchKey,
+    ) {}
 
     /**
      * @param  mixed  $names  the stored name list (see Knowledge's ValidateFieldValue), or null for none
@@ -46,6 +49,7 @@ final class SyncOccupationNames
                 'locale' => $locale,
                 'name' => $name['name'],
                 'normalized_name' => $key,
+                'search_key' => $this->searchKey->handle($name['name']),
                 'type' => NameType::from($name['type']),
                 'region' => is_string($name['region'] ?? null) ? $name['region'] : null,
             ];

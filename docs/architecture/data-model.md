@@ -71,7 +71,8 @@ erDiagram
         bigint occupation_id FK "copy of the names field (D44)"
         string locale
         text name
-        text normalized_name "search key"
+        text normalized_name "strict key, duplicates"
+        text search_key "loose key, search (M15)"
         string type "primary, alias, local, regional"
         string region "set iff regional"
     }

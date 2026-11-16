@@ -17,12 +17,13 @@ use Illuminate\Support\Carbon;
  * @property string $locale
  * @property string $name
  * @property string $normalized_name
+ * @property string $search_key
  * @property NameType $type
  * @property string|null $region
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['occupation_id', 'locale', 'name', 'normalized_name', 'type', 'region'])]
+#[Fillable(['occupation_id', 'locale', 'name', 'normalized_name', 'search_key', 'type', 'region'])]
 #[UseFactory(OccupationNameFactory::class)]
 class OccupationName extends Model
 {

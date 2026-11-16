@@ -460,6 +460,12 @@ Tests
 - `Feature/Taxonomy/SearchAliasTest` (e.g. "নলমিস্ত্রি" finds the plumbing occupation),
   `Unit/Taxonomy/BanglaNormalizerTest`, `SearchBenchmarkTest`, `Browser/SearchTest`.
 
+Status: the code is done (`NormalizeForSearch`, `occupation_names.search_key` with full-text and
+trigram indexes, `SearchOccupations`, `/search` and the header search box, `atlas:search:benchmark`;
+D58–D60). Open: the benchmark itself. Its ≥ 50 real queries come from the H2 interviews, and it can
+only run once the real occupation list exists (M10 run, O3); the Recall@3 target (proposed 90%) is
+the maintainer's call. Until then the runner is tested on a synthetic sample.
+
 ### M16 — Error reports, edit suggestions, contributor profiles and credit
 
 Depends on: M8, M13 · Blocked by: —
@@ -850,6 +856,27 @@ Tests
   crawlers reach them from the index. `/robots.txt` allows public pages (a blocked page could not
   show its `noindex`), blocks `/admin`, `/horizon`, `/dashboard` and `/settings`, and names the
   sitemap. It replaces the static `public/robots.txt`.
+- **D58** (M15) Search matches `occupation_names.search_key`, a looser key than `normalized_name`:
+  `NormalizeForSearch` also turns Bangla digits into ASCII and folds the spellings people mix up (ী/ি,
+  ূ/ু, ঈ/ই, ঊ/উ, শ/ষ/স, ণ/ন, ৎ/ত and a word-final hasanta, and drops chandrabindu). The duplicate
+  detector keeps the strict key, so folding never makes two occupations look alike. Both keys are
+  written by `SyncOccupationNames`; the migration fills in existing rows. More folds (ঙ/ং, ড়/র, য/জ)
+  wait for the benchmark, since each one also makes unrelated words meet.
+- **D59** (M15) A name matches exactly, by prefix (of the whole name, or of each query word against
+  the name's words through `to_tsvector('simple', search_key)`), or by trigram similarity: word
+  similarity ≥ 0.6 (pg_trgm's default) or whole-name similarity ≥ `atlas.search.min_similarity`
+  (0.4). Each occupation counts once, by its best name; the order is exact > prefix > similar, then
+  similarity, then a primary name, then a name in the reader's language. All languages are searched
+  on every page, since people type English on the Bangla site and the other way round. Only listed
+  and published occupations are found; a merged occupation's names are aliases of the one it went
+  into (M11). The result shows the name that matched when it is not the one shown ("also called
+  নলমিস্ত্রি").
+- **D60** (M15) `/search?q=` (bn and en) is never indexed and `robots.txt` blocks `/search` and
+  `/en/search`, because every query would be a page. The header search box is a plain GET form, so
+  it works before the script loads. The benchmark file is `tests/Fixtures/search-benchmark.csv`
+  (`query,expected_slug,locale,note`); `atlas:search:benchmark --report` writes
+  `docs/decisions/search-benchmark.md`. A query whose occupation is not in the database counts as a
+  miss and is named in the report.
 
 ## Maintainer decisions (answered 2026-11-16)
 
