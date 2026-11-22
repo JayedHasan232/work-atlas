@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Modules\Community\Enums\Role;
 use App\Modules\Knowledge\Models\FieldDefinition;
@@ -130,4 +131,16 @@ it('starts empty and works in Bangla', function () {
 it('links to compare from the occupation page', function () {
     $this->get("/en/occupations/{$this->plumber->slug}")->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('occupation.compareUrl', compareUrl([$this->plumber->slug])));
+});
+
+it('ignores slugs that are not slugs and looks up only a short list', function () {
+    $junk = implode('', array_map(fn (int $i): string => "&o[]=nobody-{$i}", range(1, 200)));
+
+    DB::enableQueryLog();
+    $this->get("/compare?o[]={$this->plumber->slug}&o[]=Not_A_Slug&o[]=%FF&o[][x]=y{$junk}")
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('compare.chosen', [$this->plumber->slug]));
+
+    // Without the limit, each of the 200 unknown slugs would cost a query.
+    expect(count(DB::getQueryLog()))->toBeLessThan(60);
 });

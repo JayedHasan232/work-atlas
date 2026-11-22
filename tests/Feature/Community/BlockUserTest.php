@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Gate;
+use Inertia\Testing\AssertableInertia as Assert;
 use App\Models\User;
 use App\Modules\Community\Actions\BlockUser;
 use App\Modules\Community\Enums\Role;
@@ -86,4 +88,36 @@ it('blocks and unblocks from the admin list', function () {
     Livewire::test(ListUsers::class)->callTableAction('unblock', $this->person);
 
     expect($this->person->refresh()->isBlocked())->toBeFalse();
+});
+
+it('keeps a blocked maintainer out of Horizon as well as the admin panel', function () {
+    $other = User::factory()->role(Role::Maintainer)->create();
+    expect(Gate::forUser($other)->allows('viewHorizon'))->toBeTrue();
+
+    app(BlockUser::class)->handle($other->id, $this->maintainer, 'Account taken over.');
+
+    expect(Gate::forUser($other->refresh())->allows('viewHorizon'))->toBeFalse();
+});
+
+it('does not send the reason for a block, the role or the counters to the browser', function () {
+    app(BlockUser::class)->handle($this->person->id, $this->maintainer, 'Spam links on many pages.');
+
+    $this->actingAs($this->person->refresh())->get('/dashboard')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('auth.user.name', $this->person->name)
+            ->where('auth.user.email', $this->person->email)
+            ->missing('auth.user.block_reason')
+            ->missing('auth.user.blocked_by')
+            ->missing('auth.user.role')
+            ->missing('auth.user.accepted_proposals_count'))
+        ->assertDontSee('Spam links on many pages.');
+});
+
+it('answers an unknown edit on the patrol page with a notice, not an error page', function () {
+    $reviewer = User::factory()->role(Role::Reviewer)->create();
+
+    $this->actingAs($reviewer)->from('/en/patrol')->post('/en/patrol/999999/patrolled')
+        ->assertRedirect('/en/patrol')
+        ->assertSessionHas('notice', 'moderation.notices.refused');
+    $this->actingAs($reviewer)->post('/en/patrol/99999999999999999999/patrolled')->assertNotFound();
 });

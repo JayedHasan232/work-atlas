@@ -83,7 +83,7 @@ final class ApiPresenter
             'data' => $this->summary($occupation) + [
                 'groups' => array_map(fn (IscoGroupData $group): array => [
                     'code' => $group->code,
-                    'title' => array_filter(['bn' => $group->titleBn, 'en' => $group->titleEn], fn (?string $title): bool => $title !== null),
+                    'title' => (object) array_filter(['bn' => $group->titleBn, 'en' => $group->titleEn], fn (?string $title): bool => $title !== null),
                 ], $this->groups->path($occupation->iscoCode)),
                 'fields' => $fields,
                 'sources' => array_values($sources),

@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\App;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,7 +17,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // The test user has a known password: never in production.
+        if (App::isProduction()) {
+            throw new RuntimeException('DatabaseSeeder creates a test account and refuses to run in production.');
+        }
 
         User::factory()->create([
             'name' => 'Test User',

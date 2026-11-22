@@ -26,6 +26,7 @@ return [
         'description' => 'Delete your account and all of its resources',
         'warning' => 'Warning',
         'caution' => 'Please proceed with caution, this cannot be undone.',
+        'has_contributions' => 'Your account has contributions (edits, reviews or talk posts), so it cannot be deleted automatically yet. Please write to the maintainers and we will remove your personal details.',
         'confirm_title' => 'Are you sure you want to delete your account?',
         'confirm_description' => 'Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.',
     ],

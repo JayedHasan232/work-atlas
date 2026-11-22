@@ -24,10 +24,16 @@ RCLONE=(rclone --config /etc/work-atlas/rclone.conf)
 
 stamp="$(date -u +%Y-%m-%dT%H%M%SZ)"
 target="${R2_REMOTE}/db/${DB_NAME}-${stamp}.dump.age"
+# Upload under another folder first. If pg_dump dies half-way, the cut-off file must never sit in
+# db/ as the newest backup, where the restore test or a person in a hurry would pick it.
+partial="${R2_REMOTE}/partial/${DB_NAME}-${stamp}.dump.age"
+trap '"${RCLONE[@]}" deletefile "${partial}" >/dev/null 2>&1 || true' EXIT
 
 pg_dump --format=custom --no-owner --no-privileges --dbname="${DB_NAME}" \
     | age --encrypt --recipient "${AGE_RECIPIENT}" \
-    | "${RCLONE[@]}" rcat "${target}"
+    | "${RCLONE[@]}" rcat "${partial}"
+
+"${RCLONE[@]}" moveto "${partial}" "${target}"
 
 size="$("${RCLONE[@]}" size --json "${target}" | sed -n 's/.*"bytes":\([0-9]*\).*/\1/p')"
 

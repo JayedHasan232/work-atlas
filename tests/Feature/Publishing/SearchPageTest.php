@@ -52,3 +52,8 @@ it('is never indexed, even with the index gate on', function () {
     $this->get('/en/search?q=plumber')->assertHeader('X-Robots-Tag', 'noindex');
     $this->get('/robots.txt')->assertSee('Disallow: /search')->assertSee('Disallow: /en/search');
 });
+
+it('treats a query that is not text as an empty search', function () {
+    $this->get('/search?q[]=plumber')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('search/index')->where('query', ''));
+});

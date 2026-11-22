@@ -15,6 +15,12 @@ final class RecomputeIndexableJob implements ShouldBeUniqueUntilProcessing, Shou
 {
     use Queueable;
 
+    /**
+     * The lock ends by itself, so a job lost before it ran (queue flushed, worker killed) does not
+     * block this occupation's recompute for ever.
+     */
+    public int $uniqueFor = 600;
+
     public function __construct(public readonly int $occupationId) {}
 
     public function uniqueId(): string

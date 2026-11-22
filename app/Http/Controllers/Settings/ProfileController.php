@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -50,9 +52,17 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        Auth::logout();
+        // Delete first, sign out after. Edits, reviews and talk posts keep their author (history is
+        // never rewritten), so the database refuses to delete a person who has any. Until accounts
+        // can be anonymised (docs/PLAN.md, O6) that person gets a message, not an error page and a
+        // sign-out with the account still there.
+        try {
+            $user->delete();
+        } catch (QueryException) {
+            throw ValidationException::withMessages(['password' => __('settings.delete.has_contributions')]);
+        }
 
-        $user->delete();
+        Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

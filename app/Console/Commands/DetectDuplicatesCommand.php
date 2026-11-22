@@ -20,6 +20,12 @@ final class DetectDuplicatesCommand extends Command
     {
         $threshold = $this->option('threshold');
 
+        if ($threshold !== null && ! is_numeric($threshold)) {
+            $this->components->error('--threshold must be a number from above 0 to 1, for example 0.5.');
+
+            return self::FAILURE;
+        }
+
         try {
             $created = $detect->handle(is_numeric($threshold) ? (float) $threshold : null);
         } catch (InvalidArgumentException $exception) {

@@ -62,6 +62,11 @@ final class MergeOccupations
                 }
             }
 
+            // A public page must not end up redirecting to one nobody can open.
+            if ($from->publish_state->isPublic() && ! $into->publish_state->isPublic()) {
+                throw ListReviewNotAllowed::because("{$from->slug} is public and {$into->slug} is not: approve {$into->slug} first, or merge the other way round.");
+            }
+
             foreach (['bn', 'en'] as $locale) {
                 $this->moveNames($from, $into, $locale, $namesField, $user, $note);
             }

@@ -77,7 +77,14 @@ final class ReviewRevision
                 $this->countReviewOutcome->handle($revision->user_id, $accepted);
             }
 
-            if (! $this->hasPendingProposal($slot)) {
+            // The last proposal is decided, so the slot leaves the queue — unless it is there because
+            // the community disputes the value and this review did not settle that (a rejection leaves
+            // it disputed). Micro-tasks skip disputed values, so it would otherwise be in no queue.
+            $stillDisputed = ! $accepted
+                && $slot->status === FieldStatus::Disputed
+                && $slot->review_priority === FieldValue::PRIORITY_COMMUNITY_DISSENT;
+
+            if (! $stillDisputed && ! $this->hasPendingProposal($slot)) {
                 $slot->review_priority = FieldValue::PRIORITY_NONE;
             }
 

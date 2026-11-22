@@ -96,6 +96,9 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
+            // Times are stored in UTC (CLAUDE.md). Without this the session uses the server's zone,
+            // and a database in Asia/Dhaka would read Laravel's UTC strings six hours off.
+            'timezone' => 'UTC',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 

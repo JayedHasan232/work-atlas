@@ -37,13 +37,14 @@ final class GenerateWave1
             if (! $result->succeeded()) {
                 return new Wave1Result($occupationId, Wave1Status::Failed, $this->runIds($results), error: $result->error);
             }
+
+            // Model A's run was already applied: stop before paying for a second opinion nobody reads.
+            if (count($results) === 1 && $this->runHasRevisions->handle($result->runId)) {
+                return new Wave1Result($occupationId, Wave1Status::Skipped, $this->runIds($results));
+            }
         }
 
         [$a, $b] = $results;
-
-        if ($this->runHasRevisions->handle($a->runId)) {
-            return new Wave1Result($occupationId, Wave1Status::Skipped, $this->runIds($results));
-        }
 
         return $this->apply->handle($occupationId, $fields, $a, $b);
     }

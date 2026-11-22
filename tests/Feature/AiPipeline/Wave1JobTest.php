@@ -125,3 +125,16 @@ it('refuses a cross-check with the same model twice', function () {
     expect(fn () => app(GenerateWave1::class)->handle($this->occupation->id))->toThrow(CrossCheckNeedsTwoModels::class)
         ->and(AiRun::query()->where('prompt_key', 'wave1/fields')->count())->toBe(0);
 });
+
+it('does not ask model B again when model A\'s run was already applied', function () {
+    $this->fake->respondWithJson(wave1Output())->respondWithJson(wave1Output());
+    GenerateWave1Job::dispatchSync($this->occupation->id);
+    expect(AiRun::query()->where('prompt_key', 'wave1/fields')->count())->toBe(2);
+
+    // Model B is changed afterwards: its earlier run no longer matches, model A's still does.
+    config(['atlas.ai.tasks.wave1.b.model' => 'fake-model-c']);
+    $result = app(GenerateWave1::class)->handle($this->occupation->id);
+
+    expect($result->status)->toBe(Wave1Status::Skipped)
+        ->and(AiRun::query()->where('prompt_key', 'wave1/fields')->count())->toBe(2);
+});

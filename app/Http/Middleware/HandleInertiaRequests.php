@@ -56,7 +56,9 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                // Only what the pages show. The whole model would also send the role, the trust counters
+                // and a block's reason and author to the browser.
+                'user' => $request->user()?->only(['id', 'name', 'email', 'email_verified_at']),
                 // Reviewers and above see the moderation links (PLAN M18).
                 'canModerate' => $request->user()?->canModerate() === true,
             ],

@@ -6,6 +6,7 @@ import { Flags, Notice, controlClass } from '@/components/moderation/parts';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/lib/i18n';
+import { login } from '@/routes';
 import type { TalkThread as Thread } from '@/types/talk';
 
 // One discussion on an occupation's talk page (PLAN M19). Moderators hide or show posts; nothing is deleted.
@@ -226,7 +227,7 @@ export default function TalkThread({ talk }: { talk: Thread }) {
                         </p>
                     ) : !viewer.signedIn ? (
                         <Link
-                            href={localizePath('/login')}
+                            href={login()}
                             className="text-sm underline underline-offset-4"
                         >
                             {t('talk.sign_in')}

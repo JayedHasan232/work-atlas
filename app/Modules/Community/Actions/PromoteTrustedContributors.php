@@ -29,6 +29,7 @@ final class PromoteTrustedContributors
 
         $users = User::query()
             ->where('role', Role::Contributor)
+            ->whereNull('blocked_at')
             ->when($userIds !== null, fn ($query) => $query->whereKey($userIds))
             ->where('created_at', '<=', now()->subDays(Config::integer('atlas.community.trusted_after_days')))
             ->whereRaw('accepted_proposals_count + confirmed_answers_count >= ?', [Config::integer('atlas.community.trusted_after_contributions')])

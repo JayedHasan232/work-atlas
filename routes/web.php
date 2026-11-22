@@ -33,6 +33,8 @@ use App\Modules\Publishing\Http\Controllers\Web\TalkThreadController;
 use App\Support\Localization\LocalizedRoutes;
 use Illuminate\Support\Facades\Route;
 
+// Record ids in a URL are `[0-9]{1,18}`: a longer number would not fit PHP's int and end in an error page.
+
 // Public pages: Bangla at the root, English under /en (decision A10).
 LocalizedRoutes::register(function () {
     Route::inertia('/', 'welcome')->name('home');
@@ -64,20 +66,20 @@ LocalizedRoutes::register(function () {
     // Talk pages (PLAN M19): anyone reads; signed-in people with a verified email write.
     Route::where(['slug' => '[a-z0-9]+(-[a-z0-9]+)*'])->group(function () {
         Route::get('occupations/{slug}/talk', TalkIndexController::class)->name('talk.index');
-        Route::get('occupations/{slug}/talk/{thread}', TalkThreadController::class)->whereNumber('thread')->name('talk.show');
+        Route::get('occupations/{slug}/talk/{thread}', TalkThreadController::class)->where('thread', '[0-9]{1,18}')->name('talk.show');
 
         Route::middleware(['auth', 'verified', 'throttle:suggestions'])->group(function () {
             Route::post('occupations/{slug}/talk', [DiscussionController::class, 'store'])->name('talk.store');
-            Route::post('occupations/{slug}/talk/{thread}', [DiscussionController::class, 'reply'])->whereNumber('thread')->name('talk.reply');
+            Route::post('occupations/{slug}/talk/{thread}', [DiscussionController::class, 'reply'])->where('thread', '[0-9]{1,18}')->name('talk.reply');
         });
     });
-    Route::get('contributors/{id}', ContributorController::class)->whereNumber('id')->name('contributors.show');
+    Route::get('contributors/{id}', ContributorController::class)->where('id', '[0-9]{1,18}')->name('contributors.show');
 
     // Micro-tasks (PLAN M17): one yes/no question at a time, for signed-in people.
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('tasks', MicroTaskController::class)->name('tasks.show');
         Route::post('tasks/{task}', TaskAnswerController::class)
-            ->whereNumber('task')
+            ->where('task', '[0-9]{1,18}')
             ->middleware('throttle:answers')
             ->name('tasks.answer');
     });
@@ -85,20 +87,20 @@ LocalizedRoutes::register(function () {
     // Moderation (PLAN M18, D66): review desk and patrol queue for reviewers and above.
     Route::middleware(['auth', 'verified', 'can:moderate'])->group(function () {
         Route::get('review', ReviewQueueController::class)->name('review.index');
-        Route::get('review/{slot}', ReviewSlotController::class)->whereNumber('slot')->name('review.show');
+        Route::get('review/{slot}', ReviewSlotController::class)->where('slot', '[0-9]{1,18}')->name('review.show');
         Route::post('review/{slot}/proposals/{revision}', [ModerationActionController::class, 'decide'])
-            ->whereNumber(['slot', 'revision'])
+            ->where(['slot' => '[0-9]{1,18}', 'revision' => '[0-9]{1,18}'])
             ->name('review.decide');
-        Route::post('review/{slot}/status', [ModerationActionController::class, 'status'])->whereNumber('slot')->name('review.status');
+        Route::post('review/{slot}/status', [ModerationActionController::class, 'status'])->where('slot', '[0-9]{1,18}')->name('review.status');
         Route::get('patrol', PatrolQueueController::class)->name('patrol.index');
-        Route::get('patrol/{revision}', PatrolEditController::class)->whereNumber('revision')->name('patrol.show');
-        Route::post('patrol/{revision}/patrolled', [ModerationActionController::class, 'patrol'])->whereNumber('revision')->name('patrol.mark');
-        Route::post('patrol/{revision}/revert', [ModerationActionController::class, 'revert'])->whereNumber('revision')->name('patrol.revert');
+        Route::get('patrol/{revision}', PatrolEditController::class)->where('revision', '[0-9]{1,18}')->name('patrol.show');
+        Route::post('patrol/{revision}/patrolled', [ModerationActionController::class, 'patrol'])->where('revision', '[0-9]{1,18}')->name('patrol.mark');
+        Route::post('patrol/{revision}/revert', [ModerationActionController::class, 'revert'])->where('revision', '[0-9]{1,18}')->name('patrol.revert');
         Route::get('patrol/talk', TalkQueueController::class)->name('patrol.talk');
-        Route::post('talk/posts/{post}/hide', [DiscussionModerationController::class, 'hidePost'])->whereNumber('post')->name('talk.posts.hide');
-        Route::post('talk/posts/{post}/show', [DiscussionModerationController::class, 'showPost'])->whereNumber('post')->name('talk.posts.show');
-        Route::post('talk/threads/{thread}/hide', [DiscussionModerationController::class, 'hideThread'])->whereNumber('thread')->name('talk.threads.hide');
-        Route::post('talk/threads/{thread}/show', [DiscussionModerationController::class, 'showThread'])->whereNumber('thread')->name('talk.threads.show');
+        Route::post('talk/posts/{post}/hide', [DiscussionModerationController::class, 'hidePost'])->where('post', '[0-9]{1,18}')->name('talk.posts.hide');
+        Route::post('talk/posts/{post}/show', [DiscussionModerationController::class, 'showPost'])->where('post', '[0-9]{1,18}')->name('talk.posts.show');
+        Route::post('talk/threads/{thread}/hide', [DiscussionModerationController::class, 'hideThread'])->where('thread', '[0-9]{1,18}')->name('talk.threads.hide');
+        Route::post('talk/threads/{thread}/show', [DiscussionModerationController::class, 'showThread'])->where('thread', '[0-9]{1,18}')->name('talk.threads.show');
     });
 
     // Search (PLAN M15).

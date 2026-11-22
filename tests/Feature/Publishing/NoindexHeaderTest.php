@@ -54,3 +54,12 @@ it('keeps an occupation page noindex until it passes the gate', function () {
 
     $this->get("/occupations/{$this->occupation->slug}")->assertOk()->assertHeaderMissing('X-Robots-Tag');
 });
+
+it('never lets the API be indexed, whatever the gate says', function () {
+    config(['atlas.index_gate.enabled' => true]);
+    $this->occupation->update(['indexable' => true]);
+
+    foreach (['/api/v1/occupations', "/api/v1/occupations/{$this->occupation->slug}", '/api/v1/fields', '/api/v1/search?q=plumber'] as $url) {
+        $this->getJson($url)->assertOk()->assertHeader('X-Robots-Tag', 'noindex');
+    }
+});

@@ -5,6 +5,7 @@ import { Notice, controlClass } from '@/components/moderation/parts';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/lib/i18n';
+import { login } from '@/routes';
 import type { TalkIndex as Talk } from '@/types/talk';
 
 // An occupation's talk page (PLAN M19): the list of discussions and a form to start one.
@@ -126,7 +127,7 @@ export default function TalkIndex({ talk }: { talk: Talk }) {
                     <h2 className="font-medium">{t('talk.form.new')}</h2>
                     {!talk.viewer.signedIn ? (
                         <Link
-                            href={localizePath('/login')}
+                            href={login()}
                             className="text-sm underline underline-offset-4"
                         >
                             {t('talk.sign_in')}

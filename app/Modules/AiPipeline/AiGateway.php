@@ -62,7 +62,7 @@ final class AiGateway
             throw $error;
         }
 
-        return $this->finish($run, $prompt, $result);
+        return $this->finishOrFail($run, $prompt, $result);
     }
 
     /**
@@ -200,10 +200,23 @@ final class AiGateway
 
             $result instanceof ProviderError
                 ? $this->fail($run, $result->getMessage())
-                : $this->finish($run, $this->prompts->get($run->prompt_key, $run->prompt_version), $result);
+                : $this->finishOrFail($run, $this->prompts->get($run->prompt_key, $run->prompt_version), $result);
         }
 
         return true;
+    }
+
+    /**
+     * Stores a provider's answer. If storing it throws (for example text the database refuses), the
+     * run is still closed as failed: no run stays `running` (every call is logged, failures included).
+     */
+    private function finishOrFail(AiRun $run, Prompt $prompt, CompletionResult $result): AiResult
+    {
+        try {
+            return $this->finish($run, $prompt, $result);
+        } catch (Throwable $error) {
+            return $this->fail($run->refresh(), 'The answer could not be stored: '.$error::class.': '.$error->getMessage());
+        }
     }
 
     private function startRun(AiRequest $request, Prompt $prompt, string $text): AiRun

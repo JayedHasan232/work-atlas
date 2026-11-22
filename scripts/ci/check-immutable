@@ -21,6 +21,10 @@ head=$2
 paths=(data/prompts data/schemas)
 changed=0
 
+# Read the diff first: a git error inside "< <(...)" would not stop the script, and the check would
+# pass on an unknown revision.
+diff=$(git diff --no-renames --name-status "${base}...${head}" -- "${paths[@]}")
+
 while IFS=$'\t' read -r status path; do
   [ -n "${status:-}" ] || continue
   case "$status" in
@@ -30,7 +34,7 @@ while IFS=$'\t' read -r status path; do
       changed=$((changed + 1))
       ;;
   esac
-done < <(git diff --no-renames --name-status "${base}...${head}" -- "${paths[@]}")
+done <<< "$diff"
 
 if [ "$changed" -gt 0 ]; then
   cat >&2 <<MSG

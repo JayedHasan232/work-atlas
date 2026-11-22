@@ -72,3 +72,12 @@ it('uses the configured thresholds', function () {
 
     expect($user->refresh()->role)->toBe(Role::Trusted);
 });
+
+it('does not promote a blocked contributor', function () {
+    $blocked = contributor(40, 30);
+    $blocked->forceFill(['blocked_at' => now(), 'block_reason' => 'Spam.'])->save();
+
+    $this->artisan('atlas:trust:promote')->assertSuccessful();
+
+    expect($blocked->refresh()->role)->toBe(Role::Contributor);
+});

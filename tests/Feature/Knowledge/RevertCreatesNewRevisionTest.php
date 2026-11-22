@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Community\Enums\Role;
 use App\Modules\Knowledge\Actions\ChangeStatus;
 use App\Modules\Knowledge\Actions\RevertRevision;
 use App\Modules\Knowledge\Actions\ReviewRevision;
@@ -89,4 +90,23 @@ it('reverts only the current value', function () {
 
 it('never lets an AI run revert', function () {
     expect(fn () => revert($this->second->id, aiActor()))->toThrow(RevertNotAllowed::class, 'AI run');
+});
+
+it('does not let a trusted person bring a verified value back by undoing a revert', function () {
+    $field = FieldDefinition::factory()->create();
+    $first = recordValue($field, 2);
+    $slot = $first->fieldValue;
+    $second = recordValue($field, 4, occupationId: $slot->occupation_id);
+    app(ChangeStatus::class)->handle($slot->id, FieldStatus::Verified, reviewerActor());
+
+    // A reviewer undoes the verified value; the slot is back at the AI draft.
+    $revert = revert($second->id);
+    expect($slot->fresh()->status)->toBe(FieldStatus::AiDraft);
+
+    // Undoing that revert would restore "verified". Only a reviewer may.
+    expect(fn () => revert($revert->id, personActor(Role::Trusted)))->toThrow(RevertNotAllowed::class);
+    expect($slot->fresh()->status)->toBe(FieldStatus::AiDraft);
+
+    revert($revert->id);
+    expect($slot->fresh()->status)->toBe(FieldStatus::Verified);
 });

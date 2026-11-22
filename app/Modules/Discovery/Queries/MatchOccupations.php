@@ -82,11 +82,17 @@ final class MatchOccupations
 
         $notes = [];
 
-        if (($values['formal_training'] ?? null)?->value === 'required') {
+        // A note states something as fact, so it follows the same rule as the criteria: a disputed
+        // value says nothing.
+        $settled = fn (string $field): mixed => ($value = $values[$field] ?? null) !== null && $value->status !== FieldStatus::Disputed
+            ? $value->value
+            : null;
+
+        if ($settled('formal_training') === 'required') {
             $notes[] = 'training_required';
         }
 
-        if (($values['seasonal'] ?? null)?->value === 'year_round_with_peaks') {
+        if ($settled('seasonal') === 'year_round_with_peaks') {
             $notes[] = 'seasonal_peaks';
         }
 

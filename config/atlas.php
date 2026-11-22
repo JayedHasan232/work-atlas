@@ -41,7 +41,7 @@ return [
             'contributors/*' => ['contribute'],
             'tasks/*' => ['tasks', 'occupations'],
             'moderation/*' => ['moderation', 'occupations', 'talk'],
-            'talk/*' => ['talk', 'occupations'],
+            'talk/*' => ['talk', 'occupations', 'moderation'],
             'discovery/*' => ['guide', 'occupations'],
             'settings/contributions' => ['contribute'],
             'search/*' => ['search'],

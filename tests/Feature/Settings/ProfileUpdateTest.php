@@ -3,6 +3,8 @@
 namespace Tests\Feature\Settings;
 
 use App\Models\User;
+use App\Modules\Knowledge\Data\Actor;
+use App\Modules\Knowledge\Models\FieldDefinition;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -120,6 +122,27 @@ class ProfileUpdateTest extends TestCase
 
         $this->assertGuest();
         $this->assertNull($user->fresh());
+    }
+
+    public function test_a_person_with_contributions_gets_a_message_and_stays_signed_in()
+    {
+        $user = User::factory()->create();
+        $field = FieldDefinition::factory()->create();
+        recordValue($field, 3, Actor::user($user));
+
+        $response = $this
+            ->actingAs($user)
+            ->from(route('profile.edit'))
+            ->delete(route('profile.destroy'), [
+                'password' => 'password',
+            ]);
+
+        $response
+            ->assertSessionHasErrors(['password' => __('settings.delete.has_contributions')])
+            ->assertRedirect(route('profile.edit'));
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertNotNull($user->fresh());
     }
 
     public function test_correct_password_must_be_provided_to_delete_account()

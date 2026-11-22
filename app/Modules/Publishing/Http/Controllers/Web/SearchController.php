@@ -19,6 +19,6 @@ final class SearchController extends Controller
     {
         $robots->decide($request, false);
 
-        return Inertia::render('search/index', $presenter->present($request->string('q')->toString(), App::getLocale()));
+        return Inertia::render('search/index', $presenter->present(is_string($query = $request->query('q')) ? $query : '', App::getLocale()));
     }
 }

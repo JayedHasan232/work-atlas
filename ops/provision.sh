@@ -75,7 +75,8 @@ if ! id deploy >/dev/null 2>&1; then
     adduser --disabled-password --gecos "" deploy
 fi
 install -d -m 0700 -o deploy -g deploy /home/deploy/.ssh
-if [ -f /root/.ssh/authorized_keys ]; then
+# Only the first time: a later run must not wipe keys added since (the GitHub deploy key).
+if [ -f /root/.ssh/authorized_keys ] && [ ! -s /home/deploy/.ssh/authorized_keys ]; then
     install -m 0600 -o deploy -g deploy /root/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys
 fi
 # Deployer reloads PHP-FPM after a release; nothing else runs as root.

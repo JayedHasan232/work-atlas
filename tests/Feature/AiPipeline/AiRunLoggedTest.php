@@ -262,3 +262,16 @@ describe('batches', function () {
         'two providers' => fn () => [sampleAiRequest(), sampleAiRequest(provider: 'other')],
     ]);
 });
+
+it('closes a run as failed when its answer cannot be stored', function () {
+    // Valid for the schema, but PostgreSQL refuses a NUL character inside jsonb.
+    $this->fake->respond('{"value": "a\u0000b", "confidence": 0.5}');
+
+    $result = $this->gateway->complete(sampleAiRequest());
+    $run = AiRun::query()->sole();
+
+    expect($result->succeeded())->toBeFalse()
+        ->and($run->status)->toBe(AiRunStatus::Failed)
+        ->and($run->error)->toContain('could not be stored')
+        ->and($run->finished_at)->not->toBeNull();
+});

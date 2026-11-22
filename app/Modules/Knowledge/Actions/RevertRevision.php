@@ -41,6 +41,12 @@ final class RevertRevision
             }
 
             [$restored, $restoredStatus] = $this->replacedBy($reverted);
+
+            // Undoing an earlier revert would bring back the status of that time. Only a role that may
+            // set that status can restore it; otherwise a trusted person could re-verify a value.
+            if ($restoredStatus === FieldStatus::Verified && ! $role->canSetStatus(FieldStatus::Verified, $slot->definition->sensitive)) {
+                throw RevertNotAllowed::because($revisionId, "a {$role->value} cannot restore a verified value");
+            }
             $value = $restored?->new_value;
             $sourceIds = $restored !== null ? $restored->sources()->pluck('sources.id')->all() : [];
 

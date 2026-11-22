@@ -14,6 +14,7 @@ use App\Modules\Taxonomy\Exceptions\ListReviewNotAllowed;
 use App\Modules\Taxonomy\Models\Occupation;
 use App\Modules\Taxonomy\Models\OccupationName;
 use Closure;
+use Illuminate\Support\Facades\DB;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Repeater;
@@ -99,7 +100,8 @@ final class ListReview
                 self::namesRepeater('bn', __('admin.review.names_bn')),
                 self::namesRepeater('en', __('admin.review.names_en')),
             ])
-            ->action(fn (Occupation $record, array $data) => self::attempt(function (User $user) use ($record, $data): void {
+            // Both languages or neither: a rule broken in the second must not leave the first saved.
+            ->action(fn (Occupation $record, array $data) => self::attempt(fn (User $user) => DB::transaction(function () use ($record, $data, $user): void {
                 foreach (['bn', 'en'] as $locale) {
                     $names = self::cleanNames(is_array($data[$locale] ?? null) ? $data[$locale] : []);
 
@@ -107,7 +109,7 @@ final class ListReview
                         app(UpdateOccupationNames::class)->handle($record->id, $locale, $names, $user, __('admin.review.name_comment'));
                     }
                 }
-            }));
+            })));
     }
 
     private static function merge(): Action

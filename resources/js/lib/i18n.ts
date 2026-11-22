@@ -32,7 +32,8 @@ export function translate(
         .sort((a, b) => b.length - a.length)
         .reduce(
             (line, name) =>
-                line.replaceAll(`:${name}`, String(replacements[name])),
+                // A function, so `$&` and the like in a value are not read as patterns.
+                line.replaceAll(`:${name}`, () => String(replacements[name])),
             node,
         );
 }

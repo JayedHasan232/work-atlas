@@ -17,8 +17,12 @@ final readonly class OccupationAddress
         public PublishState $state,
     ) {}
 
+    /**
+     * A merged occupation's address redirects only to a public page. A target that is still a
+     * candidate (or was rejected) stays hidden: a redirect would give away its slug.
+     */
     public function redirects(): bool
     {
-        return $this->canonicalSlug !== $this->slug;
+        return $this->canonicalSlug !== $this->slug && $this->state->isPublic();
     }
 }

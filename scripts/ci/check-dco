@@ -19,6 +19,10 @@ missing=0
 
 lower() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
 
+# Read the list first: a git error inside "< <(...)" would not stop the script, and the check would
+# pass with "All 0 commit(s)" on an unknown revision.
+commits=$(git rev-list --no-merges "${base}..${head}")
+
 while IFS= read -r sha; do
   [ -n "$sha" ] || continue
   checked=$((checked + 1))
@@ -41,7 +45,7 @@ while IFS= read -r sha; do
     echo "MISSING  ${sha:0:12} ${subject}"
     missing=$((missing + 1))
   fi
-done < <(git rev-list --no-merges "${base}..${head}")
+done <<< "$commits"
 
 if [ "$missing" -gt 0 ]; then
   cat >&2 <<EOF

@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Knowledge\Actions\ApplyConsensus;
 use App\Modules\Knowledge\Actions\ReviewRevision;
 use App\Modules\Knowledge\Enums\FieldStatus;
 use App\Modules\Knowledge\Enums\ReviewDecision;
@@ -67,4 +68,18 @@ it('never lets an AI run review', function () {
         ->toThrow(ReviewNotAllowed::class, 'AI run');
 
     expect($this->proposal->reviews()->count())->toBe(0);
+});
+
+it('keeps a value the community disputes in the queue when a proposal on it is rejected', function () {
+    $field = FieldDefinition::factory()->create();
+    $current = recordValue($field, 2);
+    $slot = $current->fieldValue;
+    app(ApplyConsensus::class)->handle($slot->id, $current->id, FieldStatus::Disputed);
+    $proposal = recordValue($field, 4, personActor(), occupationId: $slot->occupation_id);
+
+    review($proposal->id, ReviewDecision::Rejected);
+
+    // Still disputed, and micro-tasks skip disputed values: without the queue nobody would look again.
+    expect($slot->fresh()->status)->toBe(FieldStatus::Disputed)
+        ->and($slot->fresh()->review_priority)->toBe(FieldValue::PRIORITY_COMMUNITY_DISSENT);
 });

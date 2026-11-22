@@ -28,7 +28,8 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
      */
     protected function gate(): void
     {
-        // Maintainers only (M8). A guest has no user, so the gate refuses.
-        Gate::define('viewHorizon', fn (?User $user = null): bool => $user?->role->canUseAdmin() === true);
+        // Maintainers only (M8), and not while blocked — the same rule as the admin panel. A guest has
+        // no user, so the gate refuses.
+        Gate::define('viewHorizon', fn (?User $user = null): bool => $user !== null && $user->role->canUseAdmin() && ! $user->isBlocked());
     }
 }
