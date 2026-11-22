@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Gate;
-use Inertia\Testing\AssertableInertia as Assert;
 use App\Models\User;
 use App\Modules\Community\Actions\BlockUser;
 use App\Modules\Community\Enums\Role;
@@ -10,6 +8,8 @@ use App\Modules\Community\Exceptions\ModerationNotAllowed;
 use App\Modules\Community\Filament\Resources\Users\Pages\ListUsers;
 use App\Modules\Community\Models\VerificationAnswer;
 use App\Modules\Knowledge\Models\Revision;
+use Illuminate\Support\Facades\Gate;
+use Inertia\Testing\AssertableInertia as Assert;
 use Livewire\Livewire;
 
 /*

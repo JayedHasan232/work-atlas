@@ -11,7 +11,7 @@ import type { TalkThread as Thread } from '@/types/talk';
 
 // One discussion on an occupation's talk page (PLAN M19). Moderators hide or show posts; nothing is deleted.
 export default function TalkThread({ talk }: { talk: Thread }) {
-    const { t, formatDate, localizePath } = useTranslation();
+    const { t, formatDate } = useTranslation();
     const { thread, posts, viewer } = talk;
     const [reason, setReason] = useState('');
     const [sending, setSending] = useState(false);

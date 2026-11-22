@@ -10,7 +10,7 @@ import type { TalkIndex as Talk } from '@/types/talk';
 
 // An occupation's talk page (PLAN M19): the list of discussions and a form to start one.
 export default function TalkIndex({ talk }: { talk: Talk }) {
-    const { t, formatDate, formatNumber, localizePath } = useTranslation();
+    const { t, formatDate, formatNumber } = useTranslation();
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         body: '',

@@ -1,12 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Modules\Community\Enums\Role;
 use App\Modules\Knowledge\Models\FieldDefinition;
 use App\Modules\Knowledge\Models\Source;
 use App\Modules\Taxonomy\Actions\MergeOccupations;
 use App\Modules\Taxonomy\Models\Occupation;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 /*

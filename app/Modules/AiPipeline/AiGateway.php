@@ -213,7 +213,8 @@ final class AiGateway
     private function finishOrFail(AiRun $run, Prompt $prompt, CompletionResult $result): AiResult
     {
         try {
-            return $this->finish($run, $prompt, $result);
+            // In a transaction of its own, so a refused write is undone and the run can still be closed.
+            return DB::transaction(fn (): AiResult => $this->finish($run, $prompt, $result));
         } catch (Throwable $error) {
             return $this->fail($run->refresh(), 'The answer could not be stored: '.$error::class.': '.$error->getMessage());
         }

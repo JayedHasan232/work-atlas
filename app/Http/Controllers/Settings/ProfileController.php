@@ -56,8 +56,10 @@ class ProfileController extends Controller
         // never rewritten), so the database refuses to delete a person who has any. Until accounts
         // can be anonymised (docs/PLAN.md, O6) that person gets a message, not an error page and a
         // sign-out with the account still there.
+        // The copy is deleted, not `$user` itself: signing out saves the user's remember token, and
+        // saving a model that knows it was deleted would insert the row again.
         try {
-            $user->delete();
+            $user->getConnection()->transaction(fn () => (clone $user)->delete());
         } catch (QueryException) {
             throw ValidationException::withMessages(['password' => __('settings.delete.has_contributions')]);
         }

@@ -14,7 +14,6 @@ use App\Modules\Taxonomy\Exceptions\ListReviewNotAllowed;
 use App\Modules\Taxonomy\Models\Occupation;
 use App\Modules\Taxonomy\Models\OccupationName;
 use Closure;
-use Illuminate\Support\Facades\DB;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Repeater;
@@ -25,6 +24,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Support\Facades\DB;
 
 /**
  * The list-review actions on an occupation (PLAN M11): approve, reject, edit names, merge or mark as
